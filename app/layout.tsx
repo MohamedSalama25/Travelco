@@ -1,0 +1,53 @@
+import { cookies } from "next/headers";
+import type { Metadata } from "next";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import "./globals.css";
+import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+
+export const metadata: Metadata = {
+    title: "Orcish Dashboard",
+    description:
+        "A fully responsive analytics dashboard featuring dynamic charts, interactive tables, a collapsible sidebar, and a light/dark mode theme switcher.",
+};
+
+export default async function RootLayout({
+    children,
+    params
+}: Readonly<{
+    children: React.ReactNode;
+    params: Promise<{ locale?: string }>;
+}>) {
+    const resolvedParams = await params;
+    const locale = resolvedParams?.locale || 'en';
+    const cookieStore = await cookies();
+    const activeThemeValue = cookieStore.get("active_theme")?.value;
+    const isScaled = activeThemeValue?.endsWith("-scaled");
+
+    const messages = await getMessages();
+
+    return (
+        <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
+            <body
+                className={cn(
+                    "bg-background overscroll-none font-sans antialiased",
+                    activeThemeValue ? `theme-${activeThemeValue}` : "",
+                    isScaled ? "theme-scaled" : ""
+                )}
+            >
+                <NextIntlClientProvider messages={messages}>
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="system"
+                        enableSystem
+                        disableTransitionOnChange
+                        enableColorScheme
+                    >
+                        {children}
+                    </ThemeProvider>
+                </NextIntlClientProvider>
+            </body>
+        </html>
+    );
+}
