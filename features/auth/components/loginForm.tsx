@@ -1,41 +1,49 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/routing";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginSchema, type LoginFormData } from "../types/auth";
-import { useAuth } from "../context/authContext";
+import { useLogin } from "../hooks/useAuth";
+import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
 
 export default function LoginForm() {
     const t = useTranslations("auth");
     const tErrors = useTranslations("auth.errors");
     const router = useRouter();
-    const { login } = useAuth();
-    const [error, setError] = useState("");
+    const { mutate: login, isPending } = useLogin();
 
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: { errors },
     } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
     });
 
     const onSubmit = async (data: LoginFormData) => {
-        setError("");
-        const success = await login(data.email, data.password);
-
-        if (success) {
-            router.push("/");
-        } else {
-            setError(tErrors("invalidCredentials"));
-        }
+        login(
+            { email: data.email, password: data.password },
+            {
+                onSuccess: async () => {
+                    showSuccessToast(t("loginSuccess"));
+                    // Wait a bit for cookie to be set
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    router.push("/dashboard");
+                },
+                onError: (error: any) => {
+                    showErrorToast(
+                        tErrors("invalidCredentials"),
+                        error?.response?.data?.message
+                    );
+                },
+            }
+        );
     };
 
     return (
@@ -45,25 +53,18 @@ export default function LoginForm() {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-6 border border-gray-100 dark:border-gray-700">
                     {/* Header */}
                     <div className="text-center space-y-2">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
                             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                         </div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <h1 className="text-3xl font-bold bg-primary bg-clip-text text-transparent">
                             {t("welcomeBack")}
                         </h1>
                         <p className="text-gray-600 dark:text-gray-400">
                             {t("login")}
                         </p>
                     </div>
-
-                    {/* Error Message */}
-                    {error && (
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-                            {error}
-                        </div>
-                    )}
 
                     {/* Form */}
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -92,7 +93,7 @@ export default function LoginForm() {
                                 <Label htmlFor="password" className="text-sm font-medium">
                                     {t("password")}
                                 </Label>
-                                <Link href="#" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                                <Link href="#" className="text-sm text-primary hover:text-primary/80">
                                     {t("forgotPassword")}
                                 </Link>
                             </div>
@@ -113,10 +114,10 @@ export default function LoginForm() {
                         {/* Submit Button */}
                         <Button
                             type="submit"
-                            disabled={isSubmitting}
-                            className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                            disabled={isPending}
+                            className="w-full h-11 bg-primary cursor-pointer hover:opacity-80 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
                         >
-                            {isSubmitting ? "..." : t("signIn")}
+                            {isPending ? "..." : t("signIn")}
                         </Button>
                     </form>
 
@@ -136,7 +137,7 @@ export default function LoginForm() {
                     <div className="text-center">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             {t("noAccount")}{" "}
-                            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                            <Link href="/register" className="font-medium text-primary hover:text-primary/80">
                                 {t("signUp")}
                             </Link>
                         </p>

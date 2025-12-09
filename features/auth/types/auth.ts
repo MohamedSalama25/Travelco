@@ -21,6 +21,7 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 export const registerSchema = z.object({
     name: z.string().min(2, { message: "nameMin" }),
     email: z.string().email({ message: "emailInvalid" }),
+    phone: z.string().min(10, { message: "phoneMin" }),
     password: z.string().min(6, { message: "passwordMin" }),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {

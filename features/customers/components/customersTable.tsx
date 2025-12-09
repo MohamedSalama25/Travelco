@@ -4,12 +4,13 @@ import { useState, useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Archive, Plus, Search } from "lucide-react";
+import { Archive, Plus, Search, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import UniTable from "@/components/data-table";
 import AddCustomerDialog from "./addCustomerDialog";
 import { useTranslations } from "next-intl";
 import { mockCustomers, type Customer, type CustomerFormData } from "../types/customer";
+import { useConfirmation } from "@/hooks/useConfirmation";
 
 export default function CustomersTable() {
     const t = useTranslations("table");
@@ -22,6 +23,8 @@ export default function CustomersTable() {
     const [nameFilter, setNameFilter] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+    const confirm = useConfirmation();
+
 
     // Filter logic - name only
     const filteredCustomers = useMemo(() => {
@@ -61,15 +64,17 @@ export default function CustomersTable() {
         setDialogOpen(true);
     }, []);
 
-    const handleDelete = useCallback((customer: Customer) => {
+    const handleDelete = useCallback(async (customer: Customer) => {
         if (showArchived) {
             // Permanent delete from archive
-            if (confirm(t("confirmPermanentDelete"))) {
+            const confirmed = await confirm(t("confirmPermanentDelete"), t("confirmPermanentDeleteMessage"), <Trash2 className="w-16 h-16 text-red-500" />);
+            if (confirmed) {
                 setArchivedCustomers((prev) => prev.filter((c) => c.id !== customer.id));
             }
         } else {
             // Move to archive (soft delete)
-            if (confirm(t("confirmDelete"))) {
+            const confirmed = await confirm(t("confirmDelete"), t("confirmDeleteMessage"), <Trash2 className="w-16 h-16 text-red-500" />);
+            if (confirmed) {
                 setCustomers((prev) => prev.filter((c) => c.id !== customer.id));
                 setArchivedCustomers((prev) => [
                     ...prev,
@@ -77,7 +82,7 @@ export default function CustomersTable() {
                 ]);
             }
         }
-    }, [showArchived, t]);
+    }, [showArchived, t, confirm]);
 
     const handleRestore = useCallback((customer: Customer) => {
         setArchivedCustomers((prev) => prev.filter((c) => c.id !== customer.id));

@@ -286,7 +286,7 @@ export default function TravelersTable() {
             accessorKey: "totalSpent",
             header: tTravelers("totalSpent"),
             cell: ({ row }) => (
-                <div className="text-right font-medium">
+                <div className="text-right font-medium flex">
                     ${row.original.totalSpent.toLocaleString()}
                 </div>
             ),

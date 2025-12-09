@@ -5,6 +5,11 @@ import { getMessages } from 'next-intl/server';
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { AuthProvider } from "@/features/auth/context/authContext";
+import { QueryProvider } from "@/lib/providers/queryProvider";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthInitializer } from "@/features/auth/components/AuthInitializer";
+import { ConfirmationDialog } from "@/components/globalComponents/ConfirmationDialog";
 
 export const metadata: Metadata = {
     title: "Orcish Dashboard",
@@ -37,16 +42,23 @@ export default async function RootLayout({
                 )}
             >
                 <NextIntlClientProvider messages={messages}>
-                    <ThemeProvider
-                        attribute="class"
-                        defaultTheme="system"
-                        enableSystem
-                        disableTransitionOnChange
-                        enableColorScheme
-                    >
-                        {children}
-                    </ThemeProvider>
+                    <QueryProvider>
+                        <ThemeProvider
+                            attribute="class"
+                            defaultTheme="system"
+                            enableSystem
+                            disableTransitionOnChange
+                            enableColorScheme
+                        >
+                            <AuthProvider>
+                                {children}
+                                <ConfirmationDialog />
+                            </AuthProvider>
+                        </ThemeProvider>
+                    </QueryProvider>
                 </NextIntlClientProvider>
+                <AuthInitializer />
+                <Toaster />
             </body>
         </html>
     );

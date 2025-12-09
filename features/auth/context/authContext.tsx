@@ -26,7 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const userData = JSON.parse(atob(token));
                 setUser(userData);
             } catch (error) {
-                Cookies.remove("auth_token");
+
+                // Cookies.remove("auth_token");
             }
         }
         setIsLoading(false);
