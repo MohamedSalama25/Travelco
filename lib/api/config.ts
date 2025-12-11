@@ -17,6 +17,10 @@ export const API_CONFIG = {
             UPDATE: (id: string) => `customers/${id}`,
             DELETE: (id: string) => `customers/${id}`,
         },
+        TRANSFERS: {
+            LIST: 'transfers',
+            STATS: 'transfers/stats',
+        },
     },
 } as const;
 

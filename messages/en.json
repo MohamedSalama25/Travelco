@@ -99,7 +99,9 @@
             "passportMin": "Passport number must be at least 5 characters",
             "nationalityMin": "Nationality must be at least 2 characters",
             "addressMin": "Address must be at least 5 characters"
-        }
+        },
+        "deleteConfirmTitle": "Delete Customer",
+        "deleteConfirmDesc": "Are you sure you want to delete this customer? This action cannot be undone."
     },
     "team": {
         "title": "Team",
@@ -198,6 +200,10 @@
     "general": {
         "confirm": "Confirm",
         "cancel": "Cancel",
-        "areYouSure": "Are you sure?"
+        "areYouSure": "Are you sure?",
+        "opps": "Oops, something went wrong!",
+        "tryAgain": "Try again",
+        "loading": "Loading...",
+        "loadError": "Failed to load data"
     }
 }

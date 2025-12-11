@@ -371,7 +371,7 @@ export default function TravelersTable() {
             {/* UniTable */}
             <UniTable<Traveler>
                 columns={columns}
-                data={filteredTravelers}
+                data={filteredTravelers.slice((currentPage - 1) * 5, currentPage * 5)}
                 totalItems={filteredTravelers.length}
                 itemsPerPage={5}
                 currentPage={currentPage}

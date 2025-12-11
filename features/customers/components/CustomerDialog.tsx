@@ -9,63 +9,56 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
 import { CustomerForm } from "./CustomerForm";
-import { useCustomersStore } from "../store/customersStore";
 import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
 import type { CustomerSchemaType } from "../types/schema";
+import { createCustomer, updateCustomer } from "../services/customerService";
+import { useQueryClient } from "@tanstack/react-query";
+import { Customer } from "../types/types";
 
-export function CustomerDialog() {
+export function CustomerDialog({
+    open,
+    onClose,
+    customer
+}: {
+    open: boolean;
+    onClose: () => void;
+    customer?: Customer;
+}) {
     const t = useTranslations("customers");
-    const {
-        isAddDialogOpen,
-        isEditDialogOpen,
-        selectedCustomer,
-        setAddDialogOpen,
-        setEditDialogOpen,
-    } = useCustomersStore();
+    const queryClient = useQueryClient();
 
-    const isOpen = isAddDialogOpen || isEditDialogOpen;
-    const isEdit = isEditDialogOpen && !!selectedCustomer;
+    const isEdit = open && !!customer;
 
     const handleClose = () => {
-        setAddDialogOpen(false);
-        setEditDialogOpen(false);
+        onClose();
     };
 
     const handleSubmit = async (data: CustomerSchemaType) => {
-        // if (isEdit && selectedCustomer) {
-        //     updateCustomer(
-        //         { id: selectedCustomer._id, data },
-        //         {
-        //             onSuccess: () => {
-        //                 showSuccessToast(t("customerUpdated"));
-        //                 handleClose();
-        //             },
-        //             onError: (error: any) => {
-        //                 showErrorToast(
-        //                     t("updateError"),
-        //                     error?.response?.data?.message
-        //                 );
-        //             },
-        //         }
-        //     );
-        // } else {
-        //     createCustomer(data, {
-        //         onSuccess: () => {
-        //             showSuccessToast(t("customerCreated"));
-        //             handleClose();
-        //         },
-        //         onError: (error: any) => {
-        //             showErrorToast(
-        //                 t("createError"),
-        //                 error?.response?.data?.message
-        //             );
-        //         },
-        //     });
-        // }
+        if (isEdit && customer) {
+
+            const result = await updateCustomer(data, customer._id);
+            if (result.success) {
+                queryClient.invalidateQueries({
+                    queryKey: ["customers"],
+                });
+                showSuccessToast(t("customerUpdated"));
+                handleClose();
+            }
+
+        } else {
+            const result = await createCustomer(data);
+            if (result.success) {
+                queryClient.invalidateQueries({
+                    queryKey: ["customers"],
+                });
+                showSuccessToast(t("customerCreated"));
+                handleClose();
+            }
+        }
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={handleClose}>
+        <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>
@@ -76,7 +69,8 @@ export function CustomerDialog() {
                     </DialogDescription>
                 </DialogHeader>
                 <CustomerForm
-                    customer={isEdit ? selectedCustomer : undefined}
+                    key={customer?._id || 'new'}
+                    customer={isEdit ? customer : undefined}
                     onSubmit={handleSubmit}
                 // isLoading={isCreating || isUpdating}
                 />

@@ -163,6 +163,9 @@ const UniTable = <TData extends object>({
                 case 'Edit':
                   IconComponent = Edit;
                   break;
+                case 'View':
+                  IconComponent = Eye;
+                  break;
                 case 'Delete':
                   IconComponent = Trash2;
                   break;
