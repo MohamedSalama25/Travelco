@@ -66,6 +66,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "/team",
         icon: IconUsers,
       },
+      {
+        title: t("nav.airComps"),
+        url: "/air-comps",
+        icon: IconListDetails,
+      },
     ],
     navClouds: [
       {

@@ -1,16 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
-import { getTravelers, getTravelerStats } from "../services/travelerService";
+import { getTravelers, getTravelerStats, getTraveler } from "../services/travelerService";
 
-export function useTravelers(page: number = 1, search?: string) {
-    return useQuery({
-        queryKey: ["travelers", page, search],
-        queryFn: () => getTravelers(page, search),
+import { TravelerFilters } from "../services/travelerService";
+
+export function useTravelers(page: number = 1, filters?: TravelerFilters) {
+    const { data, isLoading, isError, error, isFetching } = useQuery({
+        queryKey: ["travelers", page, filters],
+        queryFn: () => getTravelers(page, filters),
+        placeholderData: (previousData) => previousData,
     });
+
+    return {
+        travelers: data?.data || [],
+        pagination: data?.pagination || {
+            total: 0,
+            page: 1,
+            limit: 10,
+            pages: 0
+        },
+        isLoading,
+        isFetching,
+        isError,
+        error
+    };
 }
 
 export function useTravelerStats() {
     return useQuery({
         queryKey: ["travelers-stats"],
         queryFn: () => getTravelerStats(),
+    });
+}
+
+export function useTraveler(id: string) {
+    return useQuery({
+        queryKey: ["traveler", id],
+        queryFn: () => getTraveler(id),
+        enabled: !!id,
     });
 }

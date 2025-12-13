@@ -1,383 +1,220 @@
-"use client";
-
-import { useState, useMemo, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Archive, Plus } from "lucide-react";
-import UniTable from "@/components/data-table";
-import TableFilterBar, { TableFilters } from "@/components/globalComponents/tableFilterBar";
 import { useTranslations } from "next-intl";
+import { Traveler, Pagination } from "../types/types";
+import UniTable from "@/components/data-table";
+import { Input } from "@/components/ui/input";
+import { Search, Filter, Archive } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { deleteTraveler } from "../services/travelerService";
+import { useConfirm } from "@/components/providers/ConfirmDialogProvider";
+import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { TravelersFilterPopover } from "./travelersFilterPopover";
 
-export interface Traveler {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    tripCount: number;
-    lastTripDate: string;
-    status: "active" | "inactive" | "pending";
-    totalSpent: number;
-    joinDate: string;
-    isArchived?: boolean;
+
+interface TravelersTableProps {
+    data: Traveler[];
+    pagination: Pagination;
+    onPageChange: (page: number) => void;
+    isLoading: boolean;
+    filters: {
+        bookingNumber: string;
+        name: string;
+        status: string;
+        createdAt?: string;
+    };
+    onFilterChange: (filters: { bookingNumber: string; name: string; status: string; createdAt?: string }) => void;
+    onEdit?: (traveler: Traveler) => void;
+    handleCreate?: () => void;
 }
 
-// Mock Data
-const mockTravelers: Traveler[] = [
-    {
-        id: "1",
-        name: "أحمد محمد",
-        email: "ahmed@example.com",
-        phone: "+20 123 456 7890",
-        tripCount: 12,
-        lastTripDate: "2024-11-15",
-        status: "active",
-        totalSpent: 15420,
-        joinDate: "2023-01-15",
-    },
-    {
-        id: "2",
-        name: "Sara Johnson",
-        email: "sara.j@example.com",
-        phone: "+1 555 123 4567",
-        tripCount: 8,
-        lastTripDate: "2024-10-28",
-        status: "active",
-        totalSpent: 9850,
-        joinDate: "2023-03-22",
-    },
-    {
-        id: "3",
-        name: "محمود علي",
-        email: "mahmoud@example.com",
-        phone: "+20 111 222 3333",
-        tripCount: 5,
-        lastTripDate: "2024-09-10",
-        status: "inactive",
-        totalSpent: 6200,
-        joinDate: "2023-06-10",
-    },
-    {
-        id: "4",
-        name: "Emily Chen",
-        email: "emily.chen@example.com",
-        phone: "+86 138 0000 1234",
-        tripCount: 15,
-        lastTripDate: "2024-11-20",
-        status: "active",
-        totalSpent: 22100,
-        joinDate: "2022-11-05",
-    },
-    {
-        id: "5",
-        name: "فاطمة حسن",
-        email: "fatima@example.com",
-        phone: "+20 100 555 6666",
-        tripCount: 3,
-        lastTripDate: "2024-08-15",
-        status: "pending",
-        totalSpent: 4500,
-        joinDate: "2024-05-20",
-    },
-    {
-        id: "6",
-        name: "David Smith",
-        email: "david.s@example.com",
-        phone: "+44 7700 900123",
-        tripCount: 20,
-        lastTripDate: "2024-11-25",
-        status: "active",
-        totalSpent: 31200,
-        joinDate: "2022-08-12",
-    },
-    {
-        id: "7",
-        name: "ليلى عبدالله",
-        email: "layla@example.com",
-        phone: "+966 50 123 4567",
-        tripCount: 7,
-        lastTripDate: "2024-10-05",
-        status: "active",
-        totalSpent: 8900,
-        joinDate: "2023-09-18",
-    },
-    {
-        id: "8",
-        name: "Michael Brown",
-        email: "michael.b@example.com",
-        phone: "+1 555 987 6543",
-        tripCount: 2,
-        lastTripDate: "2024-07-22",
-        status: "inactive",
-        totalSpent: 2800,
-        joinDate: "2024-04-10",
-    },
-    {
-        id: "9",
-        name: "نور الدين",
-        email: "nour@example.com",
-        phone: "+971 50 999 8888",
-        tripCount: 11,
-        lastTripDate: "2024-11-18",
-        status: "active",
-        totalSpent: 14300,
-        joinDate: "2023-02-28",
-    },
-    {
-        id: "10",
-        name: "Sophie Martin",
-        email: "sophie.m@example.com",
-        phone: "+33 6 12 34 56 78",
-        tripCount: 6,
-        lastTripDate: "2024-09-30",
-        status: "pending",
-        totalSpent: 7100,
-        joinDate: "2023-12-05",
-    },
-];
+export function TravelersTable({
+    data,
+    pagination,
+    onPageChange,
+    isLoading,
+    filters,
+    onFilterChange,
+    handleCreate,
+    onEdit
+}: TravelersTableProps) {
+    const t = useTranslations("travelers");
+    const tTable = useTranslations("table");
+    const tGeneral = useTranslations("general");
+    const queryClient = useQueryClient();
+    const router = useRouter();
+    const { confirm } = useConfirm();
 
-export default function TravelersTable() {
-    const t = useTranslations("table");
-    const tTravelers = useTranslations("travelers");
-
-    const [travelers, setTravelers] = useState<Traveler[]>(mockTravelers);
-    const [archivedTravelers, setArchivedTravelers] = useState<Traveler[]>([]);
-    const [showArchived, setShowArchived] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [filters, setFilters] = useState<TableFilters>({
-        search: "",
-        name: "",
-        dateFrom: "",
-        dateTo: "",
-        status: "all",
-    });
-
-    const statusOptions = [
-        { value: "active", label: tTravelers("active") },
-        { value: "inactive", label: tTravelers("inactive") },
-        { value: "pending", label: tTravelers("pending") },
-    ];
-
-    // Filter logic
-    const filteredTravelers = useMemo(() => {
-        return (showArchived ? archivedTravelers : travelers).filter((traveler) => {
-            // Search filter
-            if (filters.search) {
-                const searchLower = filters.search.toLowerCase();
-                const matchesSearch =
-                    traveler.name.toLowerCase().includes(searchLower) ||
-                    traveler.email.toLowerCase().includes(searchLower);
-                if (!matchesSearch) return false;
-            }
-
-            // Name filter
-            if (filters.name) {
-                const nameLower = filters.name.toLowerCase();
-                if (!traveler.name.toLowerCase().includes(nameLower)) return false;
-            }
-
-            // Date range filter
-            if (filters.dateFrom && traveler.lastTripDate < filters.dateFrom) {
-                return false;
-            }
-            if (filters.dateTo && traveler.lastTripDate > filters.dateTo) {
-                return false;
-            }
-
-            // Status filter
-            if (filters.status && filters.status !== "all") {
-                if (traveler.status !== filters.status) return false;
-            }
-
-            return true;
-        });
-    }, [travelers, archivedTravelers, showArchived, filters]);
-
-    const handleClearFilters = () => {
-        setFilters({
-            search: "",
-            name: "",
-            dateFrom: "",
-            dateTo: "",
-            status: "all",
-        });
+    const handleBookingNumberChange = (value: string) => {
+        onFilterChange({ ...filters, bookingNumber: value });
     };
 
-    const handleEdit = useCallback((traveler: Traveler) => {
-        // TODO: Implement edit functionality
-        console.log("Edit traveler:", traveler);
-        alert(`Edit: ${traveler.name}`);
-    }, []);
+    const handleNameChange = (value: string) => {
+        onFilterChange({ ...filters, name: value });
+    };
 
-    const handleDelete = useCallback((traveler: Traveler) => {
-        if (showArchived) {
-            // Permanent delete from archive
-            if (confirm(t("confirmPermanentDelete"))) {
-                setArchivedTravelers((prev) => prev.filter((t) => t.id !== traveler.id));
-            }
-        } else {
-            // Move to archive (soft delete)
-            if (confirm(t("confirmDelete"))) {
-                setTravelers((prev) => prev.filter((t) => t.id !== traveler.id));
-                setArchivedTravelers((prev) => [
-                    ...prev,
-                    { ...traveler, isArchived: true },
-                ]);
+    const handleStatusChange = (value: string) => {
+        onFilterChange({ ...filters, status: value });
+    };
+
+    const handleDateChange = (value: string) => {
+        onFilterChange({ ...filters, createdAt: value });
+    };
+
+    const handleView = (traveler: Traveler) => {
+        router.push(`/travelers/${traveler._id}`);
+    };
+
+    const handleEdit = (traveler: Traveler) => {
+        // router.push(`/travelers/${traveler._id}/edit`);
+        if (onEdit) {
+            onEdit(traveler);
+        }
+    };
+
+    const handleDelete = async (traveler: Traveler) => {
+        const confirmed = await confirm({
+            title: tTable("confirmDelete"),
+            description: tTable("confirmPermanentDelete"),
+            confirmText: tTable("delete"),
+            cancelText: tGeneral("cancel"),
+            variant: "destructive",
+        });
+
+        if (confirmed) {
+            try {
+                const res = await deleteTraveler(traveler._id);
+                if (res.success) {
+                    showSuccessToast(res.message);
+                    queryClient.invalidateQueries({
+                        queryKey: ["travelers"],
+                    });
+                    queryClient.invalidateQueries({
+                        queryKey: ["travelers-stats"],
+                    });
+                }
+            } catch (error) {
+                showErrorToast("traveler deleted failed!!");
             }
         }
-    }, [showArchived, t]);
+    };
 
-    const handleRestore = useCallback((traveler: Traveler) => {
-        setArchivedTravelers((prev) => prev.filter((t) => t.id !== traveler.id));
-        setTravelers((prev) => [
-            ...prev,
-            { ...traveler, isArchived: false },
-        ]);
-    }, []);
-
-    const handlePageChange = useCallback((page: number) => {
-        setCurrentPage(page);
-    }, []);
-
-    // Define columns
     const columns: ColumnDef<Traveler>[] = useMemo(() => [
         {
-            accessorKey: "name",
-            header: tTravelers("name"),
+            accessorKey: "booking_number",
+            header: t("bookingNumber"),
         },
+
         {
-            accessorKey: "email",
-            header: tTravelers("email"),
-        },
-        {
-            accessorKey: "phone",
-            header: tTravelers("phone"),
-        },
-        {
-            accessorKey: "tripCount",
-            header: tTravelers("tripCount"),
+            accessorKey: "customer.name",
+            header: t("customer"),
             cell: ({ row }) => (
-                <div className="text-center">{row.original.tripCount}</div>
-            ),
+                <div className="flex flex-col">
+                    <span className="font-medium">{row.original.customer?.name}</span>
+                    <span className="text-xs text-muted-foreground">{row.original.customer?.phone}</span>
+                </div>
+            )
+        },
+
+        {
+            accessorKey: "ticket_price",
+            header: t("ticketPrice"),
+            cell: ({ row }) => <span className="text-green-600">{row.original.ticket_price.toLocaleString()} EGP</span>
         },
         {
-            accessorKey: "lastTripDate",
-            header: tTravelers("lastTripDate"),
+            accessorKey: "total_paid",
+            header: t("totalPaid"),
+            cell: ({ row }) => <span className="text-green-600">{row.original.total_paid.toLocaleString() || 0} EGP</span>
         },
+
         {
             accessorKey: "status",
-            header: tTravelers("status"),
-            cell: ({ row }) => {
-                const status = row.original.status;
-                const variants: Record<Traveler["status"], "default" | "secondary" | "outline"> = {
-                    active: "default",
-                    inactive: "secondary",
-                    pending: "outline",
-                };
+            header: t("status"),
+            cell: ({ row }) => (
+                <Badge variant={
+                    row.original.status === 'paid' ? 'default' :
+                        row.original.status === 'partial' ? 'secondary' :
+                            'destructive'
+                }
+                    className={
+                        row.original.status === 'paid' ? 'bg-green-100 text-green-800 hover:bg-green-100' :
+                            row.original.status === 'partial' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' :
+                                'bg-red-100 text-red-800 hover:bg-red-100'
+                    }
+                >
+                    {t(row.original.status)}
+                </Badge>
+            )
+        },
 
-                return (
-                    <Badge variant={variants[status]}>
-                        {tTravelers(status)}
-                    </Badge>
-                );
-            },
+        {
+            accessorKey: "createdAt",
+            header: t("createdAt"),
+            cell: ({ row }) => <span className="text-muted-foreground">{row.original.createdAt.toLocaleString()}</span>
+        },
+
+    ], [t]);
+
+    const actions = useMemo(() => [
+        {
+            label: "View",
+            onClick: handleView,
         },
         {
-            accessorKey: "totalSpent",
-            header: tTravelers("totalSpent"),
-            cell: ({ row }) => (
-                <div className="text-right font-medium flex">
-                    ${row.original.totalSpent.toLocaleString()}
-                </div>
-            ),
+            label: "Edit",
+            onClick: handleEdit,
         },
-    ], [tTravelers]);
-
-    // Define actions
-    const actions = useMemo(() => {
-        if (showArchived) {
-            return [
-                {
-                    label: "Restore",
-                    onClick: handleRestore,
-                },
-                {
-                    label: "Delete",
-                    onClick: handleDelete,
-                },
-            ];
-        } else {
-            return [
-                {
-                    label: "Edit",
-                    onClick: handleEdit,
-                },
-                {
-                    label: "Delete",
-                    onClick: handleDelete,
-                },
-            ];
-        }
-    }, [showArchived, handleEdit, handleDelete, handleRestore]);
+        {
+            label: "Delete",
+            onClick: handleDelete,
+        },
+    ], [handleEdit, handleDelete, handleView]);
 
     return (
         <div className="space-y-4">
-            <div className="flex gap-2 items-center bg-card px-3 rounded-xl justify-end">
+            <div className="flex gap-3 items-center bg-card px-3 rounded-xl justify-between py-3 flex-wrap">
+                <div className="flex items-center gap-3 flex-1 flex-wrap">
+                    <div className="relative w-75  max-w-[500px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder={t("searchBookingNumber")}
+                            value={filters.bookingNumber}
+                            onChange={(e) => handleBookingNumberChange(e.target.value)}
+                            className="pl-9"
+                        />
+                    </div>
+                </div>
 
+                <div className="flex items-center gap-2">
+                    <TravelersFilterPopover
+                        filters={filters}
+                        handleNameChange={handleNameChange}
+                        handleStatusChange={handleStatusChange}
+                        handleDateChange={handleDateChange}
+                        onFilterChange={onFilterChange}
+                    />
+                    <Button variant="outline" className="gap-2 text-destructive hover:bg-destructive/10">
+                        <Archive className="h-4 w-4" />
+                        {tTable("archive")}
+                    </Button>
 
-
-                {/* Filter Bar */}
-                <TableFilterBar
-                    filters={filters}
-                    onFiltersChange={setFilters}
-                    onClearFilters={handleClearFilters}
-                    statusOptions={statusOptions}
-                />
-                {/* Archive Toggle */}
-                <Button
-                    variant="outline"
-                    onClick={() => {
-                        setShowArchived(!showArchived);
-                        setCurrentPage(1);
-                    }}
-                    className="gap-2"
-                >
-                    <Archive className="h-4 w-4" />
-                    {showArchived ? tTravelers("name") : t("archive")}
-                    {archivedTravelers.length > 0 && !showArchived && (
-                        <Badge variant="secondary" className="ml-1">
-                            {archivedTravelers.length}
-                        </Badge>
-                    )}
-                </Button>
-
-                <Button
-                    onClick={() => {
-
-                    }}
-                    className="gap-1 bg-primary"
-                >
-                    <Plus className="h-4 w-4 mt-1" />
-                    {t("addTraveler")}
-                    {archivedTravelers.length > 0 && !showArchived && (
-                        <Badge variant="secondary" className="ml-1">
-                            {archivedTravelers.length}
-                        </Badge>
-                    )}
-                </Button>
-
+                    <Button onClick={handleCreate}>{t("addTicket")}</Button>
+                </div>
             </div>
 
-            {/* UniTable */}
             <UniTable<Traveler>
                 columns={columns}
-                data={filteredTravelers.slice((currentPage - 1) * 5, currentPage * 5)}
-                totalItems={filteredTravelers.length}
-                itemsPerPage={5}
-                currentPage={currentPage}
-                tableName={tTravelers("name")}
+                data={data}
+                totalItems={pagination.total}
+                itemsPerPage={pagination.limit}
+                currentPage={pagination.page}
+                tableName={t("totalTravelers")}
+                onPageChange={onPageChange}
+                isLoading={isLoading}
                 actions={actions}
-                onPageChange={handlePageChange}
             />
         </div>
     );

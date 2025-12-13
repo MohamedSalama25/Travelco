@@ -6,8 +6,6 @@ export interface Traveler {
         name: string;
         phone: string;
     };
-    name: string;
-    phone: string;
     air_comp: {
         _id: string;
         name: string;
@@ -26,6 +24,19 @@ export interface Traveler {
     updatedBy?: string;
     createdAt: string;
     updatedAt: string;
+    payments?: Payment[];
+}
+
+export interface Payment {
+    _id: string;
+    transfer: string;
+    amount: number;
+    payment_date: string;
+    payment_method: string;
+    receipt_number: string;
+    notes: string;
+    createdBy: string;
+    createdAt: string;
 }
 
 export interface StatsItem {

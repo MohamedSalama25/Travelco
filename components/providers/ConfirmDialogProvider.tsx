@@ -40,7 +40,6 @@ export function ConfirmDialogProvider({ children }: { children: React.ReactNode 
         setOptions(options);
         setOpen(true);
         return new Promise<boolean>((resolve) => {
-            // @ts-ignore
             resolveRef.current = resolve;
         });
     }, []);
