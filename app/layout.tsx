@@ -10,6 +10,7 @@ import { QueryProvider } from "@/lib/providers/queryProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthInitializer } from "@/features/auth/components/AuthInitializer";
 import { ConfirmationDialog } from "@/components/globalComponents/ConfirmationDialog";
+import { ConfirmDialogProvider } from "@/components/providers/ConfirmDialogProvider";
 
 export const metadata: Metadata = {
     title: "Orcish Dashboard",
@@ -51,8 +52,10 @@ export default async function RootLayout({
                             enableColorScheme
                         >
                             <AuthProvider>
-                                {children}
-                                <ConfirmationDialog />
+                                <ConfirmDialogProvider>
+                                    {children}
+                                    <ConfirmationDialog />
+                                </ConfirmDialogProvider>
                             </AuthProvider>
                         </ThemeProvider>
                     </QueryProvider>

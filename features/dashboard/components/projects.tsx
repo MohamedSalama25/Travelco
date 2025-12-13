@@ -165,16 +165,16 @@ const columns: ColumnDef<ProjectSummary>[] = [
 
 /** الكومبوننت: ستاتيكي، يعرض الـ UniTable مع الـ mock data */
 export default function HomeProjects() {
-    const [page, setPage] = React.useState(1)
+  const [page, setPage] = React.useState(1)
   const router = useRouter()
-    const handlePageChange = useCallback(
+  const handlePageChange = useCallback(
     (p: number) => {
       setPage(p);
     },
     [setPage]
   );
 
-    const userActions = useMemo(() => {
+  const userActions = useMemo(() => {
     const actions: {
       label: string | (() => string);
       classname?: string | (() => string);
@@ -182,10 +182,10 @@ export default function HomeProjects() {
     }[] = [];
 
 
-      actions.push({
-        label: "Delete",
-        onClick: () => alert("Delete project"),
-      });
+    actions.push({
+      label: "Delete",
+      onClick: () => alert("Delete project"),
+    });
 
 
 
@@ -201,7 +201,7 @@ export default function HomeProjects() {
     },
     [router]
   )
-  
+
 
   return (
     <section className="w-full">
@@ -211,7 +211,7 @@ export default function HomeProjects() {
 
       <UniTable<ProjectSummary>
         columns={columns}
-        data={mockProjects}
+        data={mockProjects.slice((page - 1) * 5, page * 5)}
         totalItems={mockProjects.length}
         itemsPerPage={5}
         currentPage={page}

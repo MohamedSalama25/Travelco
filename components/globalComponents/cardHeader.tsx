@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface CardData {
@@ -6,7 +6,7 @@ export interface CardData {
     title: string;
     value: number | string;
     trend: {
-        direction: "up" | "down";
+        direction: "up" | "down" | "neutral";
         percentage: number;
         label?: string;
     };
@@ -21,6 +21,7 @@ export default function CardHeader({ cards }: CardHeaderProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {cards.map((card) => {
                 const isPositive = card.trend.direction === "up";
+                const isNeutral = card.trend.direction === "neutral";
 
                 return (
                     <div
@@ -32,7 +33,7 @@ export default function CardHeader({ cards }: CardHeaderProps) {
                         </h3>
 
                         <div className="flex justify-between items-end">
-                            <span className="text-3xl font-bold text-foreground">
+                            <span className="text-md font-bold text-foreground">
                                 {card.value}
                             </span>
 
@@ -40,12 +41,16 @@ export default function CardHeader({ cards }: CardHeaderProps) {
                                 <span
                                     className={cn(
                                         "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium",
-                                        isPositive
-                                            ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
-                                            : "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                                        isNeutral
+                                            ? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                            : isPositive
+                                                ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+                                                : "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
                                     )}
                                 >
-                                    {isPositive ? (
+                                    {isNeutral ? (
+                                        <Minus size={14} />
+                                    ) : isPositive ? (
                                         <ArrowUp size={14} />
                                     ) : (
                                         <ArrowDown size={14} />

@@ -8,6 +8,7 @@ import {
     CustomerResponse,
 } from '../types/types';
 import { getCustomers } from '../services/customerService';
+import { useCustomersStore } from '../store/customersStore';
 
 /**
  * Query keys for customers
@@ -25,15 +26,26 @@ export const customersKeys = {
 /**
  * Hook to fetch customers list
  */
-export const useCustomers = (page: number = 1, search?: string) => {
-    return useQuery({
-        queryKey: customersKeys.list(page, search),
-        queryFn: async () => {
-            const response = await getCustomers(page, search);
-            return response;
-        },
+export function useCustomers() {
+    const { currentPage, searchQuery } = useCustomersStore();
+
+    const { data, isLoading, isFetching, isError, error } = useQuery({
+        queryKey: customersKeys.list(currentPage, searchQuery),
+        queryFn: ({ signal }) => getCustomers(currentPage, searchQuery, signal),
+        placeholderData: (previousData) => previousData,
     });
-};
+
+    const customers = data?.data || [];
+    const can_add = data?.can_add || false;
+    const pagination = data?.pagination || {
+        total: 0,
+        page: 1,
+        limit: 10,
+        pages: 0
+    };
+
+    return { customers, can_add, pagination, isLoading, isFetching, isError, error };
+}
 
 /**
  * Hook to fetch customer details with transfers

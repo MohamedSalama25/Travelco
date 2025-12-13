@@ -213,7 +213,7 @@ export default function TeamTable() {
             {/* UniTable */}
             <UniTable<TeamMember>
                 columns={columns}
-                data={filteredMembers}
+                data={filteredMembers.slice((currentPage - 1) * 5, currentPage * 5)}
                 totalItems={filteredMembers.length}
                 itemsPerPage={5}
                 currentPage={currentPage}

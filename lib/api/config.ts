@@ -17,6 +17,21 @@ export const API_CONFIG = {
             UPDATE: (id: string) => `customers/${id}`,
             DELETE: (id: string) => `customers/${id}`,
         },
+        TRAVELERS: {
+            LIST: 'transfers',
+            STATS: 'transfers/stats',
+            CREATE: 'transfers',
+            UPDATE: (id: string) => `transfers/${id}`,
+            DELETE: (id: string) => `transfers/${id}`,
+
+        },
+        AIRCOMPS: {
+            LIST: 'airComp',
+            STATS: 'airComp/stats',
+            CREATE: 'airComp',
+            UPDATE: (id: string) => `airComp/${id}`,
+            DELETE: (id: string) => `airComp/${id}`,
+        },
     },
 } as const;
 

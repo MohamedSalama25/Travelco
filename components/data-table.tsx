@@ -163,6 +163,9 @@ const UniTable = <TData extends object>({
                 case 'Edit':
                   IconComponent = Edit;
                   break;
+                case 'View':
+                  IconComponent = Eye;
+                  break;
                 case 'Delete':
                   IconComponent = Trash2;
                   break;
@@ -248,25 +251,24 @@ const UniTable = <TData extends object>({
       ) : (
         <div className="rounded-lg overflow-x-auto max-w-full shadow-sm">
           <table className="w-full divide-y divide-border">
-            <thead className="bg-muted/50">
+            <thead className="bg-muted/50 ">
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
                     <th
                       key={header.id}
-                      className={`p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider ${header.id === 'actions' || header.id === 'header-actions' ? 'text-right' : 'text-left'}`}
-                      style={{ width: header.getSize() }}
+                      className={`p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider ${header.id === 'actions' || header.id === 'header-actions' ? 'text-center' : 'text-center'} `}
                     >
                       {header.column.getCanSort() ? (
                         <div
-                          className="flex items-center cursor-pointer select-none group"
+                          className="flex items-center justify-center cursor-pointer select-none group text-center ps-3"
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {flexRender(
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                          <span className="ml-2 relative w-4 flex-none">
+                          <span className="ml-2 relative w-4 flex-none ">
                             {{
                               asc: (
                                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -304,7 +306,7 @@ const UniTable = <TData extends object>({
                   {row.getVisibleCells().map(cell => (
                     <td
                       key={cell.id}
-                      className="px-6 py-3 whitespace-nowrap text-sm text-foreground font-light"
+                      className="px-6 py-3 whitespace-nowrap text-sm text-foreground font-light text-center"
                     >
                       {/* Check if the column is an action column */}
                       {cell.column.id === 'actions' || cell.column.id === 'header-actions' ? (
@@ -313,7 +315,7 @@ const UniTable = <TData extends object>({
                         cell.getValue() ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                              <div className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap ">
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                               </div>
                             </TooltipTrigger>

@@ -142,13 +142,6 @@ export default function LoginForm() {
                             </Link>
                         </p>
                     </div>
-
-                    {/* Demo Credentials */}
-                    <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 text-xs text-gray-600 dark:text-gray-400">
-                        <p className="font-medium mb-2">{t("demoCredentials", { defaultValue: "Demo Credentials" })}:</p>
-                        <p>Admin: admin@example.com / admin123</p>
-                        <p>User: user@example.com / user123</p>
-                    </div>
                 </div>
             </div>
         </div>
