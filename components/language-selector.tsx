@@ -13,8 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 
 const languages = [
-    { code: "en", name: "English", nativeName: "English" },
-    { code: "ar", name: "Arabic", nativeName: "العربية" },
+    { code: "en", name: "English", nativeName: "EN" },
+    { code: "ar", name: "Arabic", nativeName: "" },
 ];
 
 export function LanguageSelector() {
@@ -56,41 +56,42 @@ export function LanguageSelector() {
     const currentLanguage = languages.find((lang) => lang.code === locale);
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="h-8 w-full justify-start gap-2 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    disabled={isPending}
-                >
-                    <IconLanguage className="h-4 w-4" />
-                    <span className="flex-1 text-left text-sm">
-                        {currentLanguage?.nativeName}
-                    </span>
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent
-                className="w-48 p-2"
-                align="end"
-                side="top"
-                sideOffset={8}
-            >
-                <div className="space-y-1">
-                    {languages.map((language) => (
-                        <Button
-                            key={language.code}
-                            variant="ghost"
-                            className="w-full justify-between"
-                            onClick={() => handleLanguageChange(language.code)}
-                        >
-                            <span>{language.nativeName}</span>
-                            {locale === language.code && (
-                                <IconCheck className="h-4 w-4" />
-                            )}
-                        </Button>
-                    ))}
-                </div>
-            </PopoverContent>
-        </Popover>
+        <></>
+        // <Popover open={open} onOpenChange={setOpen}>
+        //     <PopoverTrigger asChild>
+        //         <Button
+        //             variant="ghost"
+        //             className="h-8 w-full justify-start gap-2 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        //             disabled={isPending}
+        //         >
+        //             <IconLanguage className="h-4 w-4" />
+        //             <span className="flex-1 text-left text-sm">
+        //                 {currentLanguage?.nativeName}
+        //             </span>
+        //         </Button>
+        //     </PopoverTrigger>
+        //     <PopoverContent
+        //         className="w-48 p-2"
+        //         align="end"
+        //         side="top"
+        //         sideOffset={8}
+        //     >
+        //         <div className="space-y-1">
+        //             {languages.map((language) => (
+        //                 <Button
+        //                     key={language.code}
+        //                     variant="ghost"
+        //                     className="w-full justify-between"
+        //                     onClick={() => handleLanguageChange(language.code)}
+        //                 >
+        //                     <span>{language.nativeName}</span>
+        //                     {locale === language.code && (
+        //                         <IconCheck className="h-4 w-4" />
+        //                     )}
+        //                 </Button>
+        //             ))}
+        //         </div>
+        //     </PopoverContent>
+        // </Popover>
     );
 }

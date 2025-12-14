@@ -26,7 +26,7 @@ export default async function RootLayout({
     params: Promise<{ locale?: string }>;
 }>) {
     const resolvedParams = await params;
-    const locale = resolvedParams?.locale || 'en';
+    const locale = resolvedParams?.locale || 'ar';
     const cookieStore = await cookies();
     const activeThemeValue = cookieStore.get("active_theme")?.value;
     const isScaled = activeThemeValue?.endsWith("-scaled");
