@@ -1,8 +1,8 @@
 'use client';
 
 import { useTraveler } from '@/features/travelers/hooks/useTravelers';
-import { FullScreenLoader } from '@/components/globalComponents/fullScreenLoader';
-import Error from '@/components/globalComponents/error';
+import { FullScreenLoader } from '@/components/globalComponents/FullScreenLoader';
+import Error from '@/components/globalComponents/Error';
 import { useTranslations } from 'next-intl';
 import { use } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

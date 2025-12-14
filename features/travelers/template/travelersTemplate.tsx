@@ -3,9 +3,9 @@
 import { useTranslations } from 'next-intl';
 import { useTravelers, useTravelerStats } from '../hooks/useTravelers';
 import { TravelersStats } from '../components/TravelersStats';
-import { TravelersTable } from '../components/travelersTable';
-import { FullScreenLoader } from '@/components/globalComponents/fullScreenLoader';
-import Error from '@/components/globalComponents/error';
+import { TravelersTable } from '../components/TravelersTable';
+import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
+import Error from "@/components/globalComponents/Error";
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { TravelerDialog } from '../components/TravelerDialog';

@@ -3,7 +3,6 @@
 import * as React from "react";
 import { IconLanguage, IconCheck } from "@tabler/icons-react";
 import { useLocale } from "next-intl";
-import { useRouter, usePathname } from "@/routing";
 import { useTransition } from "react";
 
 import {
@@ -20,9 +19,7 @@ const languages = [
 
 export function LanguageSelector() {
     const locale = useLocale();
-    const router = useRouter();
-    const pathname = usePathname();
-    const [isPending, startTransition] = useTransition();
+    const [isPending] = useTransition();
     const [open, setOpen] = React.useState(false);
 
     const handleLanguageChange = async (newLocale: string) => {

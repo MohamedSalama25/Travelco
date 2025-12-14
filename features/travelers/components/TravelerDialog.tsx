@@ -17,7 +17,7 @@ import { useTranslations } from "next-intl";
 import { Traveler } from "../types/types";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { AutocompleteSelect } from "@/components/globalComponents/autoCompleteSelect";
+import { AutocompleteSelect } from "@/components/globalComponents/AutoCompleteSelect";
 
 // Schema matching the requested payload
 const formSchema = z.object({

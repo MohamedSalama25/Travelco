@@ -1,4 +1,4 @@
-import CardHeader, { CardData } from "@/components/globalComponents/cardHeader";
+import CardHeader, { CardData } from "@/components/globalComponents/CardHeader";
 import { useTranslations } from "next-intl";
 import { AirCompStats } from "../types/types";
 import { useMemo } from "react";

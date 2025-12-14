@@ -1,6 +1,6 @@
 "use client";
 
-import TeamTable from "../components/teamTable";
+import TeamTable from "../components/TeamTable";
 
 export default function TeamTemplate() {
     return (

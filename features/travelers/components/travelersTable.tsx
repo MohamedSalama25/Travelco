@@ -12,7 +12,7 @@ import { deleteTraveler } from "../services/travelerService";
 import { useConfirm } from "@/components/providers/ConfirmDialogProvider";
 import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { TravelersFilterPopover } from "./travelersFilterPopover";
+import { TravelersFilterPopover } from "./TravelersFilterPopover";
 
 
 interface TravelersTableProps {

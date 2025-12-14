@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Archive, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import UniTable from "@/components/data-table";
-import AddTeamMemberDialog from "./addTeamMemberDialog";
+import AddTeamMemberDialog from "./AddTeamMemberDialog";
 import { useTranslations } from "next-intl";
 import { mockTeamMembers, type TeamMember, type TeamMemberFormData } from "../types/team";
 

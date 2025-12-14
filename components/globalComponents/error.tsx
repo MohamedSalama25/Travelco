@@ -1,6 +1,5 @@
 'use client'; // Error components must be Client Components
 
-import { useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 

@@ -69,7 +69,6 @@ export function AutocompleteSelect({
         hasNextPage,
         isFetchingNextPage,
         isLoading,
-        isError,
     } = useInfiniteQuery({
         queryKey: [endpoint, debouncedSearch],
         queryFn: async ({ pageParam = 1 }) => {
