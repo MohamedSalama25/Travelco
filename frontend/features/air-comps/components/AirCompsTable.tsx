@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AirComp, Pagination } from "../types/types";
-import UniTable from "@/components/data-table";
+import UniTable from "@/components/DataTable";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useConfirm } from "@/components/providers/ConfirmDialogProvider";

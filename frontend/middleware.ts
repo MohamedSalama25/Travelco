@@ -22,14 +22,14 @@ export default function middleware(request: NextRequest) {
     // Redirect authenticated users away from auth pages
     if (isAuthenticated && isAuthPage) {
         const segment = pathname.split('/')[1];
-        const locale = ['en', 'ar'].includes(segment) ? segment : 'en';
+        const locale = ['en', 'ar'].includes(segment) ? segment : 'ar';
         return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
     }
 
     // Redirect unauthenticated users to login
     if (!isAuthenticated && isDashboardPage) {
         const segment = pathname.split('/')[1];
-        const locale = ['en', 'ar'].includes(segment) ? segment : 'en';
+        const locale = ['en', 'ar'].includes(segment) ? segment : 'ar';
         return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
     }
 

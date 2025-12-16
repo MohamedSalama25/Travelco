@@ -12,6 +12,7 @@ import { AuthInitializer } from "@/features/auth/components/AuthInitializer";
 import { ConfirmationDialog } from "@/components/globalComponents/ConfirmationDialog";
 import { ConfirmDialogProvider } from "@/components/providers/ConfirmDialogProvider";
 
+
 export const metadata: Metadata = {
     title: "Orcish Dashboard",
     description:
@@ -26,7 +27,7 @@ export default async function RootLayout({
     params: Promise<{ locale?: string }>;
 }>) {
     const resolvedParams = await params;
-    const locale = resolvedParams?.locale || 'en';
+    const locale = resolvedParams?.locale || 'ar';
     const cookieStore = await cookies();
     const activeThemeValue = cookieStore.get("active_theme")?.value;
     const isScaled = activeThemeValue?.endsWith("-scaled");

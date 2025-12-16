@@ -3,7 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import { Traveler, Pagination } from "../types/types";
-import UniTable from "@/components/data-table";
+import UniTable from "@/components/DataTable";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";

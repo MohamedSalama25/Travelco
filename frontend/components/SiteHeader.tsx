@@ -2,8 +2,8 @@
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ThemeSelector } from "./theme-selector";
-import { ModeSwitcher } from "./mode-switcher";
+import { ThemeSelector } from "./ThemeSelector";
+import { ModeSwitcher } from "./ModeSwitcher";
 import { useTranslations } from "next-intl";
 
 export function SiteHeader() {

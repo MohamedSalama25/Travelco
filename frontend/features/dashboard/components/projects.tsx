@@ -4,7 +4,7 @@ import React, { useCallback, useMemo } from "react"
 import { ColumnDef, Row } from "@tanstack/react-table"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
-import UniTable from "@/components/data-table"
+import UniTable from "@/components/DataTable"
 
 
 export function formatStatus(status: string): string {

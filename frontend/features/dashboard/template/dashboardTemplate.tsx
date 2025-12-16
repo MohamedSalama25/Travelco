@@ -1,6 +1,6 @@
 import React from 'react'
 import HomeProjects from '../components/Projects'
-import { ChartAreaInteractive } from '@/components/chart-area-interactive'
+import { ChartAreaInteractive } from '@/components/ChartAreaInteractive'
 
 export default function DashboardTemplate() {
   return (

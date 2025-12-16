@@ -18,11 +18,11 @@ import {
 } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
-import { NavDocuments } from "@/components/nav-documents";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
-import { LanguageSelector } from "@/components/language-selector";
+import { NavDocuments } from "@/components/NavDocuments";
+import { NavMain } from "@/components/NavMain";
+import { NavSecondary } from "@/components/NavSecondary";
+import { NavUser } from "@/components/NavUser";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import {
   Sidebar,
   SidebarContent,

@@ -72,10 +72,45 @@ const getTransfers = async (req, res) => {
 
     const total = await Transfer.countDocuments(filter);
 
+    // Calculate stats
+    const statsAggregation = await Transfer.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: null,
+          totalTickets: { $sum: 1 },
+          totalRevenue: { $sum: "$ticket_price" },
+          totalCost: { $sum: "$ticket_salary" },
+          totalPaid: { $sum: "$total_paid" },
+          totalRemaining: { $sum: "$remaining_amount" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          totalTickets: 1,
+          totalRevenue: 1,
+          totalCost: 1,
+          totalProfit: { $subtract: ["$totalRevenue", "$totalCost"] },
+          totalPaid: 1,
+          totalRemaining: 1
+        }
+      }
+    ]);
+
+    const stats = statsAggregation.length > 0 ? statsAggregation[0] : {
+      totalTickets: 0,
+      totalRevenue: 0,
+      totalCost: 0,
+      totalProfit: 0,
+      totalPaid: 0,
+      totalRemaining: 0
+    };
 
     return res.status(200).json({
       success: true,
       data: transfers,
+      stats,
       pagination: {
         total,
         page: Math.floor(skip / limit) + 1,

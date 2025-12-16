@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Archive, Plus, Search, Trash2, Edit } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import UniTable from "@/components/data-table";
+import UniTable from "@/components/DataTable";
 import { useTranslations } from "next-intl";
 import { Customer } from "../types/types";
 import { useCustomersStore } from "../store/customersStore";
