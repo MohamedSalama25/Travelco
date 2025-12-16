@@ -12,16 +12,14 @@ export default async function DashboardLayout({
     const cookieStore = await cookies();
     const activeThemeValue = cookieStore.get("active_theme")?.value;
 
+    const layoutStyle: Record<string, string> = {
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+    };
+
     return (
         <ActiveThemeProvider initialTheme={activeThemeValue}>
-            <SidebarProvider
-                style={
-                    {
-                        "--sidebar-width": "calc(var(--spacing) * 72)",
-                        "--header-height": "calc(var(--spacing) * 12)",
-                    } as React.CSSProperties
-                }
-            >
+            <SidebarProvider style={layoutStyle}>
                 <AppSidebar variant="inset" />
                 <SidebarInset>
                     <SiteHeader />
