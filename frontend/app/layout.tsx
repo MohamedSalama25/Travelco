@@ -13,7 +13,7 @@ import { ConfirmationDialog } from "@/components/globalComponents/ConfirmationDi
 import { ConfirmDialogProvider } from "@/components/providers/ConfirmDialogProvider";
 
 export const metadata: Metadata = {
-    title: "Orcish Dashboard",
+    title: "Flyzo Dashboard",
     description:
         "A fully responsive analytics dashboard featuring dynamic charts, interactive tables, a collapsible sidebar, and a light/dark mode theme switcher.",
 };

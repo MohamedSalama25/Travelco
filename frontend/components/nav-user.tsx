@@ -31,28 +31,22 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useCurrentUser } from "@/features/auth/store/authStore"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser() {
   const { isMobile } = useSidebar()
   const t = useTranslations("auth")
   const router = useRouter()
-  const { logout, user: authUser } = useAuth()
+  const { logout } = useAuth();
+  const user = useCurrentUser();
+
+  console.log("user", user)
 
   const handleLogout = () => {
     logout()
     router.push("/login")
   }
 
-  // Use auth user if available, otherwise use prop
-  const displayUser = authUser || user
 
   return (
     <SidebarMenu>
@@ -64,15 +58,15 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={displayUser.avatar || user.avatar} alt={displayUser.name} />
+                <AvatarImage src={"sssss"} alt={user?.name || "sss"} />
                 <AvatarFallback className="rounded-lg">
-                  {displayUser.name.substring(0, 2).toUpperCase()}
+                  {user?.name?.substring(0, 2).toUpperCase() || "sss"}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{displayUser.name}</span>
+                <span className="truncate font-medium">{user?.name || "sss"}</span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {displayUser.email}
+                  {user?.email}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -87,15 +81,15 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={displayUser.avatar || user.avatar} alt={displayUser.name} />
+                  <AvatarImage src={"sss"} alt={user?.name || "sss"} />
                   <AvatarFallback className="rounded-lg">
-                    {displayUser.name.substring(0, 2).toUpperCase()}
+                    {user?.name?.substring(0, 2).toUpperCase() || "ssss"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{displayUser.name}</span>
+                  <span className="truncate font-medium">{user?.name}</span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {displayUser.email}
+                    {user?.email}
                   </span>
                 </div>
               </div>

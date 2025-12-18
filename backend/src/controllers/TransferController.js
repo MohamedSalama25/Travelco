@@ -4,6 +4,7 @@ const Payment = require("../models/Payment.model");
 const AppError = require("../utils/appError");
 const getPagination = require("../utils/pagination");
 const { generateTransfersExcel } = require("../utils/excelExport");
+const buildTransferStats = require("../utils/transferStats.helper");
 
 /**
  * Helper to calculate percentage change
@@ -98,14 +99,15 @@ const getTransfers = async (req, res) => {
       }
     ]);
 
-    const stats = statsAggregation.length > 0 ? statsAggregation[0] : {
-      totalTickets: 0,
-      totalRevenue: 0,
-      totalCost: 0,
-      totalProfit: 0,
-      totalPaid: 0,
-      totalRemaining: 0
-    };
+    // const stats = statsAggregation.length > 0 ? statsAggregation[0] : {
+    //   totalTickets: 0,
+    //   totalRevenue: 0,
+    //   totalCost: 0,
+    //   totalProfit: 0,
+    //   totalPaid: 0,
+    //   totalRemaining: 0
+    // };
+    const stats = await buildTransferStats(req.query);
 
     return res.status(200).json({
       success: true,
