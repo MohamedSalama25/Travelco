@@ -263,6 +263,8 @@
         "opps": "Oops, something went wrong!",
         "tryAgain": "Try again",
         "loading": "Loading...",
-        "loadError": "Failed to load data"
+        "loadError": "Failed to load data",
+        "from": "From",
+        "to": "To"
     }
 }

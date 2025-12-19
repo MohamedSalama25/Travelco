@@ -1,10 +1,12 @@
 const asyncWrapper = require("../middlewares/asyncWarpper");
 const Transfer = require("../models/Transfer.model");
 const Payment = require("../models/Payment.model");
+const Customer = require("../models/Customer.model");
 const AppError = require("../utils/appError");
 const getPagination = require("../utils/pagination");
 const { generateTransfersExcel } = require("../utils/excelExport");
 const buildTransferStats = require("../utils/transferStats.helper");
+const buildTransferFilter = require("../utils/buildTransferFilter");
 
 /**
  * Helper to calculate percentage change
@@ -20,112 +22,36 @@ const calculateChange = (current, previous) => {
  * Get all transfers with advanced filtering and pagination
  */
 const getTransfers = async (req, res) => {
-  try {
-    const { limit, skip } = getPagination(req);
-    const {
-      name,
-      booking_number,
-      fromDate,
-      toDate,
-      status,
-      air_comp,
-      country
-    } = req.query;
+  const { limit, skip } = getPagination(req);
 
-    // Build filter object
-    const filter = {};
+  const filter = await buildTransferFilter(req.query);
 
-    if (name) {
-      filter.name = { $regex: name, $options: 'i' };
+  const transfers = await Transfer.find(filter)
+    .populate("customer", "name phone")
+    .populate("air_comp", "name")
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .skip(skip);
+
+  const total = await Transfer.countDocuments(filter);
+
+  const stats = await buildTransferStats({
+    filter,
+    fromDate: req.query.fromDate,
+    toDate: req.query.toDate
+  });
+
+  res.status(200).json({
+    success: true,
+    data: transfers,
+    stats,
+    pagination: {
+      total,
+      page: Math.floor(skip / limit) + 1,
+      limit,
+      pages: Math.ceil(total / limit)
     }
-    if (booking_number) {
-      filter.booking_number = { $regex: booking_number, $options: 'i' };
-    }
-    if (status) {
-      filter.status = status;
-    }
-    if (air_comp) {
-      filter.air_comp = air_comp;
-    }
-    if (country) {
-      filter.country = { $regex: country, $options: 'i' };
-    }
-
-    // Date range filter
-    if (fromDate || toDate) {
-      filter.createdAt = {};
-      if (fromDate) {
-        filter.createdAt.$gte = new Date(fromDate);
-      }
-      if (toDate) {
-        filter.createdAt.$lte = new Date(toDate);
-      }
-    }
-
-    const transfers = await Transfer.find(filter, { "__v": false })
-      .populate('customer', 'name phone')
-      .populate('air_comp', 'name')
-      .populate('createdBy', 'email')
-      .populate('updatedBy', 'email')
-      .limit(limit)
-      .skip(skip)
-      .sort({ createdAt: -1 });
-
-    const total = await Transfer.countDocuments(filter);
-
-    // Calculate stats
-    const statsAggregation = await Transfer.aggregate([
-      { $match: filter },
-      {
-        $group: {
-          _id: null,
-          totalTickets: { $sum: 1 },
-          totalRevenue: { $sum: "$ticket_price" },
-          totalCost: { $sum: "$ticket_salary" },
-          totalPaid: { $sum: "$total_paid" },
-          totalRemaining: { $sum: "$remaining_amount" }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          totalTickets: 1,
-          totalRevenue: 1,
-          totalCost: 1,
-          totalProfit: { $subtract: ["$totalRevenue", "$totalCost"] },
-          totalPaid: 1,
-          totalRemaining: 1
-        }
-      }
-    ]);
-
-    // const stats = statsAggregation.length > 0 ? statsAggregation[0] : {
-    //   totalTickets: 0,
-    //   totalRevenue: 0,
-    //   totalCost: 0,
-    //   totalProfit: 0,
-    //   totalPaid: 0,
-    //   totalRemaining: 0
-    // };
-    const stats = await buildTransferStats(req.query);
-
-    return res.status(200).json({
-      success: true,
-      data: transfers,
-      stats,
-      pagination: {
-        total,
-        page: Math.floor(skip / limit) + 1,
-        limit,
-        pages: Math.ceil(total / limit)
-      }
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
+  });
 };
 
 /**

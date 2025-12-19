@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl";
 import { Traveler, Pagination } from "../types/types";
 import UniTable from "@/components/data-table";
 import { Input } from "@/components/ui/input";
-import { Trash2, Search, Filter, Archive } from "lucide-react";
+import { Trash2, Search, Filter, Archive, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { deleteTraveler } from "../services/travelerService";
+import { deleteTraveler, exportTravelersToExcel } from "../services/travelerService";
 import { useConfirm } from "@/components/providers/ConfirmDialogProvider";
 import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,9 +24,11 @@ interface TravelersTableProps {
         bookingNumber: string;
         name: string;
         status: string;
+        fromDate?: string;
+        toDate?: string;
         createdAt?: string;
     };
-    onFilterChange: (filters: { bookingNumber: string; name: string; status: string; createdAt?: string }) => void;
+    onFilterChange: (filters: { bookingNumber: string; name: string; status: string; fromDate?: string; toDate?: string; createdAt?: string }) => void;
     onEdit?: (traveler: Traveler) => void;
     handleCreate?: () => void;
 }
@@ -60,7 +62,11 @@ export function TravelersTable({
         onFilterChange({ ...filters, status: value });
     };
 
-    const handleDateChange = (value: string) => {
+    const handleDateRangeChange = (from: string, to: string) => {
+        onFilterChange({ ...filters, fromDate: from, toDate: to });
+    };
+
+    const handleCreatedAtChange = (value: string) => {
         onFilterChange({ ...filters, createdAt: value });
     };
 
@@ -100,6 +106,20 @@ export function TravelersTable({
             } catch (error) {
                 showErrorToast("لا يمكنك حذف هذا المسافر حاليا !!");
             }
+        }
+    };
+
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExportExcel = async () => {
+        try {
+            setIsExporting(true);
+            await exportTravelersToExcel(filters);
+            showSuccessToast("تم تصدير البيانات بنجاح");
+        } catch (error) {
+            showErrorToast("فشل تصدير البيانات");
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -194,9 +214,19 @@ export function TravelersTable({
                         filters={filters}
                         handleNameChange={handleNameChange}
                         handleStatusChange={handleStatusChange}
-                        handleDateChange={handleDateChange}
+                        handleDateRangeChange={handleDateRangeChange}
+                        handleCreatedAtChange={handleCreatedAtChange}
                         onFilterChange={onFilterChange}
                     />
+                    <Button
+                        variant="outline"
+                        className="gap-2 text-green-600 hover:bg-green-50"
+                        onClick={handleExportExcel}
+                        disabled={isExporting}
+                    >
+                        <FileDown className="h-4 w-4" />
+                        {isExporting ? "جاري التصدير..." : "تصدير Excel"}
+                    </Button>
                     <Button variant="outline" className="gap-2 text-destructive hover:bg-destructive/10">
                         <Archive className="h-4 w-4" />
                         {tTable("archive")}

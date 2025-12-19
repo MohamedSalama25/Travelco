@@ -23,12 +23,16 @@ export default function TravelersTemplate() {
         bookingNumber: string;
         name: string;
         status: string;
-        createdAt?: string;
+        fromDate?: string;
+        toDate?: string;
+        takeOffDate?: string;
     }>({
         bookingNumber: "",
         name: "",
         status: "all",
-        createdAt: ""
+        fromDate: "",
+        toDate: "",
+        takeOffDate: ""
     });
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedTraveler, setSelectedTraveler] = useState<Traveler | null>(null);

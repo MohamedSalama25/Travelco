@@ -20,23 +20,29 @@ export function TravelersFilterPopover({
     filters,
     handleNameChange,
     handleStatusChange,
-    handleDateChange,
+    handleDateRangeChange,
+    handleCreatedAtChange,
     onFilterChange,
 }: {
     filters: {
         bookingNumber: string;
         name: string;
         status: string;
+        fromDate?: string;
+        toDate?: string;
         createdAt?: string;
     };
     handleNameChange: (name: string) => void;
     handleStatusChange: (status: string) => void;
-    handleDateChange: (date: string) => void;
+    handleDateRangeChange: (from: string, to: string) => void;
+    handleCreatedAtChange: (date: string) => void;
     onFilterChange: (filters: {
         bookingNumber: string;
         name: string;
         status: string;
-        createdAt?: string;
+        fromDate?: string;
+        toDate?: string;
+        takeOffDate?: string;
     }) => void;
 }) {
     const t = useTranslations("travelers");
@@ -83,18 +89,48 @@ export function TravelersFilterPopover({
                             </Select>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="date">{t("createdAt")}</Label>
+                            <Label htmlFor="createdAt">{t("createdAt")}</Label>
                             <Input
-                                id="date"
+                                id="createdAt"
                                 type="date"
                                 value={filters.createdAt || ''}
-                                onChange={(e) => handleDateChange(e.target.value)}
+                                onChange={(e) => handleCreatedAtChange(e.target.value)}
                             />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>{t("createdAt")}</Label>
+                            <div className="flex gap-2">
+                                <div className="grid gap-1 flex-1">
+                                    <Label htmlFor="fromDate" className="text-xs text-muted-foreground">{tGeneral("from")}</Label>
+                                    <Input
+                                        id="fromDate"
+                                        type="date"
+                                        value={filters.fromDate || ''}
+                                        onChange={(e) => handleDateRangeChange(e.target.value, filters.toDate || '')}
+                                    />
+                                </div>
+                                <div className="grid gap-1 flex-1">
+                                    <Label htmlFor="toDate" className="text-xs text-muted-foreground">{tGeneral("to")}</Label>
+                                    <Input
+                                        id="toDate"
+                                        type="date"
+                                        value={filters.toDate || ''}
+                                        onChange={(e) => handleDateRangeChange(filters.fromDate || '', e.target.value)}
+                                    />
+                                </div>
+                            </div>
                         </div>
                         <Button
                             variant="ghost"
                             className="w-full mt-2"
-                            onClick={() => onFilterChange({ bookingNumber: filters.bookingNumber, name: "", status: "all", createdAt: "" })}
+                            onClick={() => onFilterChange({
+                                bookingNumber: filters.bookingNumber,
+                                name: "",
+                                status: "all",
+                                fromDate: "",
+                                toDate: "",
+                                takeOffDate: ""
+                            })}
                         >
                             {tTable("clearFilters")}
                         </Button>

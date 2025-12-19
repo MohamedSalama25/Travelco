@@ -23,7 +23,7 @@ export const API_CONFIG = {
             CREATE: 'transfers',
             UPDATE: (id: string) => `transfers/${id}`,
             DELETE: (id: string) => `transfers/${id}`,
-
+            EXPORT_EXCEL: 'transfers/export/excel',
         },
         AIRCOMPS: {
             LIST: 'airComp',

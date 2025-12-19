@@ -1,4 +1,3 @@
-// utils/transferStats.helper.js
 const Transfer = require("../models/Transfer.model");
 
 const calculateChange = (current, previous) => {
@@ -6,7 +5,7 @@ const calculateChange = (current, previous) => {
     return ((current - previous) / previous) * 100;
 };
 
-const buildTransferStats = async ({ fromDate, toDate, air_comp }) => {
+const buildTransferStats = async ({ filter = {}, fromDate, toDate }) => {
     let currentStart, currentEnd, prevStart, prevEnd;
 
     if (fromDate && toDate) {
@@ -24,11 +23,13 @@ const buildTransferStats = async ({ fromDate, toDate, air_comp }) => {
     }
 
     const getStatsForRange = async (start, end) => {
-        const filter = { createdAt: { $gte: start, $lte: end } };
-        if (air_comp) filter.air_comp = air_comp;
+        const rangeFilter = {
+            ...filter,
+            createdAt: { $gte: start, $lte: end }
+        };
 
         const stats = await Transfer.aggregate([
-            { $match: filter },
+            { $match: rangeFilter },
             {
                 $group: {
                     _id: null,
@@ -42,7 +43,7 @@ const buildTransferStats = async ({ fromDate, toDate, air_comp }) => {
         ]);
 
         const statusCounts = await Transfer.aggregate([
-            { $match: filter },
+            { $match: rangeFilter },
             { $group: { _id: "$status", count: { $sum: 1 } } }
         ]);
 
@@ -58,7 +59,7 @@ const buildTransferStats = async ({ fromDate, toDate, air_comp }) => {
             ...result,
             totalProfit: result.totalSales - result.totalCost,
             overdueTickets: statusCounts
-                .filter(s => s._id !== 'paid')
+                .filter(s => s._id !== "paid")
                 .reduce((acc, s) => acc + s.count, 0)
         };
     };
@@ -77,10 +78,9 @@ const buildTransferStats = async ({ fromDate, toDate, air_comp }) => {
                 currentStats.totalPassengers,
                 prevStats.totalPassengers
             ).toFixed(1),
-            trend:
-                currentStats.totalPassengers >= prevStats.totalPassengers
-                    ? "increase"
-                    : "decrease"
+            trend: currentStats.totalPassengers >= prevStats.totalPassengers
+                ? "increase"
+                : "decrease"
         },
         totalPayments: {
             value: currentStats.totalPaid,
@@ -90,10 +90,9 @@ const buildTransferStats = async ({ fromDate, toDate, air_comp }) => {
                 currentStats.totalPaid,
                 prevStats.totalPaid
             ).toFixed(1),
-            trend:
-                currentStats.totalPaid >= prevStats.totalPaid
-                    ? "increase"
-                    : "decrease"
+            trend: currentStats.totalPaid >= prevStats.totalPaid
+                ? "increase"
+                : "decrease"
         },
         totalProfit: {
             value: currentStats.totalProfit,
@@ -103,10 +102,9 @@ const buildTransferStats = async ({ fromDate, toDate, air_comp }) => {
                 currentStats.totalProfit,
                 prevStats.totalProfit
             ).toFixed(1),
-            trend:
-                currentStats.totalProfit >= prevStats.totalProfit
-                    ? "increase"
-                    : "decrease"
+            trend: currentStats.totalProfit >= prevStats.totalProfit
+                ? "increase"
+                : "decrease"
         },
         overdueTickets: {
             value: currentStats.overdueTickets,
@@ -116,10 +114,9 @@ const buildTransferStats = async ({ fromDate, toDate, air_comp }) => {
                 currentStats.overdueTickets,
                 prevStats.overdueTickets
             ).toFixed(1),
-            trend:
-                currentStats.overdueTickets >= prevStats.overdueTickets
-                    ? "increase"
-                    : "decrease"
+            trend: currentStats.overdueTickets >= prevStats.overdueTickets
+                ? "increase"
+                : "decrease"
         }
     };
 };

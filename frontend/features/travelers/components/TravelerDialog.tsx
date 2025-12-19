@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTranslations } from "next-intl";
@@ -18,6 +18,7 @@ import { Traveler } from "../types/types";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { AutocompleteSelect } from "@/components/globalComponents/AutoCompleteSelect";
+import { DatePicker } from "@/components/globalComponents/date-picker";
 
 // Schema matching the requested payload
 const formSchema = z.object({
@@ -58,6 +59,7 @@ export function TravelerDialog({
         reset,
         setValue,
         watch,
+        control,
         formState: { errors },
     } = useForm<TravelerFormData>({
         resolver: zodResolver(formSchema) as any,
@@ -187,7 +189,17 @@ export function TravelerDialog({
 
                     <div className="space-y-2">
                         <Label htmlFor="take_off_date">{t("takeOffDate")}</Label>
-                        <Input className="bg-red-500 " type="date" id="take_off_date" {...register("take_off_date")} />
+                        {/* <Input className="bg-red-500 " type="date" id="take_off_date" {...register("take_off_date")} /> */}
+                        <Controller
+                            control={control}
+                            name="take_off_date"
+                            render={({ field }) => (
+                                <DatePicker
+                                    value={field.value ? new Date(field.value) : undefined}
+                                    onChange={(date) => field.onChange(date ? date.toISOString().split('T')[0] : "")}
+                                />
+                            )}
+                        />
                         {errors.take_off_date && (
                             <p className="text-sm text-destructive">{errors.take_off_date.message}</p>
                         )}

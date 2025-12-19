@@ -83,3 +83,12 @@ export interface TravelersListResponse {
     pagination: Pagination;
     stats?: TravelerStats;
 }
+
+export interface TravelerFilters {
+    bookingNumber?: string;
+    name?: string;
+    status?: string;
+    fromDate?: string;
+    toDate?: string;
+    createdAt?: string;
+}
