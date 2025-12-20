@@ -58,15 +58,10 @@ export function TravelersFilterPopover({
             </PopoverTrigger>
             <PopoverContent className="w-80">
                 <div className="grid gap-4">
-                    <div className="space-y-2">
-                        <h4 className="font-medium leading-none">{tTable("filters")}</h4>
-                        <p className="text-sm text-muted-foreground">
-                            {tTable("applyFilters")}
-                        </p>
-                    </div>
+                    {/*      */}
                     <div className="grid gap-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">{tTable("filterByName")}</Label>
+                            <Label className="text-xs text-muted-foreground px-1" htmlFor="name">{tTable("filterByName")}</Label>
                             <Input
                                 id="name"
                                 placeholder={tTable("filterByName")}
@@ -74,34 +69,40 @@ export function TravelersFilterPopover({
                                 onChange={(e) => handleNameChange(e.target.value)}
                             />
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="status">{t("status")}</Label>
-                            <Select value={filters.status} onValueChange={handleStatusChange}>
-                                <SelectTrigger id="status">
-                                    <SelectValue placeholder={t("status")} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{tTable("allStatuses")}</SelectItem>
-                                    <SelectItem value="paid">{t("paid")}</SelectItem>
-                                    <SelectItem value="partial">{t("partial")}</SelectItem>
-                                    <SelectItem value="unpaid">{t("unpaid")}</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="flex gap-4 items-end">
+                            <div>
+                                <Label className="text-xs text-muted-foreground px-1 mb-1" htmlFor="status">{t("status")}</Label>
+                                <Select value={filters.status} onValueChange={handleStatusChange}>
+                                    <SelectTrigger id="status">
+                                        <SelectValue placeholder={t("status")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{tTable("allStatuses")}</SelectItem>
+                                        <SelectItem value="paid">{t("paid")}</SelectItem>
+                                        <SelectItem value="partial">{t("partial")}</SelectItem>
+                                        <SelectItem value="unpaid">{t("unpaid")}</SelectItem>
+                                        <SelectItem value="cancel">{t("cancel")}</SelectItem>
+                                        <SelectItem value="overdue">{t("overdue")}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div>
+                                <Label className="text-xs text-muted-foreground px-1 mb-1" htmlFor="createdAt">{t("createdAt")}</Label>
+                                <Input
+                                    id="createdAt"
+                                    type="date"
+                                    value={filters.createdAt || ''}
+                                    onChange={(e) => handleCreatedAtChange(e.target.value)}
+                                />
+                            </div>
                         </div>
+
                         <div className="grid gap-2">
-                            <Label htmlFor="createdAt">{t("createdAt")}</Label>
-                            <Input
-                                id="createdAt"
-                                type="date"
-                                value={filters.createdAt || ''}
-                                onChange={(e) => handleCreatedAtChange(e.target.value)}
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label>{t("createdAt")}</Label>
+
                             <div className="flex gap-2">
                                 <div className="grid gap-1 flex-1">
-                                    <Label htmlFor="fromDate" className="text-xs text-muted-foreground">{tGeneral("from")}</Label>
+                                    <Label htmlFor="fromDate" className="text-xs text-muted-foreground px-1">{tGeneral("from")}</Label>
                                     <Input
                                         id="fromDate"
                                         type="date"
@@ -110,7 +111,7 @@ export function TravelersFilterPopover({
                                     />
                                 </div>
                                 <div className="grid gap-1 flex-1">
-                                    <Label htmlFor="toDate" className="text-xs text-muted-foreground">{tGeneral("to")}</Label>
+                                    <Label htmlFor="toDate" className="text-xs text-muted-foreground px-1">{tGeneral("to")}</Label>
                                     <Input
                                         id="toDate"
                                         type="date"

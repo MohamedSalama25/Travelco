@@ -59,7 +59,7 @@ const buildTransferStats = async ({ filter = {}, fromDate, toDate }) => {
             ...result,
             totalProfit: result.totalSales - result.totalCost,
             overdueTickets: statusCounts
-                .filter(s => s._id !== "paid")
+                .filter(s => s._id !== "paid" && s._id !== "cancel")
                 .reduce((acc, s) => acc + s.count, 0)
         };
     };

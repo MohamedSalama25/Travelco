@@ -227,10 +227,7 @@ export function TravelersTable({
                         <FileDown className="h-4 w-4" />
                         {isExporting ? "جاري التصدير..." : "تصدير Excel"}
                     </Button>
-                    <Button variant="outline" className="gap-2 text-destructive hover:bg-destructive/10">
-                        <Archive className="h-4 w-4" />
-                        {tTable("archive")}
-                    </Button>
+
 
                     <Button onClick={handleCreate}>{t("addTicket")}</Button>
                 </div>

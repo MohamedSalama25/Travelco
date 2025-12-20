@@ -19,7 +19,16 @@ export interface Traveler {
     transfer_pay: number;
     total_paid: number;
     remaining_amount: number;
-    status: 'paid' | 'partial' | 'unpaid';
+    status: 'paid' | 'partial' | 'unpaid' | 'cancel';
+    cancel_reason?: string;
+    cancel_tax?: number;
+    cancel_commission?: number;
+    cancel_at?: string;
+    transfer_pay_before_cancel?: number;
+    transfer_salary_before_cancel?: number;
+    transfer_price_before_cancel?: number;
+    refund_amount: number;
+    refund_at?: string;
     createdBy?: string;
     updatedBy?: string;
     createdAt: string;
@@ -91,4 +100,10 @@ export interface TravelerFilters {
     fromDate?: string;
     toDate?: string;
     createdAt?: string;
+}
+
+export interface CancelTravelerPayload {
+    cancel_reason: string;
+    cancel_tax: number;
+    cancel_commission: number;
 }

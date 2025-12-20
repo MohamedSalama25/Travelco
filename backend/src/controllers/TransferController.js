@@ -7,6 +7,7 @@ const getPagination = require("../utils/pagination");
 const { generateTransfersExcel } = require("../utils/excelExport");
 const buildTransferStats = require("../utils/transferStats.helper");
 const buildTransferFilter = require("../utils/buildTransferFilter");
+const { updateTreasury } = require("../utils/treasury.helper");
 
 /**
  * Helper to calculate percentage change
@@ -145,6 +146,13 @@ const addTransfer = async (req, res) => {
         createdBy: req.user?.id || null
       });
       await paymentRecord.save();
+
+      // Update Treasury
+      await updateTreasury(initialPayment, `دفعة مقدمة للحجز رقم ${newTransfer.booking_number}`, {
+        relatedModel: 'Transfer',
+        relatedId: newTransfer._id,
+        userId: req.user?.id || null
+      });
     }
 
     return res.status(201).json({
@@ -332,7 +340,7 @@ const getTransferStats = async (req, res) => {
       return {
         ...result,
         totalProfit: result.totalSales - result.totalCost,
-        overdueTickets: statusCounts.filter(s => s._id !== 'paid').reduce((acc, s) => acc + s.count, 0)
+        overdueTickets: statusCounts.filter(s => s._id !== 'paid' && s._id !== 'cancel').reduce((acc, s) => acc + s.count, 0)
       };
     };
 
@@ -388,35 +396,182 @@ const getTransferStats = async (req, res) => {
   }
 };
 
+const cancelTransfer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      cancel_reason,
+      cancel_tax,
+      cancel_commission
+    } = req.body;
+
+    // تحقق من البيانات
+    if (!cancel_reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'سبب الإلغاء مطلوب'
+      });
+    }
+
+    if (cancel_tax < 0 || cancel_commission < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'الضريبة أو العمولة غير صحيحة'
+      });
+    }
+
+    const transfer = await Transfer.findById(id);
+
+    if (!transfer) {
+      return res.status(404).json({
+        success: false,
+        message: 'الحجز غير موجود'
+      });
+    }
+
+    if (transfer.status === 'cancel') {
+      return res.status(400).json({
+        success: false,
+        message: 'تم إلغاء التذكرة بالفعل'
+      });
+    }
+
+    /* =====================
+       حفظ القيم القديمة
+    ====================== */
+    transfer.transfer_pay_before_cancel = transfer.transfer_pay;
+    transfer.transfer_salary_before_cancel = transfer.ticket_salary;
+    transfer.transfer_price_before_cancel = transfer.ticket_price;
+
+    /* =====================
+       بيانات الإلغاء
+    ====================== */
+    transfer.cancel_reason = cancel_reason;
+    transfer.cancel_tax = Number(cancel_tax);
+    transfer.cancel_commission = Number(cancel_commission);
+
+    /* =====================
+       إعادة التسعير
+    ====================== */
+    // تكلفة التذكرة = الضريبة
+    transfer.ticket_salary = transfer.cancel_tax;
+
+    // سعر البيع الجديد = الضريبة + العمولة
+    transfer.ticket_price =
+      transfer.cancel_tax + transfer.cancel_commission;
+
+    /* =====================
+       إعادة الحسابات
+    ====================== */
+    if (transfer.total_paid > transfer.ticket_price) {
+      transfer.total_paid = transfer.ticket_price;
+    }
+
+    transfer.remaining_amount =
+      transfer.ticket_price - transfer.total_paid;
+
+    /* =====================
+       حساب الاسترداد (Refund)
+    ====================== */
+    if (transfer.total_paid > transfer.ticket_price) {
+      transfer.refund_amount = transfer.total_paid - transfer.ticket_price;
+      // لا يتم خصمها من الخزنة هنا، بل عند تأكيد الاسترداد من الفرونت اند
+    } else {
+      transfer.refund_amount = 0;
+    }
+
+    transfer.status = 'cancel';
+    transfer.updatedBy = req.user.id;
+
+    await transfer.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'تم إلغاء التذكرة بنجاح',
+      data: transfer
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+const refundTransfer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const transfer = await Transfer.findById(id);
+
+    if (!transfer) {
+      return res.status(404).json({
+        success: false,
+        message: 'الحجز غير موجود'
+      });
+    }
+
+    if (transfer.status !== 'cancel') {
+      return res.status(400).json({
+        success: false,
+        message: 'يجب إلغاء التذكرة أولاً لتنفيذ عملية الاسترداد'
+      });
+    }
+
+    if (transfer.refund_amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'لا يوجد مبلغ مستحق للاسترداد لهذه التذكرة'
+      });
+    }
+
+    if (transfer.refund_at) {
+      return res.status(400).json({
+        success: false,
+        message: 'تم تنفيذ عملية الاسترداد مسبقاً'
+      });
+    }
+
+    // خصم المبلغ من الخزنة
+    await updateTreasury(-transfer.refund_amount, `استرداد مبلغ للعميل بعد إلغاء التذكرة رقم ${transfer.booking_number}`, {
+      relatedModel: 'Transfer',
+      relatedId: transfer._id,
+      userId: req.user.id
+    });
+
+    transfer.refund_at = new Date();
+    await transfer.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'تم تنفيذ عملية الاسترداد من الخزنة بنجاح',
+      data: transfer
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+
 /**
  * Export transfers to Excel
  */
 const exportTransfersToExcel = async (req, res) => {
   try {
-    const {
-      name,
-      fromDate,
-      toDate,
-      status,
-      air_comp
-    } = req.query;
-
-    const filter = {};
-    if (name) filter.name = { $regex: name, $options: 'i' };
-    if (status) filter.status = status;
-    if (air_comp) filter.air_comp = air_comp;
-    if (fromDate || toDate) {
-      filter.createdAt = {};
-      if (fromDate) filter.createdAt.$gte = new Date(fromDate);
-      if (toDate) filter.createdAt.$lte = new Date(toDate);
-    }
+    const filter = await buildTransferFilter(req.query);
 
     const transfers = await Transfer.find(filter)
       .populate('air_comp', 'name')
-      .populate('customer', 'name')
+      .populate('customer', 'name phone')
       .populate('createdBy', 'email')
       .populate('updatedBy', 'email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     await generateTransfersExcel(transfers, res, 'transfers');
   } catch (error) {
@@ -434,5 +589,7 @@ module.exports = {
   updateTransfer,
   deleteTransfer,
   getTransferStats,
+  cancelTransfer,
+  refundTransfer,
   exportTransfersToExcel
 };

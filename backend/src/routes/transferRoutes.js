@@ -20,6 +20,12 @@ router.post('/', TransferController.addTransfer);
 // Update transfer
 router.put('/:id', TransferController.updateTransfer);
 
+// Cancel transfer
+router.put('/:id/cancel', TransferController.cancelTransfer);
+
+// Refund transfer
+router.put('/:id/refund', TransferController.refundTransfer);
+
 // Delete transfer
 router.delete('/:id', TransferController.deleteTransfer);
 

@@ -26,7 +26,11 @@ const buildTransferFilter = async (query) => {
     }
 
     if (status) {
-        filter.status = status;
+        if (status.includes(',')) {
+            filter.status = { $in: status.split(',') };
+        } else {
+            filter.status = status;
+        }
     }
 
     if (air_comp) {

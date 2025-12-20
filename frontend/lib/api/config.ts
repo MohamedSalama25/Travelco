@@ -23,6 +23,8 @@ export const API_CONFIG = {
             CREATE: 'transfers',
             UPDATE: (id: string) => `transfers/${id}`,
             DELETE: (id: string) => `transfers/${id}`,
+            CANCEL: (id: string) => `transfers/${id}/cancel`,
+            REFUND: (id: string) => `transfers/${id}/refund`,
             EXPORT_EXCEL: 'transfers/export/excel',
         },
         AIRCOMPS: {
@@ -32,6 +34,28 @@ export const API_CONFIG = {
             UPDATE: (id: string) => `airComp/${id}`,
             DELETE: (id: string) => `airComp/${id}`,
         },
+        PAYMENTS: {
+            CREATE: 'payments',
+            DELETE: (id: string) => `payments/${id}`,
+        },
+        TREASURY: {
+            LIST: 'treasury/history',
+            STATS: 'treasury/stats',
+            EXPORT_EXCEL: 'treasury/export/excel',
+        },
+        USERS: {
+            LIST: 'users',
+            DETAILS: (id: string) => `users/${id}`,
+            CREATE: 'users',
+            UPDATE: (id: string) => `users/${id}`,
+            DELETE: (id: string) => `users/${id}`,
+        },
+        ADVANCES: {
+            LIST: 'advances',
+            CREATE: 'advances',
+            UPDATE_STATUS: (id: string) => `advances/${id}/status`,
+            DELETE: (id: string) => `advances/${id}`,
+        }
     },
 } as const;
 

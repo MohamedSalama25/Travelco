@@ -23,11 +23,11 @@ const userSchema = new mongoose.Schema({
     }
   },
 
-    role: {
+  role: {
     type: String,
-  enum: ['accountant', 'admin', 'manager'],
-  default: 'accountant'
-    
+    enum: ['accountant', 'admin', 'manager'],
+    default: 'accountant'
+
   },
 
   password: {
@@ -47,7 +47,20 @@ const userSchema = new mongoose.Schema({
       },
       message: "Weak password. Must contain at least one number."
     }
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  department: {
+    type: String,
+    trim: true
+  },
+  status: {
+    type: String,
+    enum: ['active', 'inactive'],
+    default: 'active'
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

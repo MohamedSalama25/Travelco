@@ -19,6 +19,8 @@ const transferRoutes = require('./routes/transferRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const treasuryRoutes = require('./routes/treasuryRoutes');
+const advanceRoutes = require('./routes/advanceRoutes');
 
 // Import middleware
 const auth = require('./middlewares/auth');
@@ -33,6 +35,8 @@ app.use('/api/transfers', auth, transferRoutes);
 app.use('/api/customers', auth, customerRoutes);
 app.use('/api/payments', auth, paymentRoutes);
 app.use('/api/dashboard', auth, dashboardRoutes);
+app.use('/api/treasury', auth, treasuryRoutes);
+app.use('/api/advances', auth, advanceRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

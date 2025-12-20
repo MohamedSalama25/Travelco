@@ -17,7 +17,12 @@ export async function getTravelers(
             query.append('name', filters.name);
         }
         if (filters?.status && filters.status !== 'all') {
-            query.append('status', filters.status);
+            if (filters.status === 'overdue') {
+                // overdue = partial + unpaid (excluding cancel and paid)
+                query.append('status', 'partial,unpaid');
+            } else {
+                query.append('status', filters.status);
+            }
         }
         if (filters?.fromDate) {
             query.append('fromDate', filters.fromDate);
@@ -102,6 +107,54 @@ export async function deleteTraveler(id: string): Promise<{ success: boolean, me
     }
 }
 
+export async function cancelTraveler(id: string, payload: {
+    cancel_reason: string;
+    cancel_tax: number;
+    cancel_commission: number;
+}): Promise<{ success: boolean, message: string, data: Traveler }> {
+    try {
+        const response = await clientAxios.put(
+            API_CONFIG.ENDPOINTS.TRAVELERS.CANCEL(id),
+            payload
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Failed to cancel traveler", error);
+        throw error;
+    }
+}
+
+export async function refundTraveler(id: string): Promise<{ success: boolean, message: string, data: Traveler }> {
+    try {
+        const response = await clientAxios.put(
+            API_CONFIG.ENDPOINTS.TRAVELERS.REFUND(id)
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Failed to refund traveler", error);
+        throw error;
+    }
+}
+
+export async function addPayment(payload: {
+    transfer: string;
+    amount: number;
+    payment_method: string;
+    notes?: string;
+    payment_date?: string;
+}): Promise<{ success: boolean, message: string }> {
+    try {
+        const response = await clientAxios.post(
+            API_CONFIG.ENDPOINTS.PAYMENTS.CREATE,
+            payload
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Failed to add payment", error);
+        throw error;
+    }
+}
+
 export async function exportTravelersToExcel(filters?: TravelerFilters): Promise<void> {
     try {
         const query = new URLSearchParams();
@@ -113,7 +166,11 @@ export async function exportTravelersToExcel(filters?: TravelerFilters): Promise
             query.append('name', filters.name);
         }
         if (filters?.status && filters.status !== 'all') {
-            query.append('status', filters.status);
+            if (filters.status === 'overdue') {
+                query.append('status', 'partial,unpaid');
+            } else {
+                query.append('status', filters.status);
+            }
         }
         if (filters?.fromDate) {
             query.append('fromDate', filters.fromDate);

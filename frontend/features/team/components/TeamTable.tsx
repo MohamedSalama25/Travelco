@@ -1,89 +1,78 @@
-"use client";
+'use client';
 
 import { useState, useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Archive, Plus, Search } from "lucide-react";
+import { Plus, Search, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import UniTable from "@/components/data-table";
 import AddTeamMemberDialog from "./AddTeamMemberDialog";
 import { useTranslations } from "next-intl";
-import { mockTeamMembers, type TeamMember, type TeamMemberFormData } from "../types/team";
+import { type TeamMember, type TeamMemberFormData } from "../types/team";
+import { useUsers, useDeleteUser, useCreateUser, useUpdateUser } from "../hooks/useUsers";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function TeamTable() {
     const t = useTranslations("table");
     const tTeam = useTranslations("team");
+    const router = useRouter();
 
-    const [members, setMembers] = useState<TeamMember[]>(mockTeamMembers);
-    const [archivedMembers, setArchivedMembers] = useState<TeamMember[]>([]);
-    const [showArchived, setShowArchived] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [nameFilter, setNameFilter] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
-    // Filter logic - name only
-    const filteredMembers = useMemo(() => {
-        return (showArchived ? archivedMembers : members).filter((member) => {
-            if (nameFilter) {
-                const nameLower = nameFilter.toLowerCase();
-                return member.name.toLowerCase().includes(nameLower);
-            }
-            return true;
-        });
-    }, [members, archivedMembers, showArchived, nameFilter]);
+    const { data: usersData, isLoading } = useUsers({
+        page: currentPage,
+        limit: 10,
+        name: nameFilter || undefined
+    });
 
-    const handleAddMember = useCallback((data: TeamMemberFormData) => {
-        const newMember: TeamMember = {
-            id: Date.now().toString(),
-            ...data,
-            joinDate: new Date().toISOString().split("T")[0],
-        };
-        setMembers((prev) => [newMember, ...prev]);
-    }, []);
+    const createUserMutation = useCreateUser();
+    const updateUserMutation = useUpdateUser();
+    const deleteUserMutation = useDeleteUser();
 
-    const handleEditMember = useCallback((data: TeamMemberFormData) => {
+    const handleAddMember = async (data: TeamMemberFormData) => {
+        try {
+            await createUserMutation.mutateAsync(data);
+            toast.success(tTeam("addSuccess"));
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || tTeam("addError"));
+        }
+    };
+
+    const handleEditMember = async (data: TeamMemberFormData) => {
         if (!editingMember) return;
-
-        setMembers((prev) =>
-            prev.map((m) =>
-                m.id === editingMember.id
-                    ? { ...m, ...data }
-                    : m
-            )
-        );
-        setEditingMember(null);
-    }, [editingMember]);
+        try {
+            await updateUserMutation.mutateAsync({ id: editingMember._id, data });
+            toast.success(tTeam("updateSuccess"));
+            setEditingMember(null);
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || tTeam("updateError"));
+        }
+    };
 
     const handleEdit = useCallback((member: TeamMember) => {
         setEditingMember(member);
         setDialogOpen(true);
     }, []);
 
-    const handleDelete = useCallback((member: TeamMember) => {
-        if (showArchived) {
-            if (confirm(t("confirmPermanentDelete"))) {
-                setArchivedMembers((prev) => prev.filter((m) => m.id !== member.id));
-            }
-        } else {
-            if (confirm(t("confirmDelete"))) {
-                setMembers((prev) => prev.filter((m) => m.id !== member.id));
-                setArchivedMembers((prev) => [
-                    ...prev,
-                    { ...member, isArchived: true },
-                ]);
+    const handleDelete = useCallback(async (member: TeamMember) => {
+        if (confirm(t("confirmDelete"))) {
+            try {
+                await deleteUserMutation.mutateAsync(member._id);
+                toast.success(tTeam("deleteSuccess"));
+            } catch (error: any) {
+                toast.error(error.response?.data?.message || tTeam("deleteError"));
             }
         }
-    }, [showArchived, t]);
+    }, [t, tTeam, deleteUserMutation]);
 
-    const handleRestore = useCallback((member: TeamMember) => {
-        setArchivedMembers((prev) => prev.filter((m) => m.id !== member.id));
-        setMembers((prev) => [
-            ...prev,
-            { ...member, isArchived: false },
-        ]);
-    }, []);
+    const handleViewDetails = useCallback((member: TeamMember) => {
+        router.push(`/team/${member._id}`);
+    }, [router]);
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
@@ -97,16 +86,17 @@ export default function TeamTable() {
     // Define columns
     const columns: ColumnDef<TeamMember>[] = useMemo(() => [
         {
-            accessorKey: "name",
+            accessorKey: "user_name",
             header: tTeam("member"),
         },
         {
             accessorKey: "email",
-            header: "Email",
+            header: tTeam("email"),
         },
         {
             accessorKey: "phone",
-            header: "Phone",
+            header: tTeam("phone"),
+            cell: ({ row }) => row.original.phone || "-",
         },
         {
             accessorKey: "role",
@@ -116,8 +106,7 @@ export default function TeamTable() {
                 const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
                     admin: "destructive",
                     manager: "default",
-                    developer: "secondary",
-                    designer: "outline",
+                    accountant: "secondary",
                 };
 
                 return (
@@ -127,102 +116,73 @@ export default function TeamTable() {
                 );
             },
         },
+
         {
-            accessorKey: "department",
-            header: tTeam("department"),
-            cell: ({ row }) => row.original.department || "-",
+            accessorKey: "status",
+            header: tTeam("status"),
+            cell: ({ row }) => (
+                <Badge variant={row.original.status === 'active' ? 'outline' : 'secondary'}>
+                    {tTeam(row.original.status)}
+                </Badge>
+            )
         },
-        {
-            accessorKey: "joinDate",
-            header: "Join Date",
-        },
+
     ], [tTeam]);
 
     // Define actions
-    const actions = useMemo(() => {
-        if (showArchived) {
-            return [
-                {
-                    label: "Restore",
-                    onClick: handleRestore,
-                },
-                {
-                    label: "Delete",
-                    onClick: handleDelete,
-                },
-            ];
-        } else {
-            return [
-                {
-                    label: "Edit",
-                    onClick: handleEdit,
-                },
-                {
-                    label: "Delete",
-                    onClick: handleDelete,
-                },
-            ];
-        }
-    }, [showArchived, handleEdit, handleDelete, handleRestore]);
+    const actions = useMemo(() => [
+        {
+            label: "Details",
+            icon: Eye,
+            onClick: handleViewDetails,
+        },
+        {
+            label: "Edit",
+            onClick: handleEdit,
+        },
+        {
+            label: "Delete",
+            onClick: handleDelete,
+        },
+    ], [handleEdit, handleDelete, handleViewDetails]);
 
     return (
         <div className="space-y-4">
-            {/* Header with Filter and Actions */}
             <div className="flex gap-2 items-center bg-card px-3 rounded-xl justify-end">
-                {/* Name Filter */}
                 <div className="relative flex-1 my-6">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder={`${t("search")} ${tTeam("member")}...`}
                         value={nameFilter}
-                        onChange={(e) => setNameFilter(e.target.value)}
+                        onChange={(e) => {
+                            setNameFilter(e.target.value);
+                            setCurrentPage(1);
+                        }}
                         className="pl-9"
                     />
                 </div>
 
-                {/* Archive Toggle */}
                 <Button
-                    variant="outline"
-                    onClick={() => {
-                        setShowArchived(!showArchived);
-                        setCurrentPage(1);
-                    }}
-                    className="gap-2"
+                    onClick={() => setDialogOpen(true)}
+                    className="gap-1 bg-primary"
                 >
-                    <Archive className="h-4 w-4" />
-                    {showArchived ? tTeam("title") : t("archive")}
-                    {archivedMembers.length > 0 && !showArchived && (
-                        <Badge variant="secondary" className="ml-1">
-                            {archivedMembers.length}
-                        </Badge>
-                    )}
+                    <Plus className="h-4 w-4 mt-1" />
+                    {tTeam("addMember")}
                 </Button>
-
-                {/* Add Member Button */}
-                {!showArchived && (
-                    <Button
-                        onClick={() => setDialogOpen(true)}
-                        className="gap-1 bg-primary"
-                    >
-                        <Plus className="h-4 w-4 mt-1" />
-                        {tTeam("addMember")}
-                    </Button>
-                )}
             </div>
 
-            {/* UniTable */}
             <UniTable<TeamMember>
                 columns={columns}
-                data={filteredMembers.slice((currentPage - 1) * 5, currentPage * 5)}
-                totalItems={filteredMembers.length}
-                itemsPerPage={5}
+                data={usersData?.data || []}
+                totalItems={usersData?.pagination?.total || 0}
+                itemsPerPage={10}
                 currentPage={currentPage}
                 tableName={tTeam("members")}
                 actions={actions}
                 onPageChange={handlePageChange}
+                isLoading={isLoading}
             />
 
-            {/* Add/Edit Member Dialog */}
             <AddTeamMemberDialog
                 open={dialogOpen}
                 onOpenChange={handleDialogClose}

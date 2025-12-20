@@ -5,7 +5,6 @@ const transferSchema = mongoose.Schema({
     booking_number: {
         type: String,
         required: [true, "Booking number is required"],
-        unique: true,
         trim: true
     },
     customer: {
@@ -56,8 +55,38 @@ const transferSchema = mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['paid', 'partial', 'unpaid'],
+        enum: ['paid', 'partial', 'unpaid', 'cancel'],
         default: 'unpaid'
+    },
+    cancel_reason: {
+        type: String
+    },
+    transfer_pay_before_cancel: {
+        type: Number
+    },
+    transfer_salary_before_cancel: {
+        type: Number
+    },
+    transfer_price_before_cancel: {
+        type: Number
+    },
+    cancel_tax: {
+        type: Number,
+        default: 0
+    },
+    cancel_commission: {
+        type: Number,
+        default: 0
+    },
+    cancel_at: {
+        type: Date
+    },
+    refund_amount: {
+        type: Number,
+        default: 0
+    },
+    refund_at: {
+        type: Date
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -72,7 +101,14 @@ const transferSchema = mongoose.Schema({
 });
 
 // Calculate remaining amount on save
+// Calculate remaining amount on save
 transferSchema.pre('save', function (next) {
+
+    // لو التذكرة ملغية، ما نغيرش الحالة ولا الحسابات
+    if (this.status === 'cancel') {
+        return next();
+    }
+
     this.remaining_amount = this.ticket_price - this.total_paid;
 
     if (this.remaining_amount <= 0) {
@@ -86,6 +122,7 @@ transferSchema.pre('save', function (next) {
 
     next();
 });
+
 
 // Transform toJSON to return email string for createdBy/updatedBy
 transferSchema.set('toJSON', {

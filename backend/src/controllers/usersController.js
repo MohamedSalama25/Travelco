@@ -1,7 +1,9 @@
+const mongoose = require("mongoose");
 const Users = require("../models/Users.model");
 const Transfer = require("../models/Transfer.model");
 const Payment = require("../models/Payment.model");
 const Customer = require("../models/Customer.model");
+const Advance = require("../models/Advance.model");
 const getPagination = require("../utils/pagination");
 const bcrypt = require("bcryptjs");
 
@@ -49,12 +51,12 @@ const getUsers = async (req, res) => {
 
 const addUser = async (req, res) => {
     try {
-        const { user_name, email, password, role } = req.body;
+        const { user_name, email, password, role, phone, department, status } = req.body;
 
         if (!user_name || !email || !password) {
             return res.status(400).json({
                 success: false,
-                message: "User name, email and password are required"
+                message: "اسم المستخدم، البريد الإلكتروني وكلمة المرور حقول مطلوبة"
             });
         }
 
@@ -62,7 +64,7 @@ const addUser = async (req, res) => {
         if (emailExists) {
             return res.status(400).json({
                 success: false,
-                message: "Email is already exist"
+                message: "البريد الإلكتروني مسجل بالفعل"
             });
         }
 
@@ -72,7 +74,10 @@ const addUser = async (req, res) => {
             user_name,
             email,
             password: hashedPassword,
-            role: role || "accountant"
+            role: role || "accountant",
+            phone,
+            department,
+            status: status || "active"
         });
 
         const userSafe = newUser.toObject();
@@ -80,7 +85,7 @@ const addUser = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "User created successfully",
+            message: "تم إنشاء المستخدم بنجاح",
             data: userSafe
         });
     } catch (error) {
@@ -100,7 +105,7 @@ const addUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-        const { user_name, email, password, role } = req.body;
+        const { user_name, email, password, role, phone, department, status } = req.body;
 
         const user = await Users.findById(req.params.id).select("+password");
 
@@ -116,7 +121,7 @@ const updateUser = async (req, res) => {
             if (emailExists && String(emailExists._id) !== String(user._id)) {
                 return res.status(400).json({
                     success: false,
-                    message: "Email is already exist"
+                    message: "البريد الإلكتروني مسجل بالفعل لمستخدم آخر"
                 });
             }
         }
@@ -124,6 +129,9 @@ const updateUser = async (req, res) => {
         if (user_name !== undefined) user.user_name = user_name;
         if (email !== undefined) user.email = email;
         if (role !== undefined) user.role = role;
+        if (phone !== undefined) user.phone = phone;
+        if (department !== undefined) user.department = department;
+        if (status !== undefined) user.status = status;
 
         if (password !== undefined && password !== "") {
             user.password = await bcrypt.hash(password, 10);
@@ -136,7 +144,7 @@ const updateUser = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "User updated successfully",
+            message: "تم تحديث بيانات المستخدم بنجاح",
             data: userSafe
         });
     } catch (error) {
@@ -169,7 +177,7 @@ const deleteUser = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "User deleted successfully"
+            message: "تم حذف المستخدم بنجاح"
         });
     } catch (error) {
         return res.status(500).json({
@@ -189,7 +197,7 @@ const getUserById = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: "المستخدم غير موجود"
             });
         }
 
@@ -203,7 +211,7 @@ const getUserById = async (req, res) => {
         const totalTransfers = await Transfer.countDocuments({ createdBy: user._id });
 
         const transferStatsAgg = await Transfer.aggregate([
-            { $match: { createdBy: user._id } },
+            { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
             {
                 $group: {
                     _id: null,
@@ -217,7 +225,7 @@ const getUserById = async (req, res) => {
         ]);
 
         const transferStatusCounts = await Transfer.aggregate([
-            { $match: { createdBy: user._id } },
+            { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
             { $group: { _id: "$status", count: { $sum: 1 } } }
         ]);
 
@@ -240,7 +248,7 @@ const getUserById = async (req, res) => {
         };
 
         const paymentStatsAgg = await Payment.aggregate([
-            { $match: { createdBy: user._id } },
+            { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
             {
                 $group: {
                     _id: null,
@@ -257,16 +265,31 @@ const getUserById = async (req, res) => {
 
         const totalCustomersCreated = await Customer.countDocuments({ createdBy: user._id });
 
+        const advances = await Advance.find({ user: user._id })
+            .populate("approvedBy", "user_name")
+            .sort({ createdAt: -1 });
+
+        const advanceStatsAgg = await Advance.aggregate([
+            { $match: { user: new mongoose.Types.ObjectId(userId), status: 'approved' } },
+            { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
+        ]);
+
+        const totalAdvances = advanceStatsAgg[0]?.totalAmount || 0;
+
         return res.status(200).json({
             success: true,
             data: {
                 user,
                 transfers,
+                advances,
                 stats: {
                     transfers: transferStats,
                     payments: paymentStats,
                     customers: {
                         totalCustomersCreated
+                    },
+                    advances: {
+                        totalAdvances
                     }
                 }
             },

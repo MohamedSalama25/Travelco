@@ -36,6 +36,7 @@ export default function AddTeamMemberDialog({
     member,
 }: AddTeamMemberDialogProps) {
     const t = useTranslations("team");
+    const tCommon = useTranslations("common");
     const tCustomers = useTranslations("customers");
     const tErrors = useTranslations("customers.formErrors");
 
@@ -50,23 +51,24 @@ export default function AddTeamMemberDialog({
         resolver: zodResolver(teamMemberSchema),
         defaultValues: member
             ? {
-                name: member.name,
+                user_name: member.user_name,
                 email: member.email,
-                phone: member.phone,
+                phone: member.phone || "",
                 role: member.role,
                 department: member.department || "",
             }
             : {
-                name: "",
+                user_name: "",
                 email: "",
                 phone: "",
-                role: "developer",
+                role: "accountant",
                 department: "",
+                password: "",
             },
     });
 
     const handleFormSubmit = async (data: TeamMemberFormData) => {
-        onSubmit(data);
+        await onSubmit(data);
         reset();
         onOpenChange(false);
     };
@@ -90,18 +92,18 @@ export default function AddTeamMemberDialog({
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
                     {/* Name Field */}
                     <div className="space-y-2">
-                        <Label htmlFor="name">
+                        <Label htmlFor="user_name">
                             {tCustomers("name")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
-                            id="name"
-                            {...register("name")}
+                            id="user_name"
+                            {...register("user_name")}
                             placeholder={tCustomers("name")}
-                            className={errors.name ? "border-destructive" : ""}
+                            className={errors.user_name ? "border-destructive" : ""}
                         />
-                        {errors.name && (
+                        {errors.user_name && (
                             <p className="text-sm text-destructive">
-                                {tErrors(errors.name.message as any)}
+                                {tErrors(errors.user_name.message as any)}
                             </p>
                         )}
                     </div>
@@ -124,6 +126,26 @@ export default function AddTeamMemberDialog({
                             </p>
                         )}
                     </div>
+
+                    {!member && (
+                        <div className="space-y-2">
+                            <Label htmlFor="password">
+                                {t("password")} <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                {...register("password")}
+                                placeholder={t("password")}
+                                className={errors.password ? "border-destructive" : ""}
+                            />
+                            {errors.password && (
+                                <p className="text-sm text-destructive">
+                                    {t("passwordError")}
+                                </p>
+                            )}
+                        </div>
+                    )}
 
                     {/* Phone Field */}
                     <div className="space-y-2">
@@ -158,8 +180,7 @@ export default function AddTeamMemberDialog({
                             <SelectContent>
                                 <SelectItem value="admin">{t("admin")}</SelectItem>
                                 <SelectItem value="manager">{t("manager")}</SelectItem>
-                                <SelectItem value="developer">{t("developer")}</SelectItem>
-                                <SelectItem value="designer">{t("designer")}</SelectItem>
+                                <SelectItem value="accountant">{t("accountant")}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -181,10 +202,10 @@ export default function AddTeamMemberDialog({
                             onClick={handleCancel}
                             disabled={isSubmitting}
                         >
-                            {tCustomers("cancel")}
+                            {tCommon("cancel")}
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? "..." : tCustomers("save")}
+                            {isSubmitting ? "..." : tCommon("save")}
                         </Button>
                     </DialogFooter>
                 </form>

@@ -2,6 +2,7 @@ const Payment = require("../models/Payment.model");
 const Transfer = require("../models/Transfer.model");
 const getPagination = require("../utils/pagination");
 const { generatePaymentsExcel } = require("../utils/excelExport");
+const { updateTreasury } = require("../utils/treasury.helper");
 
 /**
  * Get all payments with filtering and pagination
@@ -24,7 +25,14 @@ const getPayments = async (req, res) => {
         }
 
         const payments = await Payment.find(dateFilter, { "__v": false })
-            .populate('transfer', 'booking_number name phone ticket_price status')
+            .populate({
+                path: 'transfer',
+                select: 'booking_number ticket_price status',
+                populate: {
+                    path: 'customer',
+                    select: 'name phone'
+                }
+            })
             .populate('createdBy', 'user_name email')
             .limit(limit)
             .skip(skip)
@@ -159,6 +167,13 @@ const addPayment = async (req, res) => {
         transfer.total_paid = (transfer.total_paid || 0) + amount;
         await transfer.save(); // This will trigger pre-save hook to update remaining_amount and status
 
+        // Update Treasury
+        await updateTreasury(amount, `دفعة للحجز رقم ${transfer.booking_number}`, {
+            relatedModel: 'Transfer',
+            relatedId: transfer._id,
+            userId: req.user?.id || null
+        });
+
         return res.status(201).json({
             success: true,
             message: "Payment added successfully",
@@ -199,6 +214,13 @@ const deletePayment = async (req, res) => {
             // Revert payment from transfer
             transfer.total_paid = Math.max(0, (transfer.total_paid || 0) - payment.amount);
             await transfer.save();
+
+            // Update Treasury (subtract amount)
+            await updateTreasury(-payment.amount, `حذف دفعة للحجز رقم ${transfer.booking_number}`, {
+                relatedModel: 'Transfer',
+                relatedId: transfer._id,
+                userId: req.user?.id || null
+            });
         }
 
         await payment.deleteOne();
@@ -240,7 +262,11 @@ const exportPaymentsToExcel = async (req, res) => {
         const payments = await Payment.find(filter)
             .populate({
                 path: 'transfer',
-                select: 'booking_number name'
+                select: 'booking_number',
+                populate: {
+                    path: 'customer',
+                    select: 'name'
+                }
             })
             .populate('createdBy', 'user_name')
             .sort({ payment_date: -1 });
