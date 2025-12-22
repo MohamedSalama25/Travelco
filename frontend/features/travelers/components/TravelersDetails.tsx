@@ -15,6 +15,7 @@ import { AddPaymentDialog } from './AddPaymentDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { refundTraveler } from '../services/travelerService';
 import { toast } from 'sonner';
+import { formatDate } from '@/lib/utils/handleDate';
 
 export const TravelersDetails = () => {
     const { id } = useParams();
@@ -32,14 +33,7 @@ export const TravelersDetails = () => {
     if (error) return <Error message={tCommon('loadError')} />;
     if (!traveler) return <Error message={tCommon('loadError')} />;
 
-    const formatDate = (dateString: string) => {
-        if (!dateString) return '-';
-        return new Intl.DateTimeFormat('en-GB', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        }).format(new Date(dateString));
-    };
+
 
     const handleCancelSuccess = () => {
         queryClient.invalidateQueries({ queryKey: ['traveler', id] });
@@ -65,12 +59,9 @@ export const TravelersDetails = () => {
             {/* Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" onClick={() => router.back()}>
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
+
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">{traveler.customer.name}</h1>
-                        <p className="text-muted-foreground">{traveler.booking_number}</p>
                     </div>
                     <Badge variant={
                         traveler.status === 'paid' ? 'default' :
@@ -108,9 +99,8 @@ export const TravelersDetails = () => {
                             {t('cancelTicket') || 'Cancel Ticket'}
                         </Button>
                     )}
-                    <Button variant="outline" className="gap-2">
-                        <Printer className="h-4 w-4" />
-                        Print
+                    <Button variant="outline" size="icon" onClick={() => router.back()}>
+                        <ArrowLeft className="h-4 w-4" />
                     </Button>
                 </div>
             </div>
@@ -181,6 +171,14 @@ export const TravelersDetails = () => {
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
+                                <p className="text-sm font-medium text-muted-foreground">{t('bookingNumber')}</p>
+                                <p>{traveler.booking_number}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">{t('phone')}</p>
+                                <p>{traveler.customer.phone}</p>
+                            </div>
+                            <div>
                                 <p className="text-sm font-medium text-muted-foreground">{t('airCompany')}</p>
                                 <p>{traveler.air_comp.name}</p>
                             </div>
@@ -228,24 +226,6 @@ export const TravelersDetails = () => {
                     </CardContent>
                 </Card>
 
-                {/* Customer Info */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{t('customerInfo')}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">{t('name')}</p>
-                                <p>{traveler.customer.name}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">{t('phone')}</p>
-                                <p>{traveler.customer.phone}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
 
                 {/* Payments History */}
                 <Card className="md:col-span-2">
@@ -256,7 +236,7 @@ export const TravelersDetails = () => {
                         {traveler.payments && traveler.payments.length > 0 ? (
                             <div className="space-y-4">
                                 {traveler.payments.map((payment) => (
-                                    <div key={payment._id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+                                    <div key={payment._id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0 ">
                                         <div>
                                             <p className="font-medium">{formatDate(payment.payment_date)}</p>
                                             <p className="text-sm text-muted-foreground">{payment.notes || t(payment.payment_method)}</p>
