@@ -52,8 +52,10 @@ export const API_CONFIG = {
         },
         ADVANCES: {
             LIST: 'advances',
+            STATS: 'advances/stats',
             CREATE: 'advances',
             UPDATE_STATUS: (id: string) => `advances/${id}/status`,
+            REPAY: (id: string) => `advances/${id}/repay`,
             DELETE: (id: string) => `advances/${id}`,
         }
     },

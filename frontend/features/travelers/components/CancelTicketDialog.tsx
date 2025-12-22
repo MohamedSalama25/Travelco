@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { cancelTraveler } from '../services/travelerService';
 import { toast } from 'sonner';
@@ -36,7 +37,8 @@ export const CancelTicketDialog = ({
     const [formData, setFormData] = useState({
         cancel_reason: '',
         cancel_tax: 0,
-        cancel_commission: 0
+        cancel_commission: 0,
+        is_refunded: false
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -100,6 +102,26 @@ export const CancelTicketDialog = ({
                                 value={formData.cancel_commission}
                                 onChange={(e) => setFormData({ ...formData, cancel_commission: Number(e.target.value) })}
                             />
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2 space-x-reverse border p-4 rounded-lg bg-muted/30">
+                        <Checkbox
+                            id="is_refunded"
+                            checked={formData.is_refunded}
+                            onCheckedChange={(checked) =>
+                                setFormData({ ...formData, is_refunded: checked as boolean })
+                            }
+                        />
+                        <div className="grid gap-1.5 leading-none px-2">
+                            <Label
+                                htmlFor="is_refunded"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                                {t('confirmRefundAmount') || 'تم استرداد المبلغ للعميل'}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                                {t('refundNote') || 'سيتم خصم المبلغ المستحق للاسترداد من الخزنة فوراً.'}
+                            </p>
                         </div>
                     </div>
                 </form>

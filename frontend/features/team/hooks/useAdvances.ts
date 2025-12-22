@@ -35,6 +35,25 @@ export const useUpdateAdvanceStatus = () => {
     });
 };
 
+export const useAdvanceStats = () => {
+    return useQuery({
+        queryKey: ['advances-stats'],
+        queryFn: () => AdvanceService.getAdvanceStats(),
+    });
+};
+
+export const useRepayAdvance = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => AdvanceService.repayAdvance(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['advances'] });
+            queryClient.invalidateQueries({ queryKey: ['advances-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury'] });
+        },
+    });
+};
+
 export const useDeleteAdvance = () => {
     const queryClient = useQueryClient();
     return useMutation({

@@ -3,7 +3,7 @@ import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel, getS
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, Eye, RotateCcw, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Trash2, Eye, RotateCcw, Plus, Check, X, ArrowDownToLine } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import NoDataMsg from '@/molecules/NoDataMsg'
 import { Button } from './ui/button'
@@ -11,6 +11,7 @@ export interface Action<TData> {
   label: string | ((rowData: TData) => string);
   classname?: string | ((rowData: TData) => string);
   onClick: (rowData: TData) => void;
+  icon?: React.ElementType; // Optional icon override
 }
 
 interface UniTableProps<TData> {
@@ -162,22 +163,45 @@ const UniTable = <TData extends object>({
 
               switch (actionLabel) {
                 case 'Edit':
+                case 'تعديل':
                   IconComponent = Edit;
                   break;
                 case 'View':
+                case 'عرض':
                   IconComponent = Eye;
                   break;
                 case 'Delete':
+                case 'حذف':
                   IconComponent = Trash2;
                   break;
                 case 'Details':
+                case 'تفاصيل':
+                case 'التفاصيل':
                   IconComponent = Eye;
                   break;
                 case 'Restore':
+                case 'استعادة':
                   IconComponent = RotateCcw;
+                  break;
+                case 'Approve':
+                case 'اعتماد':
+                  IconComponent = Check;
+                  break;
+                case 'Reject':
+                case 'رفض':
+                  IconComponent = X;
+                  break;
+                case 'Repay':
+                case 'استرداد':
+                  IconComponent = ArrowDownToLine;
                   break;
                 default:
                   break;
+              }
+
+              // Use action.icon if provided
+              if (action.icon) {
+                IconComponent = action.icon;
               }
               return (
                 <Tooltip key={index}>

@@ -81,18 +81,18 @@ export function AirCompsTable({
 
     const actions = useMemo(() => [
         {
-            label: ("View"),
+            label: tTable("details"),
             onClick: onView,
         },
         {
-            label: ('Edit'),
+            label: tTable("edit"),
             onClick: onEdit,
         },
         {
-            label: ('Delete'),
+            label: tTable("delete"),
             onClick: handleDelete,
         },
-    ], [onEdit, handleDelete]);
+    ], [onEdit, handleDelete, onView, tTable]);
 
     return (
         <div className="space-y-4">

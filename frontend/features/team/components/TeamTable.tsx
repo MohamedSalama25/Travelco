@@ -132,19 +132,19 @@ export default function TeamTable() {
     // Define actions
     const actions = useMemo(() => [
         {
-            label: "Details",
+            label: t("details"),
             icon: Eye,
             onClick: handleViewDetails,
         },
         {
-            label: "Edit",
+            label: t("edit"),
             onClick: handleEdit,
         },
         {
-            label: "Delete",
+            label: t("delete"),
             onClick: handleDelete,
         },
-    ], [handleEdit, handleDelete, handleViewDetails]);
+    ], [handleEdit, handleDelete, handleViewDetails, t]);
 
     return (
         <div className="space-y-4">

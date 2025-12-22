@@ -111,6 +111,7 @@ export async function cancelTraveler(id: string, payload: {
     cancel_reason: string;
     cancel_tax: number;
     cancel_commission: number;
+    is_refunded?: boolean;
 }): Promise<{ success: boolean, message: string, data: Traveler }> {
     try {
         const response = await clientAxios.put(

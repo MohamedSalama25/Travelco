@@ -80,18 +80,18 @@ export default function CustomersTable({
     // Define actions
     const actions = useMemo(() => [
         {
-            label: "View",
+            label: t("details"),
             onClick: handleView,
         },
         {
-            label: "Edit",
+            label: t("edit"),
             onClick: handleEdit,
         },
         {
-            label: "Delete",
+            label: t("delete"),
             onClick: handleDelete,
         },
-    ], [handleEdit, handleDelete, handleView]);
+    ], [handleEdit, handleDelete, handleView, t]);
 
     return (
         <div className="space-y-4">

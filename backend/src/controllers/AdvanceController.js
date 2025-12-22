@@ -168,9 +168,106 @@ const deleteAdvance = async (req, res) => {
     }
 };
 
+const getAdvanceStats = async (req, res) => {
+    try {
+        const stats = await Advance.aggregate([
+            {
+                $facet: {
+                    byStatus: [
+                        {
+                            $group: {
+                                _id: "$status",
+                                count: { $sum: 1 },
+                                totalAmount: { $sum: "$amount" }
+                            }
+                        }
+                    ],
+                    totalApproved: [
+                        { $match: { status: { $in: ['approved', 'repaid'] } } },
+                        { $group: { _id: null, total: { $sum: "$amount" } } }
+                    ],
+                    totalRepaid: [
+                        { $match: { status: 'repaid' } },
+                        { $group: { _id: null, total: { $sum: "$amount" } } }
+                    ]
+                }
+            }
+        ]);
+
+        const totalApproved = stats[0].totalApproved[0]?.total || 0;
+        const totalRepaid = stats[0].totalRepaid[0]?.total || 0;
+        const outstanding = totalApproved - totalRepaid;
+
+        const result = {
+            totalApproved,
+            totalRepaid,
+            outstanding,
+            byStatus: stats[0].byStatus
+        };
+
+        return res.status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+const repayAdvance = async (req, res) => {
+    try {
+        const advanceId = req.params.id;
+        const advance = await Advance.findById(advanceId).populate("user", "user_name");
+
+        if (!advance) {
+            return res.status(404).json({
+                success: false,
+                message: "السلفة غير موجودة"
+            });
+        }
+
+        if (advance.status !== 'approved') {
+            return res.status(400).json({
+                success: false,
+                message: "يمكن فقط استرداد السلف المعتمدة التي لم يتم استردادها بعد"
+            });
+        }
+
+        advance.status = 'repaid';
+        await advance.save();
+
+        // record income in treasury
+        await updateTreasury(
+            advance.amount,
+            `استرداد سلفة من الموظف: ${advance.user.user_name}`,
+            {
+                relatedModel: 'Advance',
+                relatedId: advance._id,
+                userId: req.user.id
+            }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "تم استرداد السلفة بنجاح وإيداع المبلغ في الخزنة",
+            data: advance
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     addAdvance,
     getAdvances,
     updateAdvanceStatus,
-    deleteAdvance
+    deleteAdvance,
+    getAdvanceStats,
+    repayAdvance
 };

@@ -1,4 +1,5 @@
 'use client';
+import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { TreasuryFilters as TreasuryFiltersType } from "../types/types";
 import { useTranslations } from "next-intl";
-import { Download } from "lucide-react";
+import { FileDown, Loader } from "lucide-react";
 
 interface TreasuryFiltersProps {
     filters: TreasuryFiltersType;
@@ -17,6 +18,16 @@ interface TreasuryFiltersProps {
 export const TreasuryFilters = ({ filters, onFilterChange, onExport }: TreasuryFiltersProps) => {
     const t = useTranslations('treasury');
     const tCommon = useTranslations('common');
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExportExcel = async () => {
+        try {
+            setIsExporting(true);
+            await onExport();
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     return (
         <div className="bg-card p-4 rounded-lg border flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -73,9 +84,22 @@ export const TreasuryFilters = ({ filters, onFilterChange, onExport }: TreasuryF
                 </div>
             </div>
             <div className="flex gap-2">
-                <Button variant="outline" onClick={onExport} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    {tCommon('exportExcel')}
+                <Button
+                    variant="outline"
+                    className="gap-2 text-green-600 hover:bg-green-50"
+                    onClick={handleExportExcel}
+                    disabled={isExporting}
+                >
+                    <FileDown className="h-4 w-4" />
+
+                    {isExporting ? (
+                        <>
+                            جاري التصدير
+                            <Loader className="h-4 w-4 animate-spin ml-2" />
+                        </>
+                    ) : (
+                        "تصدير Excel"
+                    )}
                 </Button>
             </div>
         </div>

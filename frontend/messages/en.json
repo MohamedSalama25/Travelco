@@ -91,7 +91,13 @@
         "advanceHistoryDesc": "Member's financial requests and approvals history",
         "pending": "Pending",
         "approved": "Approved",
-        "rejected": "Rejected"
+        "rejected": "Rejected",
+        "repaid": "Repaid",
+        "repay": "Repay",
+        "confirmRepay": "Are you sure you want to repay this advance? The amount will be added to the treasury.",
+        "totalRepaid": "Total Repaid",
+        "outstanding": "Outstanding",
+        "totalDisbursed": "Total Disbursed"
     },
     "treasury": {
         "title": "Treasury",
@@ -113,6 +119,7 @@
         "transfer": "Transfer",
         "payment": "Payment",
         "expense_source": "Expense",
+        "advance": "Advance",
         "other": "Other",
         "exportSuccess": "Data exported successfully",
         "exportError": "Failed to export data"
@@ -213,6 +220,8 @@
         "refunded": "Refunded",
         "refundAmount": "Refund Due",
         "refundedAt": "Refunded at",
+        "confirmRefundAmount": "Amount refunded to customer",
+        "refundNote": "The refund amount will be deducted from the treasury immediately.",
         "tripDetails": "Trip Details",
         "financialDetails": "Financial Details",
         "customerInfo": "Customer Information",

@@ -90,7 +90,13 @@
         "advanceHistoryDesc": "سجل الطلبات والموافقات المالية للموظف",
         "pending": "قيد الانتظار",
         "approved": "معتمد",
-        "rejected": "مرفوض"
+        "rejected": "مرفوض",
+        "repaid": "تم الاسترداد",
+        "repay": "استرداد",
+        "confirmRepay": "هل أنت متأكد من استرداد هذه السلفة للشركة؟ سيتم إضافة المبلغ للخزنة.",
+        "totalRepaid": "إجمالي المسترد",
+        "outstanding": "المبالغ المتبقية",
+        "totalDisbursed": "إجمالي المنصرف"
     },
     "treasury": {
         "title": "الخزنة",
@@ -112,6 +118,7 @@
         "transfer": "حجز",
         "payment": "دفعة",
         "expense_source": "مصروف",
+        "advance": "سلفة",
         "relatedModel": "نموذج الارتباط",
         "other": "أخرى",
         "exportSuccess": "تم تصدير البيانات بنجاح",
@@ -213,6 +220,8 @@
         "refunded": "تم الاسترداد",
         "refundAmount": "مبلغ مستحق للاسترداد",
         "refundedAt": "تم في",
+        "confirmRefundAmount": "تم استرداد المبلغ للعميل",
+        "refundNote": "سيتم خصم المبلغ المستحق للاسترداد من الخزنة فوراً.",
         "tripDetails": "تفاصيل الرحلة",
         "financialDetails": "البيانات المالية",
         "customerInfo": "بيانات العميل",

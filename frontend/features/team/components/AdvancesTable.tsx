@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Check, X } from "lucide-react";
 import UniTable from "@/components/data-table";
 import { useTranslations } from "next-intl";
 import { type Advance } from "../types/team";
-import { useAdvances, useUpdateAdvanceStatus } from "../hooks/useAdvances";
+import { useAdvances, useUpdateAdvanceStatus, useAdvanceStats, useRepayAdvance } from "../hooks/useAdvances";
 import { toast } from "sonner";
+import { AdvancesStats } from "./AdvancesStats";
 
 export default function AdvancesTable() {
     const t = useTranslations("team");
@@ -24,7 +24,9 @@ export default function AdvancesTable() {
         status: statusFilter !== "all" ? statusFilter : undefined
     });
 
+    const { data: statsData } = useAdvanceStats();
     const updateAdvanceMutation = useUpdateAdvanceStatus();
+    const repayAdvanceMutation = useRepayAdvance();
 
     const handleApprove = async (advance: Advance) => {
         if (confirm(t("confirmApprove"))) {
@@ -41,6 +43,17 @@ export default function AdvancesTable() {
         if (confirm(t("confirmReject"))) {
             try {
                 await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'rejected' });
+                toast.success(t("updateSuccess"));
+            } catch (error: any) {
+                toast.error(error.response?.data?.message || t("updateError"));
+            }
+        }
+    };
+
+    const handleRepay = async (advance: Advance) => {
+        if (confirm(t("confirmRepay"))) {
+            try {
+                await repayAdvanceMutation.mutateAsync(advance._id);
                 toast.success(t("updateSuccess"));
             } catch (error: any) {
                 toast.error(error.response?.data?.message || t("updateError"));
@@ -76,8 +89,15 @@ export default function AdvancesTable() {
                 return (
                     <Badge variant={
                         status === 'approved' ? 'default' :
-                            status === 'rejected' ? 'destructive' : 'secondary'
-                    }>
+                            status === 'rejected' ? 'destructive' :
+                                status === 'repaid' ? 'outline' : 'secondary'
+                    }
+                        className={
+                            status === 'approved' ? 'bg-green-100 text-green-800' :
+                                status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                    status === 'repaid' ? 'bg-blue-100 text-blue-800' : ''
+                        }
+                    >
                         {t(status)}
                     </Badge>
                 );
@@ -88,20 +108,24 @@ export default function AdvancesTable() {
     const actions = useMemo(() => [
         {
             label: t("approve"),
-            icon: Check,
             onClick: handleApprove,
             show: (item: Advance) => item.status === 'pending',
         },
         {
             label: t("reject"),
-            icon: X,
             onClick: handleReject,
             show: (item: Advance) => item.status === 'pending',
         },
-    ], [handleApprove, handleReject, t]);
+        {
+            label: t("repay"),
+            onClick: handleRepay,
+            show: (item: Advance) => item.status === 'approved',
+        },
+    ], [handleApprove, handleReject, handleRepay, t]);
 
     return (
         <div className="space-y-4">
+            <AdvancesStats stats={statsData?.data} />
             <div className="flex gap-2 items-center bg-card px-3 py-4 rounded-xl justify-between">
                 <div className="flex gap-2">
                     <Button

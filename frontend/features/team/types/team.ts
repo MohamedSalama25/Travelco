@@ -18,12 +18,23 @@ export interface Advance {
     user: string | Partial<TeamMember>;
     amount: number;
     reason: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'repaid';
     date: string;
     approvedBy?: string | Partial<TeamMember>;
     approvedAt?: string;
     notes?: string;
     createdAt: string;
+}
+
+export interface AdvanceStats {
+    totalApproved: number;
+    totalRepaid: number;
+    outstanding: number;
+    byStatus: {
+        _id: string;
+        count: number;
+        totalAmount: number;
+    }[];
 }
 
 export interface UserStats {

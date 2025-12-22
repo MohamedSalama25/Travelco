@@ -461,6 +461,27 @@ const cancelTransfer = async (req, res) => {
       transfer.cancel_tax + transfer.cancel_commission;
 
     /* =====================
+       حساب الاسترداد (Refund)
+    ====================== */
+    const { is_refunded } = req.body;
+
+    if (transfer.total_paid > transfer.ticket_price) {
+      transfer.refund_amount = transfer.total_paid - transfer.ticket_price;
+
+      // لو اليوزر اختار استرداد المبلغ فوراً
+      if (is_refunded && transfer.refund_amount > 0) {
+        await updateTreasury(-transfer.refund_amount, `استرداد مبلغ للعميل عند إلغاء الحجز رقم ${transfer.booking_number}`, {
+          relatedModel: 'Transfer',
+          relatedId: transfer._id,
+          userId: req.user.id
+        });
+        transfer.refund_at = new Date();
+      }
+    } else {
+      transfer.refund_amount = 0;
+    }
+
+    /* =====================
        إعادة الحسابات
     ====================== */
     if (transfer.total_paid > transfer.ticket_price) {
@@ -470,18 +491,9 @@ const cancelTransfer = async (req, res) => {
     transfer.remaining_amount =
       transfer.ticket_price - transfer.total_paid;
 
-    /* =====================
-       حساب الاسترداد (Refund)
-    ====================== */
-    if (transfer.total_paid > transfer.ticket_price) {
-      transfer.refund_amount = transfer.total_paid - transfer.ticket_price;
-      // لا يتم خصمها من الخزنة هنا، بل عند تأكيد الاسترداد من الفرونت اند
-    } else {
-      transfer.refund_amount = 0;
-    }
-
     transfer.status = 'cancel';
     transfer.updatedBy = req.user.id;
+    transfer.cancel_at = new Date(); // التأكد من تسجيل وقت الإلغاء
 
     await transfer.save();
 

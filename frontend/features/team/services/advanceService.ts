@@ -18,6 +18,16 @@ export const AdvanceService = {
         return response.data;
     },
 
+    getAdvanceStats: async () => {
+        const response = await clientAxios.get(API_CONFIG.ENDPOINTS.ADVANCES.STATS);
+        return response.data;
+    },
+
+    repayAdvance: async (id: string) => {
+        const response = await clientAxios.put(API_CONFIG.ENDPOINTS.ADVANCES.REPAY(id));
+        return response.data;
+    },
+
     deleteAdvance: async (id: string) => {
         const response = await clientAxios.delete(API_CONFIG.ENDPOINTS.ADVANCES.DELETE(id));
         return response.data;

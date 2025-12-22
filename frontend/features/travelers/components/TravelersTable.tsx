@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Traveler, Pagination } from "../types/types";
 import UniTable from "@/components/data-table";
 import { Input } from "@/components/ui/input";
-import { Trash2, Search, Filter, Archive, FileDown } from "lucide-react";
+import { Trash2, Search, Filter, Archive, FileDown, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { deleteTraveler, exportTravelersToExcel } from "../services/travelerService";
@@ -181,18 +181,18 @@ export function TravelersTable({
 
     const actions = useMemo(() => [
         {
-            label: "View",
+            label: tTable("details"),
             onClick: handleView,
         },
         {
-            label: "Edit",
+            label: tTable("edit"),
             onClick: handleEdit,
         },
         {
-            label: "Delete",
+            label: tTable("delete"),
             onClick: handleDelete,
         },
-    ], [handleEdit, handleDelete, handleView]);
+    ], [handleEdit, handleDelete, handleView, tTable]);
 
     return (
         <div className="space-y-4">
@@ -225,8 +225,17 @@ export function TravelersTable({
                         disabled={isExporting}
                     >
                         <FileDown className="h-4 w-4" />
-                        {isExporting ? "جاري التصدير..." : "تصدير Excel"}
+
+                        {isExporting ? (
+                            <>
+                                جاري التصدير
+                                <Loader className="h-4 w-4 animate-spin ml-2" />
+                            </>
+                        ) : (
+                            "تصدير Excel"
+                        )}
                     </Button>
+
 
 
                     <Button onClick={handleCreate}>{t("addTicket")}</Button>
