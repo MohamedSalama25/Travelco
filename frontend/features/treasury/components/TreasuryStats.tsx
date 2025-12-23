@@ -53,7 +53,7 @@ export const TreasuryStats = ({ stats }: TreasuryStatsProps) => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {stat.value.toLocaleString()} <span className="text-xs font-normal">EGP</span>
+                            {stat.value.toLocaleString()} <span className="text-xs font-normal">ج.م</span>
                         </div>
                     </CardContent>
                 </Card>

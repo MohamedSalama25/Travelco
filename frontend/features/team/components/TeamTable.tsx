@@ -13,6 +13,8 @@ import { type TeamMember, type TeamMemberFormData } from "../types/team";
 import { useUsers, useDeleteUser, useCreateUser, useUpdateUser } from "../hooks/useUsers";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
+import Error from "@/components/globalComponents/Error";
 
 export default function TeamTable() {
     const t = useTranslations("table");
@@ -24,7 +26,7 @@ export default function TeamTable() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
-    const { data: usersData, isLoading } = useUsers({
+    const { data: usersData, isLoading, isError, error } = useUsers({
         page: currentPage,
         limit: 10,
         name: nameFilter || undefined
@@ -93,11 +95,11 @@ export default function TeamTable() {
             accessorKey: "email",
             header: tTeam("email"),
         },
-        {
-            accessorKey: "phone",
-            header: tTeam("phone"),
-            cell: ({ row }) => row.original.phone || "-",
-        },
+        // {
+        //     accessorKey: "phone",
+        //     header: tTeam("phone"),
+        //     cell: ({ row }) => row.original.phone || "-",
+        // },
         {
             accessorKey: "role",
             header: tTeam("role"),
@@ -146,13 +148,22 @@ export default function TeamTable() {
         },
     ], [handleEdit, handleDelete, handleViewDetails, t]);
 
+    if (isLoading) {
+        return <FullScreenLoader />;
+    }
+
+    if (isError || error) {
+        return <Error message={error?.message} />;
+    }
+
     return (
         <div className="space-y-4">
-            <div className="flex gap-2 items-center bg-card px-3 rounded-xl justify-end">
-                <div className="relative flex-1 my-6">
+            <div className="flex gap-3 items-center bg-card px-3 rounded-xl justify-between py-3 flex-wrap" >
+                {/* Name Filter */}
+                <div className="relative w-75  max-w-[500px] ">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder={`${t("search")} ${tTeam("member")}...`}
+                        placeholder={"بحث باسم المستخدم"}
                         value={nameFilter}
                         onChange={(e) => {
                             setNameFilter(e.target.value);

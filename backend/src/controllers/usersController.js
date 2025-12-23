@@ -68,6 +68,14 @@ const addUser = async (req, res) => {
             });
         }
 
+        const phoneExists = await Users.findOne({ phone });
+        if (phoneExists) {
+            return res.status(400).json({
+                success: false,
+                message: "الهاتف مسجل بالفعل"
+            });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await Users.create({
@@ -122,6 +130,16 @@ const updateUser = async (req, res) => {
                 return res.status(400).json({
                     success: false,
                     message: "البريد الإلكتروني مسجل بالفعل لمستخدم آخر"
+                });
+            }
+        }
+
+        if (phone && phone !== user.phone) {
+            const phoneExists = await Users.findOne({ phone });
+            if (phoneExists && String(phoneExists._id) !== String(user._id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "الهاتف مسجل بالفعل لمستخدم آخر"
                 });
             }
         }

@@ -20,7 +20,7 @@ export function TravelersStats({ stats }: { stats: TravelerStats }) {
         {
             id: "revenue",
             title: t("totalRevenue"),
-            value: `${stats.totalPayments.value.toLocaleString()} EGP`,
+            value: `${stats.totalPayments.value.toLocaleString()} ج.م`,
             trend: {
                 direction: stats.totalPayments.trend === 'increase' ? "up" : stats.totalPayments.trend === 'decrease' ? "down" : "neutral",
                 percentage: parseFloat(stats.totalPayments.percentage),
@@ -30,7 +30,7 @@ export function TravelersStats({ stats }: { stats: TravelerStats }) {
         {
             id: "profit",
             title: t("totalProfit"),
-            value: `${stats.totalProfit.value.toLocaleString()} EGP`,
+            value: `${stats.totalProfit.value.toLocaleString()} ج.م`,
             trend: {
                 direction: stats.totalProfit.trend === 'increase' ? "up" : stats.totalProfit.trend === 'decrease' ? "down" : "neutral",
                 percentage: parseFloat(stats.totalProfit.percentage),

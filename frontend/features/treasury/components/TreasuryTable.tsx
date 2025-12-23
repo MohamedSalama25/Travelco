@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import { TreasuryTransaction } from "../types/types";
 import UniTable from "@/components/data-table";
+import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
+import Error from "@/components/globalComponents/Error";
 
 interface TreasuryTableProps {
     data: TreasuryTransaction[];
@@ -17,13 +19,17 @@ interface TreasuryTableProps {
     };
     onPageChange: (page: number) => void;
     isLoading: boolean;
+    isError: boolean;
+    error: any;
 }
 
 export function TreasuryTable({
     data,
     pagination,
     onPageChange,
-    isLoading
+    isLoading,
+    isError,
+    error
 }: TreasuryTableProps) {
     const t = useTranslations("treasury");
     const tCommon = useTranslations("common");
@@ -55,7 +61,7 @@ export function TreasuryTable({
             header: t("amount"),
             cell: ({ row }) => (
                 <span className={`font-bold ${row.original.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>
-                    {row.original.type === 'in' ? '+' : '-'}{row.original.amount.toLocaleString()} EGP
+                    {row.original.type === 'in' ? '+' : '-'}{row.original.amount.toLocaleString()} ج.م
                 </span>
             )
         },
@@ -74,6 +80,14 @@ export function TreasuryTable({
             cell: ({ row }) => <span className="text-xs">{row.original.createdBy?.user_name || '--'}</span>
         }
     ], [t, tCommon]);
+
+    if (isLoading) {
+        return <FullScreenLoader />;
+    }
+
+    if (isError || error) {
+        return <Error message={error?.message} />;
+    }
 
     return (
         <UniTable<TreasuryTransaction>

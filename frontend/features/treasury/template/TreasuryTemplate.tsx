@@ -17,7 +17,7 @@ export const TreasuryTemplate = () => {
         limit: 10
     });
 
-    const { data: historyData, isLoading: historyLoading } = useTreasuryHistory(filters);
+    const { data: historyData, isLoading: historyLoading, isError, error } = useTreasuryHistory(filters);
     const { data: statsData } = useTreasuryStats({ fromDate: filters.fromDate, toDate: filters.toDate });
 
     const handleExport = async () => {
@@ -45,6 +45,8 @@ export const TreasuryTemplate = () => {
                 pagination={historyData?.pagination || { total: 0, page: 1, limit: 10, pages: 1 }}
                 onPageChange={(page) => setFilters({ ...filters, page })}
                 isLoading={historyLoading}
+                isError={isError}
+                error={error}
             />
         </div>
     );

@@ -143,12 +143,12 @@ export function TravelersTable({
         {
             accessorKey: "ticket_price",
             header: t("ticketPrice"),
-            cell: ({ row }) => <span className="text-green-600">{row.original.ticket_price.toLocaleString()} EGP</span>
+            cell: ({ row }) => <span className="text-green-600">{row.original.ticket_price.toLocaleString()} ج.م</span>
         },
         {
             accessorKey: "total_paid",
             header: t("totalPaid"),
-            cell: ({ row }) => <span className="text-green-600">{row.original.total_paid.toLocaleString() || 0} EGP</span>
+            cell: ({ row }) => <span className="text-green-600">{row.original.total_paid.toLocaleString() || 0} ج.م</span>
         },
 
         {

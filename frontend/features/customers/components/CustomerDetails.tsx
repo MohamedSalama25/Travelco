@@ -88,15 +88,15 @@ export const CustomerDetails = () => {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">{t("totalAmount")}</p>
-                            <p className="text-2xl font-bold">{stats.totalAmount.toLocaleString()} EGP</p>
+                            <p className="text-2xl font-bold">{stats.totalAmount.toLocaleString()} ج.م</p>
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">{t("totalPaid")}</p>
-                            <p className="text-2xl font-bold text-green-600">{stats.totalPaid.toLocaleString()} EGP</p>
+                            <p className="text-2xl font-bold text-green-600">{stats.totalPaid.toLocaleString()} ج.م</p>
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">{t("totalRemaining")}</p>
-                            <p className="text-2xl font-bold text-red-600">{stats.totalRemaining.toLocaleString()} EGP</p>
+                            <p className="text-2xl font-bold text-red-600">{stats.totalRemaining.toLocaleString()} ج.م</p>
                         </div>
                     </div>
                 </div>
@@ -126,9 +126,9 @@ export const CustomerDetails = () => {
                                     <td className="px-4 py-3 font-medium">{transfer.booking_number}</td>
                                     <td className="px-4 py-3 text-sm">{transfer.air_comp.name}</td>
                                     <td className="px-4 py-3 text-sm">{transfer.country}</td>
-                                    <td className="px-4 py-3 text-sm">{transfer.ticket_price.toLocaleString()} EGP</td>
-                                    <td className="px-4 py-3 text-sm text-green-600">{transfer.total_paid.toLocaleString()} EGP</td>
-                                    <td className="px-4 py-3 text-sm text-red-600">{transfer.remaining_amount.toLocaleString()} EGP</td>
+                                    <td className="px-4 py-3 text-sm">{transfer.ticket_price.toLocaleString()} ج.م</td>
+                                    <td className="px-4 py-3 text-sm text-green-600">{transfer.total_paid.toLocaleString()} ج.م</td>
+                                    <td className="px-4 py-3 text-sm text-red-600">{transfer.remaining_amount.toLocaleString()} ج.م</td>
                                     <td className="px-4 py-3">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${transfer.status === 'paid' ? 'bg-green-100 text-green-800' :
                                             transfer.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :

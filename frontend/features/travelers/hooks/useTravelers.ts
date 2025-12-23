@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getTravelers, getTraveler } from "../services/travelerService";
-
-import { TravelerFilters } from "../services/travelerService";
+import { TravelerFilters } from "../types/types";
 
 export function useTravelers(page: number = 1, filters?: TravelerFilters) {
     const { data, isLoading, isError, error, isFetching } = useQuery({

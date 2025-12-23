@@ -40,7 +40,7 @@ export function AirCompsStats({ stats }: { stats: AirCompStats[] }) {
         {
             id: "total-sales",
             title: t("totalSales"),
-            value: `${aggregatedStats.totalSales.toLocaleString()} EGP`,
+            value: `${aggregatedStats.totalSales.toLocaleString()} ج.م`,
             trend: {
                 direction: "neutral",
                 percentage: 0,
@@ -50,7 +50,7 @@ export function AirCompsStats({ stats }: { stats: AirCompStats[] }) {
         {
             id: "total-profit",
             title: t("totalProfit"),
-            value: `${aggregatedStats.totalProfit.toLocaleString()} EGP`,
+            value: `${aggregatedStats.totalProfit.toLocaleString()} ج.م`,
             trend: {
                 direction: "neutral",
                 percentage: 0,
@@ -60,7 +60,7 @@ export function AirCompsStats({ stats }: { stats: AirCompStats[] }) {
         {
             id: "remaining-amount",
             title: t("remainingAmount"),
-            value: `${aggregatedStats.remainingAmount.toLocaleString()} EGP`,
+            value: `${aggregatedStats.remainingAmount.toLocaleString()} ج.م`,
             trend: {
                 direction: "neutral",
                 percentage: 0,

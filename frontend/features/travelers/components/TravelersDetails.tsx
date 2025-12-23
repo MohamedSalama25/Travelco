@@ -141,16 +141,16 @@ export const TravelersDetails = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-red-800/60">{t('cancelTax') || 'ضريبة الإلغاء'}</p>
-                                    <p className="text-red-900 font-medium">{traveler.cancel_tax?.toLocaleString()} EGP</p>
+                                    <p className="text-red-900 font-medium">{traveler.cancel_tax?.toLocaleString()} ج.م</p>
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-red-800/60">{t('cancelCommission') || 'عمولة الإلغاء'}</p>
-                                    <p className="text-red-900 font-medium">{traveler.cancel_commission?.toLocaleString()} EGP</p>
+                                    <p className="text-red-900 font-medium">{traveler.cancel_commission?.toLocaleString()} ج.م</p>
                                 </div>
                                 {traveler.refund_amount > 0 && (
                                     <div>
                                         <p className="text-sm font-medium text-red-800/60">{t('refundAmount') || 'مبلغ مستحق للاسترداد'}</p>
-                                        <p className="text-red-900 font-bold text-lg">{traveler.refund_amount?.toLocaleString()} EGP</p>
+                                        <p className="text-red-900 font-bold text-lg">{traveler.refund_amount?.toLocaleString()} ج.م</p>
                                         {traveler.refund_at && (
                                             <p className="text-xs text-green-600 mt-1">
                                                 {t('refundedAt') || 'تم في'}: {formatDate(traveler.refund_at)}
@@ -207,20 +207,20 @@ export const TravelersDetails = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">{t('ticketPrice')}</p>
-                                <p className="text-lg font-bold">{traveler.ticket_price.toLocaleString()} EGP</p>
+                                <p className="text-lg font-bold">{traveler.ticket_price.toLocaleString()} ج.م</p>
                                 {traveler.status === 'cancel' && traveler.transfer_price_before_cancel && (
                                     <p className="text-xs text-muted-foreground line-through">
-                                        {traveler.transfer_price_before_cancel.toLocaleString()} EGP
+                                        {traveler.transfer_price_before_cancel.toLocaleString()} ج.م
                                     </p>
                                 )}
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">{t('totalPaid')}</p>
-                                <p className="text-lg font-bold text-green-600">{traveler.total_paid.toLocaleString()} EGP</p>
+                                <p className="text-lg font-bold text-green-600">{traveler.total_paid.toLocaleString()} ج.م</p>
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">{t('remaining')}</p>
-                                <p className="text-lg font-bold text-red-600">{traveler.remaining_amount.toLocaleString()} EGP</p>
+                                <p className="text-lg font-bold text-red-600">{traveler.remaining_amount.toLocaleString()} ج.م</p>
                             </div>
                         </div>
                     </CardContent>
@@ -242,7 +242,7 @@ export const TravelersDetails = () => {
                                             <p className="text-sm text-muted-foreground">{payment.notes || t(payment.payment_method)}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-bold text-green-600">+{payment.amount.toLocaleString()} EGP</p>
+                                            <p className="font-bold text-green-600">+{payment.amount.toLocaleString()} ج.م</p>
                                         </div>
                                     </div>
                                 ))}

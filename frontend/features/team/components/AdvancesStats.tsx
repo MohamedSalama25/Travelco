@@ -57,7 +57,7 @@ export function AdvancesStats({ stats }: AdvancesStatsProps) {
                     <CardContent>
                         <div className="text-2xl font-bold">
                             {stat.value.toLocaleString()}
-                            {stat.isCurrency !== false && <span className="text-xs font-normal ml-1">EGP</span>}
+                            {stat.isCurrency !== false && <span className="text-xs font-normal ml-1">ج.م</span>}
                         </div>
                     </CardContent>
                 </Card>
