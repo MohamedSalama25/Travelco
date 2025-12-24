@@ -12,6 +12,9 @@ export interface AirCompStats {
     ticketsCount: number;
     totalSales: number;
     totalCost: number;
+    totalPurchases?: number;
+    totalPaidToIssuer?: number;
+    remainingToIssuer?: number;
     totalPaid: number;
     remainingAmount: number;
     totalProfit: number;

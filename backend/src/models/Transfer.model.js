@@ -101,25 +101,19 @@ const transferSchema = mongoose.Schema({
 });
 
 // Calculate remaining amount on save
-// Calculate remaining amount on save
 transferSchema.pre('save', function (next) {
-
-    // لو التذكرة ملغية، ما نغيرش الحالة ولا الحسابات
-    if (this.status === 'cancel') {
-        return next();
-    }
-
     this.remaining_amount = this.ticket_price - this.total_paid;
+    if (this.remaining_amount < 0) this.remaining_amount = 0;
 
-    if (this.remaining_amount <= 0) {
-        this.status = 'paid';
-        this.remaining_amount = 0;
-    } else if (this.total_paid > 0) {
-        this.status = 'partial';
-    } else {
-        this.status = 'unpaid';
+    if (this.status !== 'cancel') {
+        if (this.remaining_amount <= 0) {
+            this.status = 'paid';
+        } else if (this.total_paid > 0) {
+            this.status = 'partial';
+        } else {
+            this.status = 'unpaid';
+        }
     }
-
     next();
 });
 

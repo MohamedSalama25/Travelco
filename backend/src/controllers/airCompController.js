@@ -1,9 +1,11 @@
 const asyncWrapper = require("../middlewares/asyncWarpper");
 const AirComp = require("../models/AirComp.model");
 const Transfer = require("../models/Transfer.model");
+const AirCompPayment = require("../models/AirCompPayment.model");
 const AppError = require("../utils/appError");
 const getPagination = require("../utils/pagination");
 const mongoose = require("mongoose");
+const { updateTreasury } = require("../utils/treasury.helper");
 
 /**
  * Helper to calculate percentage change
@@ -236,8 +238,23 @@ const getAirCompStats = async (req, res) => {
                         ticketsCount: { $sum: 1 },
                         totalSales: { $sum: "$ticket_price" },
                         totalCost: { $sum: "$ticket_salary" },
-                        totalPaid: { $sum: "$total_paid" },
-                        remainingAmount: { $sum: "$remaining_amount" }
+                        totalCustomerPaid: { $sum: "$total_paid" },
+                        customerRemaining: { $sum: "$remaining_amount" }
+                    }
+                }
+            ]);
+
+            const paymentMatchStage = {
+                air_comp: new mongoose.Types.ObjectId(airCompId),
+                payment_date: { $gte: start, $lte: end }
+            };
+
+            const payments = await AirCompPayment.aggregate([
+                { $match: paymentMatchStage },
+                {
+                    $group: {
+                        _id: null,
+                        totalPaidToIssuer: { $sum: "$amount" }
                     }
                 }
             ]);
@@ -246,12 +263,16 @@ const getAirCompStats = async (req, res) => {
                 ticketsCount: 0,
                 totalSales: 0,
                 totalCost: 0,
-                totalPaid: 0,
-                remainingAmount: 0
+                totalCustomerPaid: 0,
+                customerRemaining: 0
             };
+
+            const totalPaidToIssuer = payments[0]?.totalPaidToIssuer || 0;
 
             return {
                 ...result,
+                totalPaidToIssuer,
+                remainingToIssuer: result.totalCost - totalPaidToIssuer,
                 totalProfit: result.totalSales - result.totalCost
             };
         };
@@ -286,12 +307,26 @@ const getAirCompStats = async (req, res) => {
                     percentage: calculateChange(currentStats.totalProfit, prevStats.totalProfit).toFixed(1),
                     trend: currentStats.totalProfit >= prevStats.totalProfit ? 'increase' : 'decrease'
                 },
-                remainingAmount: {
-                    value: currentStats.remainingAmount,
-                    previous: prevStats.remainingAmount,
-                    change: currentStats.remainingAmount - prevStats.remainingAmount,
-                    percentage: calculateChange(currentStats.remainingAmount, prevStats.remainingAmount).toFixed(1),
-                    trend: currentStats.remainingAmount >= prevStats.remainingAmount ? 'increase' : 'decrease'
+                totalPurchases: {
+                    value: currentStats.totalCost,
+                    previous: prevStats.totalCost,
+                    change: currentStats.totalCost - prevStats.totalCost,
+                    percentage: calculateChange(currentStats.totalCost, prevStats.totalCost).toFixed(1),
+                    trend: currentStats.totalCost >= prevStats.totalCost ? 'increase' : 'decrease'
+                },
+                totalPaidToIssuer: {
+                    value: currentStats.totalPaidToIssuer,
+                    previous: prevStats.totalPaidToIssuer,
+                    change: currentStats.totalPaidToIssuer - prevStats.totalPaidToIssuer,
+                    percentage: calculateChange(currentStats.totalPaidToIssuer, prevStats.totalPaidToIssuer).toFixed(1),
+                    trend: currentStats.totalPaidToIssuer >= prevStats.totalPaidToIssuer ? 'increase' : 'decrease'
+                },
+                remainingToIssuer: {
+                    value: currentStats.remainingToIssuer,
+                    previous: prevStats.remainingToIssuer,
+                    change: currentStats.remainingToIssuer - prevStats.remainingToIssuer,
+                    percentage: calculateChange(currentStats.remainingToIssuer, prevStats.remainingToIssuer).toFixed(1),
+                    trend: currentStats.remainingToIssuer >= prevStats.remainingToIssuer ? 'increase' : 'decrease'
                 }
             },
             meta: {
@@ -377,6 +412,151 @@ const getAllAirCompWithStats = async (req, res) => {
     }
 };
 
+/**
+ * Add new payment to air company
+ */
+const addAirCompPayment = async (req, res) => {
+    try {
+        const { id: airCompId } = req.params;
+        const { amount, payment_date, payment_method, notes, receipt_number } = req.body;
+
+        if (!amount || amount <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid payment amount'
+            });
+        }
+
+        const airComp = await AirComp.findById(airCompId);
+        if (!airComp) {
+            return res.status(404).json({
+                success: false,
+                message: 'Air Company not found'
+            });
+        }
+
+        const payment = new AirCompPayment({
+            air_comp: airCompId,
+            amount,
+            payment_date: payment_date || new Date(),
+            payment_method: payment_method || 'cash',
+            notes: notes || '',
+            receipt_number: receipt_number || '',
+            createdBy: req.user?.id
+        });
+
+        await payment.save();
+
+        // Deduct from Treasury
+        await updateTreasury(-amount, `دفع مبلغ لجهة الإصدار: ${airComp.name}`, {
+            relatedModel: 'AirCompPayment',
+            relatedId: payment._id,
+            userId: req.user?.id
+        });
+
+        return res.status(201).json({
+            success: true,
+            data: payment
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+/**
+ * Get air company details including tickets and payments
+ */
+const getAirCompDetails = async (req, res) => {
+    try {
+        const { id: airCompId } = req.params;
+        const { limit, skip } = getPagination(req);
+        const { fromDate, toDate } = req.query;
+
+        const airComp = await AirComp.findById(airCompId);
+        if (!airComp) {
+            return res.status(404).json({
+                success: false,
+                message: 'Air Company not found'
+            });
+        }
+
+        const filter = { air_comp: airCompId };
+        if (fromDate || toDate) {
+            filter.createdAt = {};
+            if (fromDate) filter.createdAt.$gte = new Date(fromDate);
+            if (toDate) filter.createdAt.$lte = new Date(toDate);
+        }
+
+        const transfers = await Transfer.find(filter)
+            .populate('customer', 'name phone')
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .skip(skip);
+
+        const totalTransfers = await Transfer.countDocuments(filter);
+
+        const paymentFilter = { air_comp: airCompId };
+        if (fromDate || toDate) {
+            paymentFilter.payment_date = {};
+            if (fromDate) paymentFilter.payment_date.$gte = new Date(fromDate);
+            if (toDate) paymentFilter.payment_date.$lte = new Date(toDate);
+        }
+
+        const payments = await AirCompPayment.find(paymentFilter)
+            .populate('createdBy', 'user_name email')
+            .sort({ payment_date: -1 });
+
+        // Calculate totals for the filtered period
+        const totals = await Transfer.aggregate([
+            { $match: filter },
+            {
+                $group: {
+                    _id: null,
+                    totalPurchases: { $sum: "$ticket_salary" },
+                    totalSales: { $sum: "$ticket_price" },
+                    ticketsCount: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const totalPaidToIssuer = await AirCompPayment.aggregate([
+            { $match: paymentFilter },
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+
+        const stats = totals[0] || { totalPurchases: 0, totalSales: 0, ticketsCount: 0 };
+        const paidAmount = totalPaidToIssuer[0]?.total || 0;
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                airComp,
+                transfers,
+                payments,
+                stats: {
+                    ...stats,
+                    totalPaid: paidAmount,
+                    remainingAmount: stats.totalPurchases - paidAmount
+                },
+                pagination: {
+                    total: totalTransfers,
+                    page: Math.floor(skip / limit) + 1,
+                    limit,
+                    pages: Math.ceil(totalTransfers / limit)
+                }
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     addAirComp,
     getAirComp,
@@ -384,5 +564,7 @@ module.exports = {
     updateAirComp,
     deleteAirComp,
     getAirCompStats,
-    getAllAirCompWithStats
+    getAllAirCompWithStats,
+    addAirCompPayment,
+    getAirCompDetails
 };

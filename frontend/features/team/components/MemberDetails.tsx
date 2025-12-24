@@ -159,14 +159,14 @@ export default function MemberDetails() {
                     </div>
 
                     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-                        <Table>
+                        <Table dir="rtl">
                             <TableHeader className="bg-muted/50">
                                 <TableRow>
-                                    <TableHead className="font-semibold">{t("date")}</TableHead>
-                                    <TableHead className="font-semibold">{t("amount")}</TableHead>
-                                    <TableHead className="font-semibold">{t("reason")}</TableHead>
-                                    <TableHead className="font-semibold">{t("status")}</TableHead>
-                                    <TableHead className="text-right font-semibold">{tCommon("actions")}</TableHead>
+                                    <TableHead className="text-right font-semibold">{t("date")}</TableHead>
+                                    <TableHead className="text-right font-semibold">{t("amount")}</TableHead>
+                                    <TableHead className="text-right font-semibold">{t("reason")}</TableHead>
+                                    <TableHead className="text-right font-semibold">{t("status")}</TableHead>
+                                    <TableHead className="text-left font-semibold">{tCommon("actions")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -184,12 +184,12 @@ export default function MemberDetails() {
                                 ) : (
                                     advances.map((advance: Advance) => (
                                         <TableRow key={advance._id} className="hover:bg-muted/30 transition-colors">
-                                            <TableCell className="text-muted-foreground">{new Date(advance.date).toLocaleDateString()}</TableCell>
-                                            <TableCell className="font-bold text-lg">{advance.amount.toLocaleString()}</TableCell>
-                                            <TableCell className="max-w-[200px] truncate" title={advance.reason}>
+                                            <TableCell className="text-right text-muted-foreground">{new Date(advance.date).toLocaleDateString()}</TableCell>
+                                            <TableCell className="text-right font-bold text-lg">{advance.amount.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right max-w-[200px] truncate" title={advance.reason}>
                                                 {advance.reason}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-right">
                                                 <Badge variant={
                                                     advance.status === 'approved' ? 'default' :
                                                         advance.status === 'rejected' ? 'destructive' : 'secondary'
@@ -197,8 +197,8 @@ export default function MemberDetails() {
                                                     {t(advance.status) || advance.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-1">
+                                            <TableCell className="text-left">
+                                                <div className="flex justify-start gap-1">
                                                     {advance.status === 'pending' && (
                                                         <>
                                                             <Button

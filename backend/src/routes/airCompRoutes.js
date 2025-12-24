@@ -8,11 +8,17 @@ router.get('/', airCompController.getAirComp);
 // Get all air companies with stats
 router.get('/stats', airCompController.getAllAirCompWithStats);
 
-// Get air company by ID
-router.get('/:id', airCompController.getAirCompById);
-
 // Get air company statistics
 router.get('/:id/stats', airCompController.getAirCompStats);
+
+// Get air company details (tickets + payments)
+router.get('/:id/details', airCompController.getAirCompDetails);
+
+// Add payment to air company
+router.post('/:id/payments', airCompController.addAirCompPayment);
+
+// Get air company by ID
+router.get('/:id', airCompController.getAirCompById);
 
 // Add new air company
 router.post('/', airCompController.addAirComp);

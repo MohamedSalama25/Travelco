@@ -79,7 +79,7 @@ export const TravelersDetails = () => {
                     </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                    {traveler.status !== 'cancel' && traveler.remaining_amount > 0 && (
+                    {traveler.remaining_amount > 0 && (
                         <Button
                             variant="default"
                             className="gap-2 bg-green-600 hover:bg-green-700"

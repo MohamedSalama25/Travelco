@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
@@ -63,9 +64,29 @@ export default function AddTeamMemberDialog({
                 phone: "",
                 role: "accountant",
                 department: "",
-                password: "",
             },
     });
+
+    useEffect(() => {
+        if (member) {
+            reset({
+                user_name: member.user_name,
+                email: member.email,
+                phone: member.phone || "",
+                role: member.role,
+                department: member.department || "",
+            });
+        } else {
+            reset({
+                user_name: "",
+                email: "",
+                phone: "",
+                role: "accountant",
+                department: "",
+                password: "",
+            });
+        }
+    }, [member, reset]);
 
     const handleFormSubmit = async (data: TeamMemberFormData) => {
         await onSubmit(data);

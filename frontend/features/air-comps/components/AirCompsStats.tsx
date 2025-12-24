@@ -12,9 +12,9 @@ export function AirCompsStats({ stats }: { stats: AirCompStats[] }) {
         return stats.reduce((acc, curr) => ({
             ticketsCount: acc.ticketsCount + curr.ticketsCount,
             totalSales: acc.totalSales + curr.totalSales,
-            totalCost: acc.totalCost + curr.totalCost,
-            totalPaid: acc.totalPaid + curr.totalPaid,
-            remainingAmount: acc.remainingAmount + curr.remainingAmount,
+            totalCost: acc.totalCost + (curr.totalPurchases || curr.totalCost),
+            totalPaid: acc.totalPaid + (curr.totalPaidToIssuer || 0),
+            remainingAmount: acc.remainingAmount + (curr.remainingToIssuer || (curr.totalCost - (curr.totalPaidToIssuer || 0))),
             totalProfit: acc.totalProfit + curr.totalProfit,
         }), {
             ticketsCount: 0,
@@ -38,9 +38,9 @@ export function AirCompsStats({ stats }: { stats: AirCompStats[] }) {
             }
         },
         {
-            id: "total-sales",
-            title: t("totalSales"),
-            value: `${aggregatedStats.totalSales.toLocaleString()} ج.م`,
+            id: "total-purchases",
+            title: t("totalPurchases"),
+            value: `${aggregatedStats.totalCost.toLocaleString()} ج.م`,
             trend: {
                 direction: "neutral",
                 percentage: 0,
@@ -48,9 +48,9 @@ export function AirCompsStats({ stats }: { stats: AirCompStats[] }) {
             }
         },
         {
-            id: "total-profit",
-            title: t("totalProfit"),
-            value: `${aggregatedStats.totalProfit.toLocaleString()} ج.م`,
+            id: "total-paid-issuer",
+            title: t("totalPaid"),
+            value: `${aggregatedStats.totalPaid.toLocaleString()} ج.م`,
             trend: {
                 direction: "neutral",
                 percentage: 0,
@@ -58,7 +58,7 @@ export function AirCompsStats({ stats }: { stats: AirCompStats[] }) {
             }
         },
         {
-            id: "remaining-amount",
+            id: "remaining-issuer",
             title: t("remainingAmount"),
             value: `${aggregatedStats.remainingAmount.toLocaleString()} ج.م`,
             trend: {

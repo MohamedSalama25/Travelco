@@ -30,6 +30,8 @@ export const API_CONFIG = {
         AIRCOMPS: {
             LIST: 'airComp',
             STATS: 'airComp/stats',
+            DETAILS: (id: string) => `airComp/${id}/details`,
+            PAYMENTS: (id: string) => `airComp/${id}/payments`,
             CREATE: 'airComp',
             UPDATE: (id: string) => `airComp/${id}`,
             DELETE: (id: string) => `airComp/${id}`,
