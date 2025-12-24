@@ -2,6 +2,7 @@ const TreasuryHistory = require("../models/TreasuryHistory.model");
 const Treasury = require("../models/Treasury.model");
 const getPagination = require("../utils/pagination");
 const { generateTreasuryExcel } = require("../utils/excelExport");
+const { updateTreasury } = require("../utils/treasury.helper");
 
 /**
  * Get Treasury history with filtering and pagination
@@ -141,8 +142,63 @@ const exportTreasuryToExcel = async (req, res) => {
     }
 };
 
+/**
+ * Add manual transaction (Deposit/Withdraw)
+ */
+const addTransaction = async (req, res) => {
+    try {
+        const { type, amount, description } = req.body;
+
+        if (!type || !amount || !description) {
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required'
+            });
+        }
+
+        if (amount <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Amount must be greater than 0'
+            });
+        }
+
+        if (!['in', 'out'].includes(type)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid transaction type'
+            });
+        }
+
+        const signedAmount = type === 'in' ? amount : -amount;
+
+        // Perform treasury update
+        await updateTreasury(signedAmount, description, {
+            relatedModel: 'Other',
+            userId: req.user?.id
+        });
+
+        // Provide feedback including updated balance
+        const treasury = await Treasury.findOne({ name: "Main Treasury" });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Transaction added successfully',
+            data: {
+                balance: treasury?.balance || 0
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     getTreasuryHistory,
     getTreasuryStats,
-    exportTreasuryToExcel
+    exportTreasuryToExcel,
+    addTransaction
 };

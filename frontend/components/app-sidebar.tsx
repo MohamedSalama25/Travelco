@@ -71,6 +71,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: IconListDetails,
       },
       {
+        title: t("expenses.title"),
+        url: "/expenses",
+        icon: IconReport,
+      },
+      {
         title: t("nav.treasury"),
         url: "/treasury",
         icon: IconDatabase,

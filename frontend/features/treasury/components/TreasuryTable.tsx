@@ -71,7 +71,7 @@ export function TreasuryTable({
             cell: ({ row }) => {
                 const source = row.original.relatedModel.toLowerCase();
                 const key = source === 'expense' ? 'expense_source' : source;
-                return <span>{t(key)}</span>
+                return <span>{t(key as any)}</span>
             }
         },
         {

@@ -44,6 +44,7 @@ export const API_CONFIG = {
             LIST: 'treasury/history',
             STATS: 'treasury/stats',
             EXPORT_EXCEL: 'treasury/export/excel',
+            TRANSACTIONS: 'treasury/transactions',
         },
         USERS: {
             LIST: 'users',
@@ -59,7 +60,8 @@ export const API_CONFIG = {
             UPDATE_STATUS: (id: string) => `advances/${id}/status`,
             REPAY: (id: string) => `advances/${id}/repay`,
             DELETE: (id: string) => `advances/${id}`,
-        }
+        },
+        EXPENSES: 'expenses',
     },
 } as const;
 

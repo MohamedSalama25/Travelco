@@ -58,3 +58,12 @@ export async function exportTreasuryToExcel(filters: TreasuryFilters = {}): Prom
         throw error;
     }
 }
+export async function addTransaction(data: { type: 'in' | 'out', amount: number, description: string }) {
+    try {
+        const response = await clientAxios.post(API_CONFIG.ENDPOINTS.TREASURY.TRANSACTIONS, data);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to add transaction", error);
+        throw error;
+    }
+}

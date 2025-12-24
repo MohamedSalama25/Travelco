@@ -12,6 +12,9 @@ router.get('/history', TreasuryController.getTreasuryHistory);
 // Get treasury stats
 router.get('/stats', TreasuryController.getTreasuryStats);
 
+// Add manual transaction
+router.post('/transactions', TreasuryController.addTransaction);
+
 // Export treasury history to Excel
 router.get('/export/excel', TreasuryController.exportTreasuryToExcel);
 

@@ -351,50 +351,84 @@ const getAllAirCompWithStats = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
 
-        const matchStage = {};
+        // Date filters for Transfers
+        const transferMatchStage = { "$expr": { "$eq": ["$air_comp", "$$airCompId"] } };
         if (fromDate || toDate) {
-            matchStage.createdAt = {};
-            if (fromDate) matchStage.createdAt.$gte = new Date(fromDate);
-            if (toDate) matchStage.createdAt.$lte = new Date(toDate);
+            transferMatchStage.createdAt = {};
+            if (fromDate) transferMatchStage.createdAt.$gte = new Date(fromDate);
+            if (toDate) transferMatchStage.createdAt.$lte = new Date(toDate);
         }
 
-        const stats = await Transfer.aggregate([
-            { $match: matchStage },
+        // Date filters for Payments
+        const paymentMatchStage = { "$expr": { "$eq": ["$air_comp", "$$airCompId"] } };
+        if (fromDate || toDate) {
+            paymentMatchStage.payment_date = {};
+            if (fromDate) paymentMatchStage.payment_date.$gte = new Date(fromDate);
+            if (toDate) paymentMatchStage.payment_date.$lte = new Date(toDate);
+        }
+
+        const stats = await AirComp.aggregate([
             {
-                $group: {
-                    _id: "$air_comp",
-                    ticketsCount: { $sum: 1 },
-                    totalSales: { $sum: "$ticket_price" },
-                    totalCost: { $sum: "$ticket_salary" },
-                    totalPaid: { $sum: "$total_paid" },
-                    remainingAmount: { $sum: "$remaining_amount" }
+                $lookup: {
+                    from: "transfers",
+                    let: { airCompId: "$_id" },
+                    pipeline: [
+                        { $match: transferMatchStage },
+                        {
+                            $group: {
+                                _id: null,
+                                ticketsCount: { $sum: 1 },
+                                totalSales: { $sum: "$ticket_price" },
+                                totalCost: { $sum: "$ticket_salary" },
+                            }
+                        }
+                    ],
+                    as: "transferStats"
                 }
             },
             {
                 $lookup: {
-                    from: "aircomps",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "airCompInfo"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$airCompInfo",
-                    preserveNullAndEmptyArrays: true
+                    from: "aircomppayments",
+                    let: { airCompId: "$_id" },
+                    pipeline: [
+                        { $match: paymentMatchStage },
+                        {
+                            $group: {
+                                _id: null,
+                                totalPaid: { $sum: "$amount" }
+                            }
+                        }
+                    ],
+                    as: "paymentStats"
                 }
             },
             {
                 $project: {
                     _id: 1,
-                    name: { $ifNull: ["$airCompInfo.name", "Unknown"] },
-                    phone: "$airCompInfo.phone",
-                    ticketsCount: 1,
-                    totalSales: 1,
-                    totalCost: 1,
+                    name: 1,
+                    phone: 1,
+                    transferStats: { $arrayElemAt: ["$transferStats", 0] },
+                    paymentStats: { $arrayElemAt: ["$paymentStats", 0] }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    phone: 1,
+                    ticketsCount: { $ifNull: ["$transferStats.ticketsCount", 0] },
+                    totalSales: { $ifNull: ["$transferStats.totalSales", 0] },
+                    totalCost: { $ifNull: ["$transferStats.totalCost", 0] },
+                    totalPaidToIssuer: { $ifNull: ["$paymentStats.totalPaid", 0] }
+                }
+            },
+            {
+                $addFields: {
                     totalProfit: { $subtract: ["$totalSales", "$totalCost"] },
-                    totalPaid: 1,
-                    remainingAmount: 1
+                    remainingToIssuer: { $subtract: ["$totalCost", "$totalPaidToIssuer"] },
+                    // Map logical fields to legacy fields if needed, or just standard ones
+                    totalPaid: "$totalPaidToIssuer",
+                    remainingAmount: { $subtract: ["$totalCost", "$totalPaidToIssuer"] }
                 }
             },
             { $sort: { totalProfit: -1 } }
@@ -435,12 +469,52 @@ const addAirCompPayment = async (req, res) => {
             });
         }
 
+        // Calculate current stats to validate remaining amount
+        const transferStats = await Transfer.aggregate([
+            {
+                $match: {
+                    air_comp: new mongoose.Types.ObjectId(airCompId)
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalPurchases: { $sum: "$ticket_salary" }
+                }
+            }
+        ]);
+
+        const paymentStats = await AirCompPayment.aggregate([
+            {
+                $match: {
+                    air_comp: new mongoose.Types.ObjectId(airCompId)
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalPaid: { $sum: "$amount" }
+                }
+            }
+        ]);
+
+        const totalPurchases = transferStats[0]?.totalPurchases || 0;
+        const totalPaid = paymentStats[0]?.totalPaid || 0;
+        const remainingAmount = totalPurchases - totalPaid;
+
+        if (amount > remainingAmount) {
+            return res.status(400).json({
+                success: false,
+                message: `Payment amount (${amount}) exceeds remaining amount (${remainingAmount})`
+            });
+        }
+
         const payment = new AirCompPayment({
             air_comp: airCompId,
             amount,
             payment_date: payment_date || new Date(),
             payment_method: payment_method || 'cash',
-            notes: notes || '',
+            notes: notes || '',        
             receipt_number: receipt_number || '',
             createdBy: req.user?.id
         });
@@ -511,7 +585,12 @@ const getAirCompDetails = async (req, res) => {
 
         // Calculate totals for the filtered period
         const totals = await Transfer.aggregate([
-            { $match: filter },
+            {
+                $match: {
+                    ...filter,
+                    air_comp: new mongoose.Types.ObjectId(airCompId)
+                }
+            },
             {
                 $group: {
                     _id: null,
@@ -523,7 +602,12 @@ const getAirCompDetails = async (req, res) => {
         ]);
 
         const totalPaidToIssuer = await AirCompPayment.aggregate([
-            { $match: paymentFilter },
+            {
+                $match: {
+                    ...paymentFilter,
+                    air_comp: new mongoose.Types.ObjectId(airCompId)
+                }
+            },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
 

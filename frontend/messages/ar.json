@@ -20,7 +20,11 @@
         "toDate": "إلى تاريخ",
         "date": "التاريخ",
         "all": "الكل",
-        "exportExcel": "تصدير اكسل"
+        "exportExcel": "تصدير اكسل",
+        "notes": "ملاحظات",
+        "other": "أخرى",
+        "areYouSure": "هل أنت متأكد؟",
+        "check": "تحقق"
     },
     "nav": {
         "dashboard": "لوحة التحكم",
@@ -37,7 +41,8 @@
         "wordAssistant": "مساعد الكلمات",
         "airComps": "جهات الإصدار",
         "treasury": "الخزنة",
-        "advances": "السلف"
+        "advances": "السلف",
+        "expenses": "المصروفات"
     },
     "team": {
         "title": "إدارة الفريق",
@@ -98,6 +103,35 @@
         "outstanding": "المبالغ المتبقية",
         "totalDisbursed": "إجمالي المنصرف"
     },
+    "expenses": {
+        "title": "المصروفات",
+        "addExpense": "إضافة مصروف",
+        "editExpense": "تعديل مصروف",
+        "expenseTitle": "عنوان المصروف",
+        "amount": "المبلغ",
+        "date": "التاريخ",
+        "description": "الوصف",
+        "category": "الفئة",
+        "totalExpenses": "إجمالي المصروفات",
+        "noExpenses": "لا توجد مصروفات مسجلة",
+        "createSuccess": "تم إضافة المصروف بنجاح",
+        "updateSuccess": "تم تعديل المصروف بنجاح",
+        "deleteSuccess": "تم حذف المصروف بنجاح",
+        "createError": "فشل إضافة المصروف",
+        "updateError": "فشل تعديل المصروف",
+        "deleteError": "فشل حذف المصروف",
+        "deleteConfirmDesc": "هل أنت متأكد من حذف هذا المصروف؟ سيتم استرداد المبلغ للخزنة.",
+        "categories": {
+            "general": "عام",
+            "office": "مكتب",
+            "salaries": "رواتب",
+            "rent": "إيجار",
+            "utilities": "مرافق",
+            "maintenance": "صيانة",
+            "marketing": "تسويق",
+            "other": "أخرى"
+        }
+    },
     "treasury": {
         "title": "الخزنة",
         "description_page": "متابعة كافة العمليات المالية والتدفقات النقدية للصندوق.",
@@ -122,7 +156,15 @@
         "relatedModel": "نموذج الارتباط",
         "other": "أخرى",
         "exportSuccess": "تم تصدير البيانات بنجاح",
-        "exportError": "فشل تصدير البيانات"
+        "exportError": "فشل تصدير البيانات",
+        "deposit": "إيداع",
+        "withdraw": "سحب",
+        "depositFunds": "إيداع أموال",
+        "withdrawFunds": "سحب أموال",
+        "descriptionPlaceholder": "أدخل وصف العملية...",
+        "transactionSuccess": "تمت العملية بنجاح",
+        "transactionError": "فشل تنفيذ العملية",
+        "treasuryManagement": "إدارة الخزنة"
     },
     "airComps": {
         "title": "جهات الإصدار",
@@ -161,6 +203,7 @@
         "total": "الإجمالي"
     },
     "travelers": {
+        "check": "تحقق",
         "totalTravelers": "إجمالي المسافرين",
         "activeTrips": "الرحلات النشطة",
         "completedTrips": "الرحلات المكتملة",

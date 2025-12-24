@@ -16,7 +16,7 @@ const treasuryHistorySchema = new mongoose.Schema({
     },
     relatedModel: {
         type: String,
-        enum: ['Transfer', 'Payment', 'Expense', 'Advance', 'Other'],
+        enum: ['Transfer', 'Payment', 'Expense', 'Advance', 'AirCompPayment', 'Other'],
         default: 'Other'
     },
     relatedId: {

@@ -37,6 +37,7 @@ app.use('/api/payments', auth, paymentRoutes);
 app.use('/api/dashboard', auth, dashboardRoutes);
 app.use('/api/treasury', auth, treasuryRoutes);
 app.use('/api/advances', auth, advanceRoutes);
+app.use('/api/expenses', auth, require('./routes/expenseRoutes'));
 
 // Error handler
 app.use((err, req, res, next) => {
