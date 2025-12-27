@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Check, X, Trash2, ArrowRight } from "lucide-react";
+import { Plus, Check, X, Trash2, ArrowRight, ArrowLeft } from "lucide-react";
 import { useState } from "react";// Local import
 import { toast } from "sonner";
 import { type Advance, type TeamMember } from "../types/team";
@@ -77,10 +77,8 @@ export default function MemberDetails() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()} className="rtl:rotate-180">
-                    <ArrowRight className="h-5 w-5" />
-                </Button>
+            <div className="flex items-center gap-4 px-2">
+
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                         {user.user_name}
@@ -92,12 +90,12 @@ export default function MemberDetails() {
                     </p>
                 </div>
                 <div className="mr-auto rtl:ml-0 ltr:ml-auto flex gap-2">
-                    <Badge variant={user.status === 'active' ? 'default' : 'secondary'} className="px-3 py-1">
-                        {t(user.status)}
-                    </Badge>
                     <Badge variant="outline" className="px-3 py-1 font-medium bg-background/50">
                         {t(user.role)}
                     </Badge>
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} >
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
                 </div>
             </div>
 
@@ -141,21 +139,19 @@ export default function MemberDetails() {
             </div>
 
             <Tabs defaultValue="advances" className="w-full">
-                <TabsList>
-                    <TabsTrigger value="advances">{t("advances")}</TabsTrigger>
-                    {/* Add more tabs for transfers/activity if needed */}
-                </TabsList>
 
                 <TabsContent value="advances" className="space-y-4 pt-4">
                     <div className="flex justify-between items-center bg-card p-4 rounded-xl border shadow-sm">
-                        <div className="space-y-1">
-                            <h3 className="text-lg font-semibold">{t("advances")}</h3>
-                            <p className="text-xs text-muted-foreground">{t("advanceHistoryDesc")}</p>
-                        </div>
                         <Button onClick={() => setAdvanceDialogOpen(true)} className="gap-2 shadow-lg hover:shadow-primary/20 transition-all">
                             <Plus className="h-4 w-4" />
                             {t("requestAdvance")}
                         </Button>
+
+                        <div className="space-y-1 text-right">
+                            <h3 className="text-lg font-semibold">{t("advances")}</h3>
+                            <p className="text-xs text-muted-foreground">{t("advanceHistoryDesc")}</p>
+                        </div>
+
                     </div>
 
                     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">

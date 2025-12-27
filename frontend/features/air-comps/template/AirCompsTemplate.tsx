@@ -9,6 +9,8 @@ import { useTranslations } from "next-intl";
 import { AirComp } from "../types/types";
 import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
 import { useRouter } from "next/navigation";
+import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
+import Error from "@/components/globalComponents/Error";
 
 export default function AirCompsTemplate() {
     const t = useTranslations("airComps");
@@ -18,7 +20,7 @@ export default function AirCompsTemplate() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedAirComp, setSelectedAirComp] = useState<AirComp | null>(null);
 
-    const { data, pagination, isLoading } = useAirComps(page, 10, search);
+    const { data, pagination, isLoading, isError } = useAirComps(page, 10, search);
     const { data: statsData } = useAirCompStats();
     const { createMutation, updateMutation } = useAirCompMutations();
 
@@ -49,6 +51,14 @@ export default function AirCompsTemplate() {
             throw error;
         }
     };
+
+    if (isLoading) {
+        return <FullScreenLoader />;
+    }
+
+    if (isError) {
+        return <Error message={t('loadError')} />;
+    }
 
     return (
         <div className="space-y-6">

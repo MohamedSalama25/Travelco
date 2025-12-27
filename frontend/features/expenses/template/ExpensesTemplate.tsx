@@ -125,7 +125,7 @@ export default function ExpensesTemplate() {
             {/* Filters */}
             <div className="flex gap-4 items-end flex-wrap">
                 <div className="flex-1 min-w-[200px]">
-                    <div className="relative">
+                    <div className="relative w-75  max-w-[500px] ">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder={tCommon("search")}

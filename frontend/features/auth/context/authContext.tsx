@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Store in cookie (base64 encoded)
             const token = btoa(JSON.stringify(userWithoutPassword));
-            Cookies.set("auth_token", token, { expires: 7 }); // 7 days
+            Cookies.set("auth_token", token, { expires: 7 });
 
             return true;
         }

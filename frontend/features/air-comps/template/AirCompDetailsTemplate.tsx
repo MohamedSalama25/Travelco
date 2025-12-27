@@ -33,6 +33,8 @@ import { useAirCompDetails } from "../hooks/useAirComps";
 import AirCompPaymentDialog from "../components/AirCompPaymentDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
+import Error from "@/components/globalComponents/Error";
 
 export default function AirCompDetailsTemplate({ id }: { id: string }) {
     const t = useTranslations("airComps");
@@ -45,8 +47,13 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
 
     const { data: response, isLoading, isError } = useAirCompDetails(id, page);
 
-    if (isLoading) return <div className="p-8 text-center">{tCommon("loading")}</div>;
-    if (isError || !response?.data) return <div className="p-8 text-center text-destructive">{tCommon("loadError")}</div>;
+    if (isLoading) {
+        return <FullScreenLoader />;
+    }
+
+    if (isError) {
+        return <Error message={t('loadError')} />;
+    }
 
     const { airComp, transfers, payments, stats, pagination } = response.data;
 
@@ -85,19 +92,25 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rtl:rotate-180">
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
+                <div className="flex items-center gap-4 px-3">
+
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">{airComp.name}</h1>
                         <p className="text-muted-foreground">{airComp.phone} | {airComp.address}</p>
                     </div>
                 </div>
-                <Button onClick={() => setIsPaymentDialogOpen(true)} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    {t("addPayment")}
-                </Button>
+
+                <div className="flex items-center gap-3 ">
+                    <Button onClick={() => setIsPaymentDialogOpen(true)} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        {t("addPayment")}
+                    </Button>
+                    <Button className="bg-gray-100 cursor-pointer hover:bg-gray-200" variant="ghost" size="icon" onClick={() => router.back()}>
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                </div>
+
+
             </div>
 
             {/* Stats Cards */}
@@ -128,7 +141,6 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
                 <TabsContent value="tickets" className="mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t("tickets")}</CardTitle>
                             <CardDescription>{transfers.length === 0 ? t("noTickets") : ""}</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -199,9 +211,6 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
                 {/* Payments Tab */}
                 <TabsContent value="payments" className="mt-4">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>{t("payments")}</CardTitle>
-                        </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
