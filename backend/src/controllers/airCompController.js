@@ -514,7 +514,7 @@ const addAirCompPayment = async (req, res) => {
             amount,
             payment_date: payment_date || new Date(),
             payment_method: payment_method || 'cash',
-            notes: notes || '',        
+            notes: notes || '',
             receipt_number: receipt_number || '',
             createdBy: req.user?.id
         });
@@ -545,8 +545,14 @@ const addAirCompPayment = async (req, res) => {
  */
 const getAirCompDetails = async (req, res) => {
     try {
+        const tPage = parseInt(req.query.ticketsPage) || parseInt(req.query.page) || 1;
+        const pPage = parseInt(req.query.paymentsPage) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const skip = (tPage - 1) * limit;
+        const paySkip = (pPage - 1) * limit;
+
         const { id: airCompId } = req.params;
-        const { limit, skip } = getPagination(req);
         const { fromDate, toDate } = req.query;
 
         const airComp = await AirComp.findById(airCompId);
@@ -581,7 +587,11 @@ const getAirCompDetails = async (req, res) => {
 
         const payments = await AirCompPayment.find(paymentFilter)
             .populate('createdBy', 'user_name email')
-            .sort({ payment_date: -1 });
+            .sort({ payment_date: -1 })
+            .limit(limit)
+            .skip(paySkip);
+
+        const totalPayments = await AirCompPayment.countDocuments(paymentFilter);
 
         // Calculate totals for the filtered period
         const totals = await Transfer.aggregate([
@@ -626,10 +636,18 @@ const getAirCompDetails = async (req, res) => {
                     remainingAmount: stats.totalPurchases - paidAmount
                 },
                 pagination: {
-                    total: totalTransfers,
-                    page: Math.floor(skip / limit) + 1,
-                    limit,
-                    pages: Math.ceil(totalTransfers / limit)
+                    transfers: {
+                        total: totalTransfers,
+                        page: tPage,
+                        limit,
+                        pages: Math.ceil(totalTransfers / limit)
+                    },
+                    payments: {
+                        total: totalPayments,
+                        page: pPage,
+                        limit,
+                        pages: Math.ceil(totalPayments / limit)
+                    }
                 }
             }
         });

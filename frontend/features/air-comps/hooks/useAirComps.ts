@@ -31,10 +31,10 @@ export function useAirCompStats() {
     });
 }
 
-export function useAirCompDetails(id: string, page = 1) {
+export function useAirCompDetails(id: string, ticketsPage = 1, paymentsPage = 1) {
     return useQuery({
-        queryKey: ["air-comp-details", id, page],
-        queryFn: () => getAirCompDetails(id, page),
+        queryKey: ["air-comp-details", id, { ticketsPage, paymentsPage }],
+        queryFn: () => getAirCompDetails(id, ticketsPage, paymentsPage),
         enabled: !!id
     });
 }

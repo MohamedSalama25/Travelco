@@ -283,9 +283,14 @@ const getUserById = async (req, res) => {
 
         const totalCustomersCreated = await Customer.countDocuments({ createdBy: user._id });
 
+        const { limit: advLimit, skip: advSkip } = getPagination(req);
         const advances = await Advance.find({ user: user._id })
             .populate("approvedBy", "user_name")
+            .limit(advLimit)
+            .skip(advSkip)
             .sort({ createdAt: -1 });
+
+        const totalAdvancesCount = await Advance.countDocuments({ user: user._id });
 
         const advanceStatsAgg = await Advance.aggregate([
             { $match: { user: new mongoose.Types.ObjectId(userId), status: 'approved' } },
@@ -312,10 +317,18 @@ const getUserById = async (req, res) => {
                 }
             },
             pagination: {
-                total: totalTransfers,
-                page: Math.floor(skip / limit) + 1,
-                limit,
-                pages: Math.ceil(totalTransfers / limit)
+                transfers: {
+                    total: totalTransfers,
+                    page: Math.floor(skip / limit) + 1,
+                    limit,
+                    pages: Math.ceil(totalTransfers / limit)
+                },
+                advances: {
+                    total: totalAdvancesCount,
+                    page: Math.floor(advSkip / advLimit) + 1,
+                    limit: advLimit,
+                    pages: Math.ceil(totalAdvancesCount / advLimit)
+                }
             }
         });
     } catch (error) {

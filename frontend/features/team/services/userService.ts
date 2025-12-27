@@ -9,8 +9,8 @@ export const UserService = {
         return response.data;
     },
 
-    getUserDetails: async (id: string) => {
-        const response = await clientAxios.get(API_CONFIG.ENDPOINTS.USERS.DETAILS(id));
+    getUserDetails: async (id: string, page: number = 1) => {
+        const response = await clientAxios.get(API_CONFIG.ENDPOINTS.USERS.DETAILS(id), { params: { page } });
         return response.data;
     },
 

@@ -8,10 +8,10 @@ export const useUsers = (params?: any) => {
     });
 };
 
-export const useUserDetails = (id: string) => {
+export const useUserDetails = (id: string, page: number = 1) => {
     return useQuery({
-        queryKey: ['user', id],
-        queryFn: () => UserService.getUserDetails(id),
+        queryKey: ['user', id, { page }],
+        queryFn: () => UserService.getUserDetails(id, page),
         enabled: !!id,
     });
 };

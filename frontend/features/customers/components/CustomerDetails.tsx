@@ -1,16 +1,72 @@
 "use client";
+
+import { useState, useMemo } from "react";
+import UniTable from "@/components/data-table";
+import { format } from "date-fns";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { useCustomer } from "@/features/customers/hooks/useCustomers";
-import { ArrowLeft } from "lucide-react";
+import { useRouter, Link } from "@/routing";
+import { useTranslations, useLocale } from "next-intl";
+import { useCustomer } from "../hooks/useCustomers";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
 export const CustomerDetails = () => {
     const params = useParams();
     const t = useTranslations("customers");
+    const router = useRouter();
+    const locale = useLocale();
     const id = params.id as string;
+    const [page, setPage] = useState(1);
 
-    const { data, isLoading, error } = useCustomer(id);
+    const { data, isLoading, error } = useCustomer(id, page);
+
+    // Define columns first (unconditionally)
+    const columns = useMemo(() => [
+        {
+            accessorKey: "booking_number",
+            header: t("bookingNumber"),
+            cell: ({ row }: any) => <span className="font-medium">{row.original.booking_number}</span>
+        },
+        {
+            accessorKey: "air_comp.name",
+            header: t("airCompany"),
+        },
+        {
+            accessorKey: "country",
+            header: t("country"),
+        },
+        {
+            accessorKey: "ticket_price",
+            header: t("ticketPrice"),
+            cell: ({ row }: any) => <span>{row.original.ticket_price?.toLocaleString() ?? 0} ج.م</span>
+        },
+        {
+            accessorKey: "total_paid",
+            header: t("paid"),
+            cell: ({ row }: any) => <span className="text-green-600 font-medium">{row.original.total_paid?.toLocaleString() ?? 0} ج.م</span>
+        },
+        {
+            accessorKey: "remaining_amount",
+            header: t("remaining"),
+            cell: ({ row }: any) => <span className="text-red-600 font-medium">{row.original.remaining_amount?.toLocaleString() ?? 0} ج.م</span>
+        },
+        {
+            accessorKey: "status",
+            header: t("status"),
+            cell: ({ row }: any) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${row.original.status === 'paid' ? 'bg-green-100 text-green-800' :
+                    row.original.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                    }`}>
+                    {t(row.original.status)}
+                </span>
+            )
+        },
+    ], [t]);
+
+    const handleRowClick = (row: any) => {
+        router.push(`/travelers/${row._id}`);
+    };
 
     if (isLoading) {
         return (
@@ -33,6 +89,7 @@ export const CustomerDetails = () => {
     }
 
     const { customer, transfers, stats } = data.data;
+    const pagination = data.pagination || { total: 0, limit: 10 };
 
     return (
         <div className="space-y-6">
@@ -107,41 +164,17 @@ export const CustomerDetails = () => {
                 <div className="p-6 border-b bg-card">
                     <h2 className="text-xl font-semibold">{t("transfers")}</h2>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-right" dir="rtl">
-                        <thead className="bg-muted/50">
-                            <tr>
-                                <th className="px-4 py-3 text-right text-sm font-medium">{t("bookingNumber")}</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium">{t("airCompany")}</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium">{t("country")}</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium">{t("ticketPrice")}</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium">{t("paid")}</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium">{t("remaining")}</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium">{t("status")}</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y bg-card">
-                            {transfers.map((transfer) => (
-                                <tr key={transfer._id} className="hover:bg-muted/50 transition-colors">
-                                    <td className="px-4 py-3 font-medium">{transfer.booking_number}</td>
-                                    <td className="px-4 py-3 text-sm">{transfer.air_comp.name}</td>
-                                    <td className="px-4 py-3 text-sm">{transfer.country}</td>
-                                    <td className="px-4 py-3 text-sm">{transfer.ticket_price.toLocaleString()} ج.م</td>
-                                    <td className="px-4 py-3 text-sm text-green-600 font-medium">{transfer.total_paid.toLocaleString()} ج.م</td>
-                                    <td className="px-4 py-3 text-sm text-red-600 font-medium">{transfer.remaining_amount.toLocaleString()} ج.م</td>
-                                    <td className="px-4 py-3">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${transfer.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                            transfer.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-red-100 text-red-800'
-                                            }`}>
-                                            {t(transfer.status)}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <UniTable
+                    columns={columns}
+                    data={transfers}
+                    totalItems={pagination.total}
+                    itemsPerPage={pagination.limit}
+                    currentPage={page}
+                    onPageChange={setPage}
+                    tableName={t("transfers")}
+                    onRowClick={handleRowClick}
+                    isLoading={isLoading}
+                />
             </div>
         </div>
     );

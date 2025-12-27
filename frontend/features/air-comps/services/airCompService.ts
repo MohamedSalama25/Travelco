@@ -28,9 +28,14 @@ export const updateAirComp = async (id: string, data: Partial<AirComp>) => {
     return response.data;
 };
 
-export const getAirCompDetails = async (id: string, page = 1, limit = 10) => {
+export const getAirCompDetails = async (id: string, ticketsPage = 1, paymentsPage = 1, limit = 10) => {
     const response = await clientAxios.get(API_CONFIG.ENDPOINTS.AIRCOMPS.DETAILS(id), {
-        params: { page, limit }
+        params: {
+            page: ticketsPage, // Backward compatibility or default
+            ticketsPage,
+            paymentsPage,
+            limit
+        }
     });
     return response.data;
 };

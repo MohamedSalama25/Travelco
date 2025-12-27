@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
@@ -11,14 +11,7 @@ import {
     CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import UniTable from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import {
     ArrowLeft,
@@ -42,10 +35,69 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
     const tCommon = useTranslations("common");
     const router = useRouter();
     const locale = useLocale();
-    const [page, setPage] = useState(1);
+    const [ticketsPage, setTicketsPage] = useState(1);
+    const [paymentsPage, setPaymentsPage] = useState(1);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
-    const { data: response, isLoading, isError } = useAirCompDetails(id, page);
+    const { data: response, isLoading, isError } = useAirCompDetails(id, ticketsPage, paymentsPage);
+
+    const ticketsColumns = useMemo(() => [
+        {
+            accessorKey: "booking_number",
+            header: tTravelers("bookingNumber"),
+            cell: ({ row }: any) => <span className="font-medium">{row.original.booking_number}</span>
+        },
+        {
+            accessorKey: "customer.name",
+            header: tTravelers("customer"),
+        },
+        {
+            accessorKey: "take_off_date",
+            header: tTravelers("takeOffDate"),
+            cell: ({ row }: any) => <span>{row.original.take_off_date ? format(new Date(row.original.take_off_date), "dd/MM/yyyy") : "-"}</span>
+        },
+        {
+            accessorKey: "ticket_salary",
+            header: tTravelers("ticketSalary"),
+            cell: ({ row }: any) => <span>{row.original.ticket_salary?.toLocaleString() ?? 0} ج.م</span>
+        },
+        {
+            accessorKey: "status",
+            header: tTravelers("status"),
+            cell: ({ row }: any) => (
+                <Badge variant={row.original.status === "paid" ? "default" : row.original.status === "cancel" ? "destructive" : "outline"}>
+                    {tTravelers(row.original.status)}
+                </Badge>
+            )
+        },
+    ], [tTravelers]);
+
+    const paymentsColumns = useMemo(() => [
+        {
+            accessorKey: "payment_date",
+            header: t("date"),
+            cell: ({ row }: any) => <span>{format(new Date(row.original.payment_date), "dd/MM/yyyy")}</span>
+        },
+        {
+            accessorKey: "amount",
+            header: t("amount"),
+            cell: ({ row }: any) => <span className="font-bold text-green-600">{row.original.amount?.toLocaleString() ?? 0} ج.م</span>
+        },
+        {
+            accessorKey: "payment_method",
+            header: t("paymentMethod"),
+            cell: ({ row }: any) => <span>{tTravelers(row.original.payment_method)}</span>
+        },
+        {
+            accessorKey: "receipt_number",
+            header: t("receiptNumber"),
+        },
+        {
+            accessorKey: "notes",
+            header: tCommon("notes"),
+        },
+    ], [t, tTravelers, tCommon]);
+
 
     if (isLoading) {
         return <FullScreenLoader />;
@@ -55,7 +107,12 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
         return <Error message={t('loadError')} />;
     }
 
-    const { airComp, transfers, payments, stats, pagination } = response.data;
+    const { airComp, transfers, payments, stats } = response.data;
+    const pagination = response.data.pagination || { transfers: { total: 0, limit: 10 }, payments: { total: 0, limit: 10 } };
+
+    const handleTicketRowClick = (row: any) => {
+        router.push(`/${locale}/travelers/${row._id}`);
+    };
 
     const statCards = [
         {
@@ -140,70 +197,18 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
                 {/* Tickets Tab */}
                 <TabsContent value="tickets" className="mt-4">
                     <Card>
-                        <CardHeader>
-                            <CardDescription>{transfers.length === 0 ? t("noTickets") : ""}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="text-right">{tTravelers("bookingNumber")}</TableHead>
-                                        <TableHead className="text-right">{tTravelers("customer")}</TableHead>
-                                        <TableHead className="text-right">{tTravelers("takeOffDate")}</TableHead>
-                                        <TableHead className="text-right">{tTravelers("ticketSalary")}</TableHead>
-                                        <TableHead className="text-right">{tTravelers("status")}</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {transfers.map((ticket: any) => (
-                                        <TableRow key={ticket._id} className="cursor-pointer" onClick={() => router.push(`/${locale}/travelers/${ticket._id}`)}>
-                                            <TableCell className="font-medium text-right">{ticket.booking_number}</TableCell>
-                                            <TableCell className="text-right">{ticket.customer?.name}</TableCell>
-                                            <TableCell className="text-right">
-                                                {ticket.take_off_date ? format(new Date(ticket.take_off_date), "dd/MM/yyyy") : "-"}
-                                            </TableCell>
-                                            <TableCell className="text-right">{ticket.ticket_salary?.toLocaleString()} ج.م</TableCell>
-                                            <TableCell className="text-right">
-                                                <Badge variant={ticket.status === "paid" ? "default" : ticket.status === "cancel" ? "destructive" : "outline"}>
-                                                    {tTravelers(ticket.status)}
-                                                </Badge>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {transfers.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                                                {t("noTickets")}
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-
-                            {/* Pagination */}
-                            {pagination && pagination.pages > 1 && (
-                                <div className="flex items-center justify-end space-x-2 py-4 rtl:space-x-reverse">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                    >
-                                        {tCommon("previous")}
-                                    </Button>
-                                    <div className="text-sm font-medium">
-                                        {page} / {pagination.pages}
-                                    </div>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setPage(p => Math.min(pagination.pages, p + 1))}
-                                        disabled={page === pagination.pages}
-                                    >
-                                        {tCommon("next")}
-                                    </Button>
-                                </div>
-                            )}
+                        <CardContent className="pt-6">
+                            <UniTable
+                                columns={ticketsColumns}
+                                data={transfers}
+                                totalItems={pagination.transfers.total}
+                                itemsPerPage={pagination.transfers.limit}
+                                currentPage={ticketsPage}
+                                onPageChange={setTicketsPage}
+                                tableName={t("tickets")}
+                                onRowClick={handleTicketRowClick}
+                                isLoading={isLoading}
+                            />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -211,42 +216,17 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
                 {/* Payments Tab */}
                 <TabsContent value="payments" className="mt-4">
                     <Card>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="text-right">{t("date")}</TableHead>
-                                        <TableHead className="text-right">{t("amount")}</TableHead>
-                                        <TableHead className="text-right">{t("paymentMethod")}</TableHead>
-                                        <TableHead className="text-right">{t("receiptNumber")}</TableHead>
-                                        <TableHead className="text-right">{tCommon("notes")}</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {payments.map((payment: any) => (
-                                        <TableRow key={payment._id}>
-                                            <TableCell className="text-right">
-                                                {format(new Date(payment.payment_date), "dd/MM/yyyy")}
-                                            </TableCell>
-                                            <TableCell className="text-right font-bold text-green-600">
-                                                {payment.amount?.toLocaleString()} ج.م
-                                            </TableCell>
-                                            <TableCell className="text-right">{tTravelers(payment.payment_method)}</TableCell>
-                                            <TableCell className="text-right">{payment.receipt_number || "-"}</TableCell>
-                                            <TableCell className="text-right text-muted-foreground text-sm">
-                                                {payment.notes || "-"}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {payments.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                                                {t("noPayments")}
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
+                        <CardContent className="pt-6">
+                            <UniTable
+                                columns={paymentsColumns}
+                                data={payments}
+                                totalItems={pagination.payments.total}
+                                itemsPerPage={pagination.payments.limit}
+                                currentPage={paymentsPage}
+                                onPageChange={setPaymentsPage}
+                                tableName={t("payments")}
+                                isLoading={isLoading}
+                            />
                         </CardContent>
                     </Card>
                 </TabsContent>

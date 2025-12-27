@@ -109,9 +109,70 @@ const getDashboardStats = async (req, res) => {
             createdAt: { $gte: currentStart, $lte: currentEnd }
         });
 
+        // Get latest transfers (tickets)
+        const latestTransfers = await Transfer.find()
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .populate('customer', 'name phone')
+            .populate('air_comp', 'name');
+
+        // Get monthly stats for the current year
+        const currentYear = new Date().getFullYear();
+        const monthlyStats = await Transfer.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(`${currentYear}-01-01`),
+                        $lt: new Date(`${currentYear + 1}-01-01`)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    ticketsCount: { $sum: 1 },
+                    totalSales: { $sum: "$ticket_price" },
+                    totalCost: { $sum: "$ticket_salary" },
+                    totalPaid: { $sum: "$total_paid" }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // Get daily stats for the last 90 days
+        const ninetyDaysAgo = new Date();
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+        const dailyStats = await Transfer.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: ninetyDaysAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    ticketsCount: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        const monthlyData = [];
+        for (let i = 1; i <= 12; i++) {
+            const monthData = monthlyStats.find(s => s._id === i);
+            monthlyData.push({
+                month: i,
+                ticketsCount: monthData?.ticketsCount || 0,
+                totalSales: monthData?.totalSales || 0,
+                totalCost: monthData?.totalCost || 0,
+                totalProfit: (monthData?.totalSales || 0) - (monthData?.totalCost || 0),
+                totalPaid: monthData?.totalPaid || 0
+            });
+        }
+
         // Calculate changes
         const data = {
-            totalPassengers: {
+            totalTickets: {
                 value: currentStats.totalPassengers,
                 previous: prevStats.totalPassengers,
                 change: currentStats.totalPassengers - prevStats.totalPassengers,
@@ -138,7 +199,11 @@ const getDashboardStats = async (req, res) => {
                 change: currentStats.overdueTickets - prevStats.overdueTickets,
                 percentage: calculateChange(currentStats.overdueTickets, prevStats.overdueTickets).toFixed(1),
                 trend: currentStats.overdueTickets >= prevStats.overdueTickets ? 'increase' : 'decrease'
-            }
+            },
+            latestTransfers,
+            latestTransfers,
+            monthlyStats: monthlyData,
+            dailyStats
         };
 
         return res.status(200).json({

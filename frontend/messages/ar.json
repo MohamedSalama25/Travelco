@@ -285,7 +285,14 @@
         "noPayments": "لا يوجد مدفوعات مسجلة",
         "print": "طباعة",
         "saving": "جاري الحفظ...",
-        "overdue": "متأخر"
+        "overdue": "متأخر",
+        "latestTickets": "آخر التذاكر"
+    },
+    "dashboard": {
+        "ticketTrends": "اتجاهات التذاكر",
+        "monthlyTickets": "إجمالي التذاكر الصادرة شهريًا",
+        "latestTickets": "آخر التذاكر",
+        "loadError": "خطأ في تحميل لوحة التحكم"
     },
     "customers": {
         "title": "العملاء",

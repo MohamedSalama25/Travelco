@@ -29,6 +29,7 @@ interface UniTableProps<TData> {
   currentPage?: number;
   onPerPageChange?: (perPage: number) => void;
   onRowClick?: (rowData: TData) => void;
+  hidePagination?: boolean;
 }
 
 
@@ -44,7 +45,8 @@ const UniTable = <TData extends object>({
   headerActions,
   currentPage,
   tableName,
-  onRowClick
+  onRowClick,
+  hidePagination = false
 }: UniTableProps<TData>) => {
   const t = useTranslations('table');
   const locale = useLocale();
@@ -360,63 +362,65 @@ const UniTable = <TData extends object>({
           </table>
 
           {/* Pagination */}
-          <div className="border-t bg-muted/30 py-3 px-4 flex items-center justify-between text-sm text-muted-foreground font-medium flex-wrap gap-y-2">
-            <span className="flex items-center gap-1">
-              {data.length} {t('of')}{" "}
-              {totalItems} {tableName ? tableName : t('users')}.
-            </span>
-            <div className="flex items-center space-x-6 lg:space-x-8">
-              <div className="flex items-center justify-center text-sm font-medium">
-                {t('page')} {currentPage || 1} {t('of')} {Math.ceil(totalItems / itemsPerPage) || 1}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => {
-                    onPageChange?.(1)
-                  }}
-                  disabled={currentPage === 1 || !table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">{t('goToFirstPage')}</span>
-                  {locale === 'ar' ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => {
-                    onPageChange?.((currentPage || 1) - 1)
-                  }}
-                  disabled={currentPage === 1 || !table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">{t('goToPreviousPage')}</span>
-                  {locale === 'ar' ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => {
-                    onPageChange?.((currentPage || 1) + 1)
-                  }}
-                  disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || !table.getCanNextPage()}
-                >
-                  <span className="sr-only">{t('goToNextPage')}</span>
-                  {locale === 'ar' ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => {
-                    onPageChange?.(Math.ceil(totalItems / itemsPerPage) || 1)
-                  }}
-                  disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || !table.getCanNextPage()}
-                >
-                  <span className="sr-only">{t('goToLastPage')}</span>
-                  {locale === 'ar' ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
-                </Button>
+          {!hidePagination && (
+            <div className="border-t bg-muted/30 py-3 px-4 flex items-center justify-between text-sm text-muted-foreground font-medium flex-wrap gap-y-2">
+              <span className="flex items-center gap-1">
+                {data.length} {t('of')}{" "}
+                {totalItems} {tableName ? tableName : t('users')}.
+              </span>
+              <div className="flex items-center space-x-6 lg:space-x-8">
+                <div className="flex items-center justify-center text-sm font-medium">
+                  {t('page')} {currentPage || 1} {t('of')} {Math.ceil(totalItems / itemsPerPage) || 1}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      onPageChange?.(1)
+                    }}
+                    disabled={currentPage === 1 || !table.getCanPreviousPage()}
+                  >
+                    <span className="sr-only">{t('goToFirstPage')}</span>
+                    {locale === 'ar' ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      onPageChange?.((currentPage || 1) - 1)
+                    }}
+                    disabled={currentPage === 1 || !table.getCanPreviousPage()}
+                  >
+                    <span className="sr-only">{t('goToPreviousPage')}</span>
+                    {locale === 'ar' ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      onPageChange?.((currentPage || 1) + 1)
+                    }}
+                    disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || !table.getCanNextPage()}
+                  >
+                    <span className="sr-only">{t('goToNextPage')}</span>
+                    {locale === 'ar' ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      onPageChange?.(Math.ceil(totalItems / itemsPerPage) || 1)
+                    }}
+                    disabled={currentPage === Math.ceil(totalItems / itemsPerPage) || !table.getCanNextPage()}
+                  >
+                    <span className="sr-only">{t('goToLastPage')}</span>
+                    {locale === 'ar' ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>

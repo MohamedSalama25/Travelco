@@ -45,6 +45,12 @@
         "advances": "Advances",
         "expenses": "Expenses"
     },
+    "dashboard": {
+        "ticketTrends": "Ticket Trends",
+        "monthlyTickets": "Total tickets issued per month",
+        "latestTickets": "Latest Tickets",
+        "loadError": "Error loading dashboard"
+    },
     "team": {
         "title": "Team Management",
         "members": "Team Members",
@@ -285,7 +291,8 @@
         "paymentHistory": "Payment History",
         "noPayments": "No payments recorded",
         "print": "Print",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "latestTickets": "Latest Tickets"
     },
     "customers": {
         "title": "Customers",

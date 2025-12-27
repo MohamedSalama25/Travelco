@@ -4,23 +4,23 @@ import { useUserDetails, useUpdateUser } from "../hooks/useUsers";
 import { useAdvances, useUpdateAdvanceStatus, useDeleteAdvance, useCreateAdvance } from "../hooks/useAdvances";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Check, X, Trash2, ArrowRight, ArrowLeft } from "lucide-react";
-import { useState } from "react";// Local import
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Plus, Check, X, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { type Advance, type TeamMember } from "../types/team";
 import AddAdvanceDialog from "./AddAdvanceDialog";
+import { useMemo, useState } from "react";
+import UniTable from "@/components/data-table";
 
 export default function MemberDetails() {
     const { id } = useParams();
     const router = useRouter();
     const t = useTranslations("team");
     const tCommon = useTranslations("common");
-    const { data: userDetails, isLoading } = useUserDetails(id as string);
+    const [page, setPage] = useState(1);
+    const { data: userDetails, isLoading } = useUserDetails(id as string, page);
 
     const [advanceDialogOpen, setAdvanceDialogOpen] = useState(false);
 
@@ -28,43 +28,94 @@ export default function MemberDetails() {
     const deleteAdvanceMutation = useDeleteAdvance();
     const createAdvanceMutation = useCreateAdvance();
 
+    const handleApprove = async (id: string) => {
+        try {
+            await updateAdvanceMutation.mutateAsync({ id, status: 'approved' });
+            toast.success(t("approveSuccess"));
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || t("approveError"));
+        }
+    };
+
+    const handleReject = async (id: string) => {
+        try {
+            await updateAdvanceMutation.mutateAsync({ id, status: 'rejected' });
+            toast.success(t("rejectSuccess"));
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || t("rejectError"));
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm(tCommon("confirmDelete"))) return;
+        try {
+            await deleteAdvanceMutation.mutateAsync(id);
+            toast.success(tCommon("deleteSuccess"));
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || tCommon("deleteError"));
+        }
+    };
+
+    const columns = useMemo(() => [
+        {
+            accessorKey: "date",
+            header: t("date"),
+            cell: ({ row }: any) => <span>{row.original.date ? new Date(row.original.date).toLocaleDateString() : '-'}</span>
+        },
+        {
+            accessorKey: "amount",
+            header: t("amount"),
+            cell: ({ row }: any) => <span className="font-bold text-lg">{row.original.amount?.toLocaleString() ?? 0}</span>
+        },
+        {
+            accessorKey: "reason",
+            header: t("reason"),
+        },
+        {
+            accessorKey: "status",
+            header: t("status"),
+            cell: ({ row }: any) => (
+                <Badge variant={
+                    row.original.status === 'approved' ? 'default' :
+                        row.original.status === 'rejected' ? 'destructive' : 'secondary'
+                } className="font-normal px-2">
+                    {t(row.original.status) || row.original.status}
+                </Badge>
+            )
+        },
+    ], [t]);
+
+    const actions = useMemo(() => [
+        {
+            label: t("approve"),
+            onClick: (row: any) => handleApprove(row._id),
+            icon: Check,
+            classname: "text-green-600 hover:text-green-700 hover:bg-green-50 border-green-100",
+        },
+        {
+            label: t("reject"),
+            onClick: (row: any) => handleReject(row._id),
+            icon: X,
+            classname: "text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100",
+        },
+        {
+            label: tCommon("delete"),
+            onClick: (row: any) => handleDelete(row._id),
+            icon: Trash2,
+            classname: "text-muted-foreground hover:text-destructive hover:bg-destructive/5",
+        }
+    ], [t, tCommon]);
+
+    const filterActions = (row: any, allActions: any[]) => {
+        if (row.status !== 'pending') return [];
+        return allActions;
+    };
+
     if (isLoading) return <div className="p-8 text-center">{tCommon("loading")}</div>;
     if (!userDetails) return <div className="p-8 text-center text-destructive">{tCommon("loadError")}</div>;
 
     const { user, stats, advances } = userDetails.data;
-
-    const handleApprove = async (advanceId: string) => {
-        if (confirm(t("confirmApprove"))) {
-            try {
-                await updateAdvanceMutation.mutateAsync({ id: advanceId, status: 'approved' });
-                toast.success(t("updateSuccess"));
-            } catch (error: any) {
-                toast.error(error.response?.data?.message || t("updateError"));
-            }
-        }
-    };
-
-    const handleReject = async (advanceId: string) => {
-        if (confirm(t("confirmReject"))) {
-            try {
-                await updateAdvanceMutation.mutateAsync({ id: advanceId, status: 'rejected' });
-                toast.success(t("updateSuccess"));
-            } catch (error: any) {
-                toast.error(error.response?.data?.message || t("updateError"));
-            }
-        }
-    };
-
-    const handleDelete = async (advanceId: string) => {
-        if (confirm(tCommon("confirmDelete"))) {
-            try {
-                await deleteAdvanceMutation.mutateAsync(advanceId);
-                toast.success(t("deleteSuccess"));
-            } catch (error: any) {
-                toast.error(error.response?.data?.message || t("deleteError"));
-            }
-        }
-    };
+    const pagination = userDetails.pagination?.advances || { total: 0, limit: 10 };
 
     const handleAddAdvance = async (data: any) => {
         try {
@@ -154,85 +205,19 @@ export default function MemberDetails() {
 
                     </div>
 
-                    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-                        <Table dir="rtl">
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="text-right font-semibold">{t("date")}</TableHead>
-                                    <TableHead className="text-right font-semibold">{t("amount")}</TableHead>
-                                    <TableHead className="text-right font-semibold">{t("reason")}</TableHead>
-                                    <TableHead className="text-right font-semibold">{t("status")}</TableHead>
-                                    <TableHead className="text-left font-semibold">{tCommon("actions")}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {advances.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                                            <div className="flex flex-col items-center gap-2">
-                                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                                                    <X className="h-6 w-6 opacity-20" />
-                                                </div>
-                                                <span>{t("noAdvances")}</span>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    advances.map((advance: Advance) => (
-                                        <TableRow key={advance._id} className="hover:bg-muted/30 transition-colors">
-                                            <TableCell className="text-right text-muted-foreground">{new Date(advance.date).toLocaleDateString()}</TableCell>
-                                            <TableCell className="text-right font-bold text-lg">{advance.amount.toLocaleString()}</TableCell>
-                                            <TableCell className="text-right max-w-[200px] truncate" title={advance.reason}>
-                                                {advance.reason}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <Badge variant={
-                                                    advance.status === 'approved' ? 'default' :
-                                                        advance.status === 'rejected' ? 'destructive' : 'secondary'
-                                                } className="font-normal px-2">
-                                                    {t(advance.status) || advance.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-left">
-                                                <div className="flex justify-start gap-1">
-                                                    {advance.status === 'pending' && (
-                                                        <>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="icon"
-                                                                onClick={() => handleApprove(advance._id)}
-                                                                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-100"
-                                                                title={t("approve")}
-                                                            >
-                                                                <Check className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="icon"
-                                                                onClick={() => handleReject(advance._id)}
-                                                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100"
-                                                                title={t("reject")}
-                                                            >
-                                                                <X className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="icon"
-                                                                onClick={() => handleDelete(advance._id)}
-                                                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/5"
-                                                                title={tCommon("delete")}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
+                    <div className="rounded-xl border bg-card shadow-sm overflow-hidden p-1">
+                        <UniTable
+                            columns={columns}
+                            data={advances}
+                            totalItems={pagination.total}
+                            itemsPerPage={pagination.limit}
+                            currentPage={page}
+                            onPageChange={setPage}
+                            tableName={t("advances")}
+                            isLoading={isLoading}
+                            actions={actions}
+                            filterActions={filterActions}
+                        />
                     </div>
                 </TabsContent>
             </Tabs>
