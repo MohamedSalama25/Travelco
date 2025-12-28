@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
 import { useTranslations } from "next-intl";
 
 const advanceSchema = z.object({
@@ -33,6 +35,7 @@ export default function AddAdvanceDialog({ open, onOpenChange, onSubmit }: AddAd
     const {
         register,
         handleSubmit,
+        control,
         formState: { errors, isSubmitting },
         reset
     } = useForm<AdvanceFormData>({
@@ -40,7 +43,7 @@ export default function AddAdvanceDialog({ open, onOpenChange, onSubmit }: AddAd
         defaultValues: {
             amount: "",
             reason: "",
-            date: new Date().toISOString().split('T')[0],
+            date: getTodayLocal(),
             notes: ""
         }
     });
@@ -87,7 +90,16 @@ export default function AddAdvanceDialog({ open, onOpenChange, onSubmit }: AddAd
 
                     <div className="space-y-2">
                         <Label htmlFor="date">{t("date")}</Label>
-                        <Input id="date" type="date" {...register("date")} />
+                        <Controller
+                            control={control}
+                            name="date"
+                            render={({ field }) => (
+                                <DatePicker
+                                    value={field.value ? new Date(field.value) : undefined}
+                                    onChange={(date) => field.onChange(date ? formatDateToLocal(date) : "")}
+                                />
+                            )}
+                        />
                     </div>
 
                     <div className="space-y-2">

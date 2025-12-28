@@ -69,10 +69,10 @@ export const TravelersDetails = () => {
                                 traveler.status === 'cancel' ? 'destructive' : 'outline'
                     }
                         className={
-                            traveler.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                traveler.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
-                                    traveler.status === 'cancel' ? 'bg-red-100 text-red-800' :
-                                        'bg-gray-100 text-gray-800'
+                            traveler.status === 'paid' ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400' :
+                                traveler.status === 'partial' ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400' :
+                                    traveler.status === 'cancel' ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400' :
+                                        'bg-gray-50 text-gray-700 dark:bg-gray-950/30 dark:text-gray-400'
                         }
                     >
                         {t(traveler.status)}
@@ -108,7 +108,7 @@ export const TravelersDetails = () => {
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Cancellation Details - Show only if cancelled */}
                 {traveler.status === 'cancel' && (
-                    <Card className="md:col-span-2 border-red-200 bg-red-50/30">
+                    <Card className="md:col-span-2 border-red-200 dark:border-red-950/30     ">
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Info className="h-5 w-5 text-red-600" />
@@ -127,7 +127,7 @@ export const TravelersDetails = () => {
                                 </Button>
                             )}
                             {traveler.refund_at && (
-                                <Badge variant="outline" className="gap-1 border-green-200 bg-green-100 text-green-800">
+                                <Badge variant="outline" className="gap-1 border-border bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400">
                                     <CheckCircle className="h-3 w-3" />
                                     {t('refunded') || 'تم الاسترداد'}
                                 </Badge>

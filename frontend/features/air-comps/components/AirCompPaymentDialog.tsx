@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import {
     Dialog,
@@ -19,6 +19,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
 import { toast } from "sonner";
 import { useAirCompMutations } from "../hooks/useAirComps";
 
@@ -48,11 +50,12 @@ export default function AirCompPaymentDialog({
         reset,
         setValue,
         watch,
+        control,
         formState: { isSubmitting },
     } = useForm({
         defaultValues: {
             amount: 0,
-            payment_date: new Date().toISOString().split("T")[0],
+            payment_date: getTodayLocal(),
             payment_method: "cash",
             notes: "",
             receipt_number: "",
@@ -101,10 +104,15 @@ export default function AirCompPaymentDialog({
 
                     <div className="space-y-2">
                         <Label htmlFor="payment_date">{t("date")}</Label>
-                        <Input
-                            id="payment_date"
-                            type="date"
-                            {...register("payment_date", { required: true })}
+                        <Controller
+                            control={control}
+                            name="payment_date"
+                            render={({ field }) => (
+                                <DatePicker
+                                    value={field.value ? new Date(field.value) : undefined}
+                                    onChange={(date) => field.onChange(date ? formatDateToLocal(date) : "")}
+                                />
+                            )}
                         />
                     </div>
 

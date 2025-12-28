@@ -12,8 +12,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal } from "@/lib/dateUtils";
 import { format } from "date-fns";
-import { Plus, Search, ArrowUpCircle } from "lucide-react";
+import { Plus, Search, ArrowUpCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import {
     AlertDialog,
@@ -136,18 +138,22 @@ export default function ExpensesTemplate() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Input
-                        type="date"
-                        value={filters.fromDate}
-                        onChange={(e) => handleDateChange('fromDate', e.target.value)}
-                        className="w-[150px]"
+                    <DatePicker
+                        value={filters.fromDate ? new Date(filters.fromDate) : undefined}
+                        onChange={(date) => handleDateChange('fromDate', date ? formatDateToLocal(date) : "")}
                     />
-                    <Input
-                        type="date"
-                        value={filters.toDate}
-                        onChange={(e) => handleDateChange('toDate', e.target.value)}
-                        className="w-[150px]"
+                    <DatePicker
+                        value={filters.toDate ? new Date(filters.toDate) : undefined}
+                        onChange={(date) => handleDateChange('toDate', date ? formatDateToLocal(date) : "")}
                     />
+                    <Button
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => setFilters({ page: 1, limit: 10, search: '', fromDate: '', toDate: '' })}
+                    >
+                        <X className="h-4 w-4" />
+                        {tCommon('clearFilters') || 'مسح الفلاتر'}
+                    </Button>
                 </div>
             </div>
 

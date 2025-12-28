@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal } from "@/lib/dateUtils";
 import { TreasuryFilters as TreasuryFiltersType } from "../types/types";
 import { useTranslations } from "next-intl";
-import { FileDown, Loader } from "lucide-react";
+import { FileDown, Loader, X } from "lucide-react";
 
 interface TreasuryFiltersProps {
     filters: TreasuryFiltersType;
@@ -34,18 +36,16 @@ export const TreasuryFilters = ({ filters, onFilterChange, onExport }: TreasuryF
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
                 <div className="space-y-2">
                     <Label>{tCommon('fromDate')}</Label>
-                    <Input
-                        type="date"
-                        value={filters.fromDate || ''}
-                        onChange={(e) => onFilterChange({ ...filters, fromDate: e.target.value, page: 1 })}
+                    <DatePicker
+                        value={filters.fromDate ? new Date(filters.fromDate) : undefined}
+                        onChange={(date) => onFilterChange({ ...filters, fromDate: date ? formatDateToLocal(date) : "", page: 1 })}
                     />
                 </div>
                 <div className="space-y-2">
                     <Label>{tCommon('toDate')}</Label>
-                    <Input
-                        type="date"
-                        value={filters.toDate || ''}
-                        onChange={(e) => onFilterChange({ ...filters, toDate: e.target.value, page: 1 })}
+                    <DatePicker
+                        value={filters.toDate ? new Date(filters.toDate) : undefined}
+                        onChange={(date) => onFilterChange({ ...filters, toDate: date ? formatDateToLocal(date) : "", page: 1 })}
                     />
                 </div>
                 <div className="space-y-2">
@@ -84,6 +84,21 @@ export const TreasuryFilters = ({ filters, onFilterChange, onExport }: TreasuryF
                 </div>
             </div>
             <div className="flex gap-2">
+                <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => onFilterChange({
+                        page: 1,
+                        limit: filters.limit,
+                        fromDate: "",
+                        toDate: "",
+                        type: undefined,
+                        relatedModel: undefined
+                    })}
+                >
+                    <X className="h-4 w-4" />
+                    {tCommon('clearFilters') || 'مسح الفلاتر'}
+                </Button>
                 <Button
                     variant="outline"
                     className="gap-2 text-green-600 hover:bg-green-50"

@@ -16,9 +16,10 @@ import * as z from "zod";
 import { useTranslations } from "next-intl";
 import { Traveler } from "../types/types";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader, Loader2 } from "lucide-react";
 import { AutocompleteSelect } from "@/components/globalComponents/AutoCompleteSelect";
 import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
 
 // Schema matching the requested payload
 const formSchema = z.object({
@@ -101,7 +102,7 @@ export function TravelerDialog({
                 air_comp: "",
                 airPort: "",
                 country: "",
-                take_off_date: new Date().toISOString().split('T')[0],
+                take_off_date: getTodayLocal(),
                 ticket_salary: 0,
                 ticket_price: 0,
                 transfer_pay: 0,
@@ -116,9 +117,9 @@ export function TravelerDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>
+            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="mt-4">
+                    <DialogTitle className="text-right">
                         {traveler ? t("editTicket") : t("addTicket")}
                     </DialogTitle>
                 </DialogHeader>
@@ -196,7 +197,7 @@ export function TravelerDialog({
                             render={({ field }) => (
                                 <DatePicker
                                     value={field.value ? new Date(field.value) : undefined}
-                                    onChange={(date) => field.onChange(date ? date.toISOString().split('T')[0] : "")}
+                                    onChange={(date) => field.onChange(date ? formatDateToLocal(date) : "")}
                                 />
                             )}
                         />
@@ -230,13 +231,15 @@ export function TravelerDialog({
                     </div>
 
                     <DialogFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+
+                            {tCommon("save")}
+                            {isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                        </Button>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             {tCommon("cancel")}
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {tCommon("save")}
-                        </Button>
+
                     </DialogFooter>
                 </form>
             </DialogContent>

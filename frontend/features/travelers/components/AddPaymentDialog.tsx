@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useForm, Controller } from 'react-hook-form';
 import {
     Dialog,
     DialogContent,
@@ -15,8 +16,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePicker } from '@/components/globalComponents/date-picker';
+import { formatDateToLocal, getTodayLocal } from '@/lib/dateUtils';
 import { addPayment } from '../services/travelerService';
 import { toast } from 'sonner';
+import { Loader } from 'lucide-react';
 
 interface AddPaymentDialogProps {
     isOpen: boolean;
@@ -35,17 +39,20 @@ export const AddPaymentDialog = ({
 }: AddPaymentDialogProps) => {
     const t = useTranslations('travelers');
     const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        amount: remainingAmount,
-        payment_method: 'cash',
-        notes: '',
-        payment_date: new Date().toISOString().split('T')[0]
+
+    const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
+        defaultValues: {
+            amount: remainingAmount,
+            payment_method: 'cash',
+            notes: '',
+            payment_date: getTodayLocal()
+        }
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const paymentMethod = watch('payment_method');
 
-        if (formData.amount <= 0) {
+    const onSubmit = async (data: any) => {
+        if (data.amount <= 0) {
             toast.error(t('amountRequired') || 'Amount must be greater than 0');
             return;
         }
@@ -54,9 +61,10 @@ export const AddPaymentDialog = ({
         try {
             await addPayment({
                 transfer: transferId,
-                ...formData
+                ...data
             });
             toast.success(t('paymentSuccess') || 'Payment added successfully');
+            reset();
             onSuccess();
             onClose();
         } catch (error: any) {
@@ -68,32 +76,31 @@ export const AddPaymentDialog = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px]" dir="rtl">
-                <DialogHeader>
-                    <DialogTitle>{t('addPayment') || 'إضافة دفعة'}</DialogTitle>
-                    <DialogDescription>
+            <DialogContent className="sm:max-w-[500px]" dir="rtl">
+                <DialogHeader className='mt-5'>
+                    <DialogTitle className="text-right">{t('addPayment') || 'إضافة دفعة'}</DialogTitle>
+                    <DialogDescription className="text-right">
                         {t('addPaymentDesc') || 'أدخل تفاصيل الدفعة الجديدة لهذا الحجز.'}
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2 col-span-2">
                             <Label htmlFor="amount">{t('amount') || 'المبلغ'}</Label>
                             <Input
                                 id="amount"
                                 type="number"
                                 min="1"
                                 max={remainingAmount}
-                                value={formData.amount}
-                                onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
+                                {...register('amount', { valueAsNumber: true })}
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 col-span-1">
                             <Label htmlFor="payment_method">{t('paymentMethod') || 'طريقة الدفع'}</Label>
                             <Select
-                                value={formData.payment_method}
-                                onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
+                                value={paymentMethod}
+                                onValueChange={(value) => setValue('payment_method', value)}
                             >
                                 <SelectTrigger id="payment_method">
                                     <SelectValue placeholder={t('selectMethod') || 'اختر الطريقة'} />
@@ -108,31 +115,34 @@ export const AddPaymentDialog = ({
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="payment_date">{t('paymentDate') || 'تاريخ الدفع'}</Label>
-                        <Input
-                            id="payment_date"
-                            type="date"
-                            value={formData.payment_date}
-                            onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
-                            required
+                        <Controller
+                            control={control}
+                            name="payment_date"
+                            render={({ field }) => (
+                                <DatePicker
+                                    value={field.value ? new Date(field.value) : undefined}
+                                    onChange={(date) => field.onChange(date ? formatDateToLocal(date) : "")}
+                                />
+                            )}
                         />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="notes">{t('notes') || 'ملاحظات'}</Label>
                         <Textarea
                             id="notes"
-                            value={formData.notes}
-                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                            {...register('notes')}
                             placeholder={t('notesPlaceholder') || 'أدخل ملاحظات إضافية...'}
                         />
                     </div>
                 </form>
                 <DialogFooter className="flex-row-reverse gap-2">
+                    <Button type="submit" onClick={handleSubmit(onSubmit)} disabled={isLoading}>
+                        {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />} إضافة
+                    </Button>
                     <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
-                        {t('cancel') || 'إلغاء'}
+                        إلغاء
                     </Button>
-                    <Button type="submit" onClick={handleSubmit} disabled={isLoading}>
-                        {isLoading ? t('saving') : t('addPayment')}
-                    </Button>
+
                 </DialogFooter>
             </DialogContent>
         </Dialog>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
@@ -21,6 +21,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
 import { Loader2 } from "lucide-react";
 import { Expense } from "../types/types";
 
@@ -54,7 +56,7 @@ export default function ExpenseDialog({ isOpen, onClose, onSubmit, isSubmitting,
         defaultValues: {
             title: "",
             amount: "",
-            date: new Date().toISOString().split('T')[0],
+            date: getTodayLocal(),
             description: "",
             category: "General",
         },
@@ -75,7 +77,7 @@ export default function ExpenseDialog({ isOpen, onClose, onSubmit, isSubmitting,
                 form.reset({
                     title: "",
                     amount: "",
-                    date: new Date().toISOString().split('T')[0],
+                    date: getTodayLocal(),
                     description: "",
                     category: "General",
                 });

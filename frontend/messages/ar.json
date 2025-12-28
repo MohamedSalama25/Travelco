@@ -24,7 +24,8 @@
         "notes": "ملاحظات",
         "other": "أخرى",
         "areYouSure": "هل أنت متأكد؟",
-        "check": "تحقق"
+        "check": "تحقق",
+        "clearFilters": "مسح الفلاتر"
     },
     "nav": {
         "dashboard": "لوحة التحكم",
@@ -164,7 +165,8 @@
         "descriptionPlaceholder": "أدخل وصف العملية...",
         "transactionSuccess": "تمت العملية بنجاح",
         "transactionError": "فشل تنفيذ العملية",
-        "treasuryManagement": "إدارة الخزنة"
+        "treasuryManagement": "إدارة الخزنة",
+        "aircomppayment": "دفعة لجهة إصدار"
     },
     "airComps": {
         "title": "جهات الإصدار",

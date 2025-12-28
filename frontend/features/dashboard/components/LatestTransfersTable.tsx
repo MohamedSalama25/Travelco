@@ -25,10 +25,11 @@ export default function LatestTransfersTable({ data }: { data: any[] }) {
             header: t("airCompany"),
         },
         {
-            accessorKey: "take_off_date",
-            header: t("takeOffDate"),
-            cell: ({ row }: any) => <span>{row.original.take_off_date ? format(new Date(row.original.take_off_date), "dd/MM/yyyy") : "-"}</span>
+            accessorKey: "ticket_price",
+            header: t("ticketPrice"),
+            cell: ({ row }: any) => <span>{row.original.ticket_price?.toLocaleString() ?? 0}</span>
         },
+
         {
             accessorKey: "status",
             header: t("status"),
@@ -39,15 +40,16 @@ export default function LatestTransfersTable({ data }: { data: any[] }) {
             )
         },
         {
-            accessorKey: "ticket_price",
-            header: t("ticketPrice"),
-            cell: ({ row }: any) => <span>{row.original.ticket_price?.toLocaleString() ?? 0}</span>
-        },
+            accessorKey: "take_off_date",
+            header: t("takeOffDate"),
+            cell: ({ row }: any) => <span>{row.original.take_off_date ? format(new Date(row.original.take_off_date), "dd/MM/yyyy") : "-"}</span>
+        }
+
     ], [t]);
 
     return (
         <section className="w-full">
-            <header className="mb-4">
+            <header className="mb-4 px-2">
                 <h2 className="text-lg font-semibold">{t("latestTickets") || "Latest Tickets"}</h2>
             </header>
             <UniTable

@@ -18,6 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { cancelTraveler } from '../services/travelerService';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
+import { Loader } from 'lucide-react';
 
 interface CancelTicketDialogProps {
     isOpen: boolean;
@@ -65,9 +66,9 @@ export const CancelTicketDialog = ({
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px]" dir="rtl">
-                <DialogHeader>
-                    <DialogTitle>{t('cancelTicket') || 'إلغاء التذكرة'}</DialogTitle>
-                    <DialogDescription>
+                <DialogHeader className='mt-5'>
+                    <DialogTitle className="text-right">{t('cancelTicket') || 'إلغاء التذكرة'}</DialogTitle>
+                    <DialogDescription className="text-right">
                         {t('cancelTicketDesc') || 'أدخل بيانات إلغاء التذكرة. سيتم إعادة حساب البيانات المالية.'}
                     </DialogDescription>
                 </DialogHeader>
@@ -104,8 +105,9 @@ export const CancelTicketDialog = ({
                             />
                         </div>
                     </div>
-                    <div className="flex items-center space-x-2 space-x-reverse border p-4 rounded-lg bg-muted/30">
+                    <div className="flex items-center space-x-2 gap-2 space-x-reverse border p-4 rounded-lg ">
                         <Checkbox
+                            className="border-gray-300"
                             id="is_refunded"
                             checked={formData.is_refunded}
                             onCheckedChange={(checked) =>
@@ -126,12 +128,13 @@ export const CancelTicketDialog = ({
                     </div>
                 </form>
                 <DialogFooter className="flex-row-reverse gap-2">
-                    <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
-                        {t('cancel') || 'إلغاء'}
-                    </Button>
                     <Button type="submit" variant="destructive" onClick={handleSubmit} disabled={isLoading}>
-                        {isLoading ? (t('cancelling') || 'جاري الإلغاء...') : (t('confirmCancel') || 'تأكيد الإلغاء')}
+                        تأكيد الإلغاء  {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                     </Button>
+                    <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+                        إلغاء
+                    </Button>
+
                 </DialogFooter>
             </DialogContent>
         </Dialog>

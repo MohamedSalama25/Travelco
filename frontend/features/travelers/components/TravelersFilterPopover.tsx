@@ -14,6 +14,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal } from "@/lib/dateUtils";
 import { Filter } from "lucide-react";
 import { useTranslations } from "next-intl";
 export function TravelersFilterPopover({
@@ -89,11 +91,9 @@ export function TravelersFilterPopover({
 
                             <div>
                                 <Label className="text-xs text-muted-foreground px-1 mb-1" htmlFor="createdAt">{t("createdAt")}</Label>
-                                <Input
-                                    id="createdAt"
-                                    type="date"
-                                    value={filters.createdAt || ''}
-                                    onChange={(e) => handleCreatedAtChange(e.target.value)}
+                                <DatePicker
+                                    value={filters.createdAt ? new Date(filters.createdAt) : undefined}
+                                    onChange={(date) => handleCreatedAtChange(date ? formatDateToLocal(date) : "")}
                                 />
                             </div>
                         </div>
@@ -103,20 +103,16 @@ export function TravelersFilterPopover({
                             <div className="flex gap-2">
                                 <div className="grid gap-1 flex-1">
                                     <Label htmlFor="fromDate" className="text-xs text-muted-foreground px-1">{tGeneral("from")}</Label>
-                                    <Input
-                                        id="fromDate"
-                                        type="date"
-                                        value={filters.fromDate || ''}
-                                        onChange={(e) => handleDateRangeChange(e.target.value, filters.toDate || '')}
+                                    <DatePicker
+                                        value={filters.fromDate ? new Date(filters.fromDate) : undefined}
+                                        onChange={(date) => handleDateRangeChange(date ? formatDateToLocal(date) : "", filters.toDate || '')}
                                     />
                                 </div>
                                 <div className="grid gap-1 flex-1">
                                     <Label htmlFor="toDate" className="text-xs text-muted-foreground px-1">{tGeneral("to")}</Label>
-                                    <Input
-                                        id="toDate"
-                                        type="date"
-                                        value={filters.toDate || ''}
-                                        onChange={(e) => handleDateRangeChange(filters.fromDate || '', e.target.value)}
+                                    <DatePicker
+                                        value={filters.toDate ? new Date(filters.toDate) : undefined}
+                                        onChange={(date) => handleDateRangeChange(filters.fromDate || '', date ? formatDateToLocal(date) : "")}
                                     />
                                 </div>
                             </div>

@@ -21,10 +21,16 @@ export function DatePicker({ value, onChange, className, placeholder = "Pick a d
     const [date, setDate] = React.useState<Date | undefined>(value)
 
     React.useEffect(() => {
-        if (value !== undefined) {
-            setDate(value)
-        }
+        setDate(value)
     }, [value])
+
+    // Helper function to format date in local timezone (YYYY-MM-DD)
+    const formatDateToLocal = (date: Date): string => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    }
 
     const handleSelect = (newDate: Date | undefined) => {
         setDate(newDate)
@@ -52,7 +58,7 @@ export function DatePicker({ value, onChange, className, placeholder = "Pick a d
                 <Calendar
                     mode="single"
                     selected={date}
-                    onSelect={setDate}
+                    onSelect={handleSelect}
                     className="rounded-md border shadow-sm"
                     captionLayout="dropdown"
                 />

@@ -186,9 +186,9 @@ export function ChartAreaInteractive({
   return (
     <Card className="@container/card">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-        <div className="grid flex-1 gap-1 text-center sm:text-left">
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>
+        <div className="grid flex-1 gap-1 text-center sm:text-left justify-start">
+          <CardTitle className="text-right">{title}</CardTitle>
+          <CardDescription className="text-right">
             {description}
           </CardDescription>
         </div>

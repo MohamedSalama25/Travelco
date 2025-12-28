@@ -16,6 +16,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal } from "@/lib/dateUtils";
 import { useTranslations } from "next-intl";
 
 export interface TableFilters {
@@ -126,26 +128,18 @@ export default function TableFilterBar({
                                         <Label htmlFor="date-from" className="text-xs text-muted-foreground">
                                             {t("from")}
                                         </Label>
-                                        <Input
-                                            id="date-from"
-                                            type="date"
-                                            value={filters.dateFrom}
-                                            onChange={(e) =>
-                                                handleFilterChange("dateFrom", e.target.value)
-                                            }
+                                        <DatePicker
+                                            value={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
+                                            onChange={(date) => handleFilterChange("dateFrom", date ? formatDateToLocal(date) : "")}
                                         />
                                     </div>
                                     <div className="space-y-1">
                                         <Label htmlFor="date-to" className="text-xs text-muted-foreground">
                                             {t("to")}
                                         </Label>
-                                        <Input
-                                            id="date-to"
-                                            type="date"
-                                            value={filters.dateTo}
-                                            onChange={(e) =>
-                                                handleFilterChange("dateTo", e.target.value)
-                                            }
+                                        <DatePicker
+                                            value={filters.dateTo ? new Date(filters.dateTo) : undefined}
+                                            onChange={(date) => handleFilterChange("dateTo", date ? formatDateToLocal(date) : "")}
                                         />
                                     </div>
                                 </div>

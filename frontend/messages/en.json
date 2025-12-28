@@ -25,7 +25,8 @@
         "notes": "Notes",
         "other": "Other",
         "areYouSure": "Are you sure?",
-        "check": "Check"
+        "check": "Check",
+        "clearFilters": "Clear Filters"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -171,7 +172,8 @@
         "descriptionPlaceholder": "Enter description...",
         "transactionSuccess": "Transaction successful",
         "transactionError": "Transaction failed",
-        "treasuryManagement": "Treasury Management"
+        "treasuryManagement": "Treasury Management",
+        "aircomppayment": "Payment to Issuing Entity"
     },
     "airComps": {
         "title": "Issuing Entities",

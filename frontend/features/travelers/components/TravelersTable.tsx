@@ -161,9 +161,9 @@ export function TravelersTable({
                             'destructive'
                 }
                     className={
-                        row.original.status === 'paid' ? 'bg-green-100 text-green-800 hover:bg-green-100' :
-                            row.original.status === 'partial' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' :
-                                'bg-red-100 text-red-800 hover:bg-red-100'
+                        row.original.status === 'paid' ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400' :
+                            row.original.status === 'partial' ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400' :
+                                'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400'
                     }
                 >
                     {t(row.original.status)}
