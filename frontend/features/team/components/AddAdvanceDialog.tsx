@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/globalComponents/date-picker";
 import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
 import { useTranslations } from "next-intl";
+import { Loader } from "lucide-react";
 
 const advanceSchema = z.object({
     amount: z.string().min(1, "amountRequired"),
@@ -112,7 +113,8 @@ export default function AddAdvanceDialog({ open, onOpenChange, onSubmit }: AddAd
                             {tCommon("cancel")}
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? "..." : tCommon("save")}
+                            {tCommon("save")}
+                            {isSubmitting && <Loader className="ml-2 h-4 w-4 animate-spin" />}
                         </Button>
                     </DialogFooter>
                 </form>

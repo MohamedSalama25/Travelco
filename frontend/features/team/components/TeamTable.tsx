@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye } from "lucide-react";
+import { Plus, Search, Eye, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import UniTable from "@/components/data-table";
 import AddTeamMemberDialog from "./AddTeamMemberDialog";
@@ -15,11 +15,13 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
 import Error from "@/components/globalComponents/Error";
+import { useConfirm } from "@/components/providers/ConfirmDialogProvider";
 
 export default function TeamTable() {
     const t = useTranslations("table");
     const tTeam = useTranslations("team");
     const router = useRouter();
+    const { confirm } = useConfirm();
 
     const [currentPage, setCurrentPage] = useState(1);
     const [nameFilter, setNameFilter] = useState("");
@@ -62,7 +64,16 @@ export default function TeamTable() {
     }, []);
 
     const handleDelete = useCallback(async (member: TeamMember) => {
-        if (confirm(t("confirmDelete"))) {
+        const confirmed = await confirm({
+            title: "هل ترغب في حذف هذا العضو؟",
+            description: "هذا العضو سيتم حذفه بشكل نهائي",
+            icon: <Trash2 className="w-12 h-12 text-red-500 mb-4" />,
+            confirmText: "حذف",
+            cancelText: "إلغاء",
+            variant: "destructive",
+        });
+
+        if (confirmed) {
             try {
                 await deleteUserMutation.mutateAsync(member._id);
                 toast.success(tTeam("deleteSuccess"));
@@ -95,11 +106,11 @@ export default function TeamTable() {
             accessorKey: "email",
             header: tTeam("email"),
         },
-        // {
-        //     accessorKey: "phone",
-        //     header: tTeam("phone"),
-        //     cell: ({ row }) => row.original.phone || "-",
-        // },
+        {
+            accessorKey: "phone",
+            header: tTeam("phone"),
+            cell: ({ row }) => row.original.phone || "-",
+        },
         {
             accessorKey: "role",
             header: tTeam("role"),

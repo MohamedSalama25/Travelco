@@ -50,7 +50,7 @@ export function TreasuryTable({
             header: t("type"),
             cell: ({ row }) => (
                 <Badge variant={row.original.type === 'in' ? 'default' : 'destructive'}
-                    className={row.original.type === 'in' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                    className={row.original.type === 'in' ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400' : 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400'}
                 >
                     {row.original.type === 'in' ? t('income') : t('expense')}
                 </Badge>
@@ -61,7 +61,7 @@ export function TreasuryTable({
             header: t("amount"),
             cell: ({ row }) => (
                 <span className={`font-bold ${row.original.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>
-                    {row.original.type === 'in' ? '+' : '-'}{row.original.amount.toLocaleString()} ج.م
+                    {row.original.amount.toLocaleString()} ج.م
                 </span>
             )
         },

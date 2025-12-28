@@ -1,7 +1,6 @@
 'use client';
 import { useState } from "react";
 
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { DatePicker } from "@/components/globalComponents/date-picker";
 import { formatDateToLocal } from "@/lib/dateUtils";
 import { TreasuryFilters as TreasuryFiltersType } from "../types/types";
 import { useTranslations } from "next-intl";
-import { FileDown, Loader, X } from "lucide-react";
+import { FileDown, Loader, RefreshCcw, X } from "lucide-react";
 
 interface TreasuryFiltersProps {
     filters: TreasuryFiltersType;
@@ -48,45 +47,46 @@ export const TreasuryFilters = ({ filters, onFilterChange, onExport }: TreasuryF
                         onChange={(date) => onFilterChange({ ...filters, toDate: date ? formatDateToLocal(date) : "", page: 1 })}
                     />
                 </div>
-                <div className="space-y-2">
-                    <Label>{t('type')}</Label>
-                    <Select
-                        value={filters.type || 'all'}
-                        onValueChange={(value) => onFilterChange({ ...filters, type: value === 'all' ? undefined : value as any, page: 1 })}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder={t('allTypes')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">{tCommon('all')}</SelectItem>
-                            <SelectItem value="in">{t('income')}</SelectItem>
-                            <SelectItem value="out">{t('expense')}</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label>{t('relatedModel')}</Label>
-                    <Select
-                        value={filters.relatedModel || 'all'}
-                        onValueChange={(value) => onFilterChange({ ...filters, relatedModel: value === 'all' ? undefined : value, page: 1 })}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder={t('allSources')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">{tCommon('all')}</SelectItem>
-                            <SelectItem value="Transfer">{t('transfer')}</SelectItem>
-                            <SelectItem value="Payment">{t('payment')}</SelectItem>
-                            <SelectItem value="Expense">{t('expense_source')}</SelectItem>
-                            <SelectItem value="Other">{t('other')}</SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div className="flex gap-4 px-2">
+                    <div className="space-y-2">
+                        <Label>{t('type')}</Label>
+                        <Select
+                            value={filters.type || 'all'}
+                            onValueChange={(value) => onFilterChange({ ...filters, type: value === 'all' ? undefined : value as any, page: 1 })}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('allTypes')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{tCommon('all')}</SelectItem>
+                                <SelectItem value="in">{t('income')}</SelectItem>
+                                <SelectItem value="out">{t('expense')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>المصدر</Label>
+                        <Select
+                            value={filters.relatedModel || 'all'}
+                            onValueChange={(value) => onFilterChange({ ...filters, relatedModel: value === 'all' ? undefined : value, page: 1 })}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('allSources')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{tCommon('all')}</SelectItem>
+                                <SelectItem value="Transfer">{t('transfer')}</SelectItem>
+                                <SelectItem value="Payment">{t('payment')}</SelectItem>
+                                <SelectItem value="Expense">{t('expense_source')}</SelectItem>
+                                <SelectItem value="Other">{t('other')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
             <div className="flex gap-2">
                 <Button
-                    variant="outline"
-                    className="gap-2"
+                    className="gap-1 bg-primary text-primary-foreground hover:opacity-90 cursor-pointer"
                     onClick={() => onFilterChange({
                         page: 1,
                         limit: filters.limit,
@@ -96,7 +96,7 @@ export const TreasuryFilters = ({ filters, onFilterChange, onExport }: TreasuryF
                         relatedModel: undefined
                     })}
                 >
-                    <X className="h-4 w-4" />
+                    <RefreshCcw className="h-4 w-4" />
                     {tCommon('clearFilters') || 'مسح الفلاتر'}
                 </Button>
                 <Button

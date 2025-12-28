@@ -6,9 +6,16 @@ import UniTable from "@/components/data-table";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { Traveler } from "@/features/travelers/types/types";
+import { useRouter } from "next/navigation";
 
 export default function LatestTransfersTable({ data }: { data: any[] }) {
     const t = useTranslations('travelers');
+    const router = useRouter();
+
+    const handleView = (traveler: Traveler) => {
+        router.push(`/travelers/${traveler._id}`);
+    };
 
     const columns = useMemo(() => [
         {
@@ -33,8 +40,18 @@ export default function LatestTransfersTable({ data }: { data: any[] }) {
         {
             accessorKey: "status",
             header: t("status"),
-            cell: ({ row }: any) => (
-                <Badge variant={row.original.status === "paid" ? "default" : row.original.status === "cancel" ? "destructive" : "outline"}>
+            cell: ({ row }) => (
+                <Badge variant={
+                    row.original.status === 'paid' ? 'default' :
+                        row.original.status === 'partial' ? 'secondary' :
+                            'destructive'
+                }
+                    className={
+                        row.original.status === 'paid' ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400' :
+                            row.original.status === 'partial' ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400' :
+                                'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400'
+                    }
+                >
                     {t(row.original.status)}
                 </Badge>
             )
@@ -46,6 +63,14 @@ export default function LatestTransfersTable({ data }: { data: any[] }) {
         }
 
     ], [t]);
+
+    const actions = useMemo(() => [
+        {
+            label: "تفاصيل",
+            onClick: handleView,
+        },
+
+    ], [handleView]);
 
     return (
         <section className="w-full">
@@ -61,6 +86,7 @@ export default function LatestTransfersTable({ data }: { data: any[] }) {
                 tableName={t("latestTickets") || "Latest Tickets"}
                 onPageChange={() => { }}
                 hidePagination={true}
+                actions={actions}
             />
         </section>
     );

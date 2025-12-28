@@ -11,12 +11,14 @@ import { type Advance } from "../types/team";
 import { useAdvances, useUpdateAdvanceStatus, useAdvanceStats, useRepayAdvance } from "../hooks/useAdvances";
 import { toast } from "sonner";
 import { AdvancesStats } from "./AdvancesStats";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function AdvancesTable() {
     const t = useTranslations("team");
     const tCommon = useTranslations("common");
     const [currentPage, setCurrentPage] = useState(1);
     const [statusFilter, setStatusFilter] = useState<string>("pending");
+    const queryClient = useQueryClient();
 
     const { data: advancesData, isLoading } = useAdvances({
         page: currentPage,
@@ -32,6 +34,8 @@ export default function AdvancesTable() {
         if (confirm(t("confirmApprove"))) {
             try {
                 await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'approved' });
+                queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+                queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
                 toast.success(t("updateSuccess"));
             } catch (error: any) {
                 toast.error(error.response?.data?.message || t("updateError"));
@@ -43,6 +47,7 @@ export default function AdvancesTable() {
         if (confirm(t("confirmReject"))) {
             try {
                 await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'rejected' });
+                queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
                 toast.success(t("updateSuccess"));
             } catch (error: any) {
                 toast.error(error.response?.data?.message || t("updateError"));
@@ -54,6 +59,8 @@ export default function AdvancesTable() {
         if (confirm(t("confirmRepay"))) {
             try {
                 await repayAdvanceMutation.mutateAsync(advance._id);
+                queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+                queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
                 toast.success(t("updateSuccess"));
             } catch (error: any) {
                 toast.error(error.response?.data?.message || t("updateError"));

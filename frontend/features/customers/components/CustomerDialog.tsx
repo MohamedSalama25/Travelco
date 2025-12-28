@@ -70,7 +70,6 @@ export function CustomerDialog({
                     key={customer?._id || 'new'}
                     customer={isEdit ? customer : undefined}
                     onSubmit={handleSubmit}
-                // isLoading={isCreating || isUpdating}
                 />
             </DialogContent>
         </Dialog>

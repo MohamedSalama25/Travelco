@@ -15,7 +15,7 @@ import {
 import { DatePicker } from "@/components/globalComponents/date-picker";
 import { formatDateToLocal } from "@/lib/dateUtils";
 import { format } from "date-fns";
-import { Plus, Search, ArrowUpCircle, X } from "lucide-react";
+import { Plus, Search, ArrowUpCircle, X, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import {
     AlertDialog,
@@ -125,8 +125,8 @@ export default function ExpensesTemplate() {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-4 items-end flex-wrap">
-                <div className="flex-1 min-w-[200px]">
+            <div className="flex gap-4 items-end flex-wrap justify-between">
+                <div>
                     <div className="relative w-75  max-w-[500px] ">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -138,20 +138,23 @@ export default function ExpensesTemplate() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <DatePicker
-                        value={filters.fromDate ? new Date(filters.fromDate) : undefined}
-                        onChange={(date) => handleDateChange('fromDate', date ? formatDateToLocal(date) : "")}
-                    />
-                    <DatePicker
-                        value={filters.toDate ? new Date(filters.toDate) : undefined}
-                        onChange={(date) => handleDateChange('toDate', date ? formatDateToLocal(date) : "")}
-                    />
+                    <div className="max-w-[320px]">
+                        <DatePicker
+                            value={filters.fromDate ? new Date(filters.fromDate) : undefined}
+                            onChange={(date) => handleDateChange('fromDate', date ? formatDateToLocal(date) : "")}
+                        />
+                    </div>
+                    <div className="max-w-[320px]">
+                        <DatePicker
+                            value={filters.toDate ? new Date(filters.toDate) : undefined}
+                            onChange={(date) => handleDateChange('toDate', date ? formatDateToLocal(date) : "")}
+                        />
+                    </div>
                     <Button
-                        variant="outline"
-                        className="gap-2"
+                        className="gap-1 bg-primary text-primary-foreground hover:opacity-90 cursor-pointer"
                         onClick={() => setFilters({ page: 1, limit: 10, search: '', fromDate: '', toDate: '' })}
                     >
-                        <X className="h-4 w-4" />
+                        <RefreshCcw className="h-4 w-4 " />
                         {tCommon('clearFilters') || 'مسح الفلاتر'}
                     </Button>
                 </div>

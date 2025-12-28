@@ -8,8 +8,7 @@ import UniTable from "@/components/data-table";
 import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
 import Error from "@/components/globalComponents/Error";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Edit2, Trash2 } from "lucide-react";
+
 
 interface ExpensesTableProps {
     data: Expense[];
@@ -66,21 +65,19 @@ export function ExpensesTable({
             header: t("description"),
             cell: ({ row }) => <span className="max-w-[200px] truncate block" title={row.original.description}>{row.original.description}</span>
         },
+    ], [t, tCommon]);
+
+
+    const actions = useMemo(() => [
         {
-            id: "actions",
-            header: tCommon("actions"),
-            cell: ({ row }) => (
-                <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(row.original)}>
-                        <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(row.original._id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                </div>
-            )
-        }
-    ], [t, tCommon, onEdit, onDelete]);
+            label: "تعديل",
+            onClick: onEdit,
+        },
+        {
+            label: "حذف",
+            onClick: (expense: Expense) => onDelete(expense._id),
+        },
+    ], [onEdit, onDelete, t]);
 
     if (isLoading) {
         return <FullScreenLoader />;
@@ -100,6 +97,7 @@ export function ExpensesTable({
             tableName={t("title")}
             onPageChange={onPageChange}
             isLoading={isLoading}
+            actions={actions}
         />
     );
 }

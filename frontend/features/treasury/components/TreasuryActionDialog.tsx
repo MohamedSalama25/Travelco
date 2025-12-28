@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
 
 interface TreasuryActionDialogProps {
     readonly isOpen: boolean;
@@ -121,8 +121,9 @@ export default function TreasuryActionDialog({ isOpen, onClose, type, onSubmit, 
                                 {tCommon("cancel")}
                             </Button>
                             <Button type="submit" disabled={isSubmitting} variant={type === 'out' ? "destructive" : "default"}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {submitLabel}
+                                {isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+
                             </Button>
                         </DialogFooter>
                     </form>

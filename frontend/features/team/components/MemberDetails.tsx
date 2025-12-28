@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import AddAdvanceDialog from "./AddAdvanceDialog";
 import { useMemo, useState } from "react";
 import UniTable from "@/components/data-table";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function MemberDetails() {
     const { id } = useParams();
@@ -21,6 +22,7 @@ export default function MemberDetails() {
     const tCommon = useTranslations("common");
     const [page, setPage] = useState(1);
     const { data: userDetails, isLoading } = useUserDetails(id as string, page);
+    const queryClient = useQueryClient();
 
     const [advanceDialogOpen, setAdvanceDialogOpen] = useState(false);
 
@@ -31,6 +33,8 @@ export default function MemberDetails() {
     const handleApprove = async (id: string) => {
         try {
             await updateAdvanceMutation.mutateAsync({ id, status: 'approved' });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
             toast.success(t("approveSuccess"));
         } catch (error: any) {
             toast.error(error.response?.data?.message || t("approveError"));
@@ -120,6 +124,8 @@ export default function MemberDetails() {
     const handleAddAdvance = async (data: any) => {
         try {
             await createAdvanceMutation.mutateAsync({ ...data, user: user._id });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
             toast.success(t("addSuccess"));
         } catch (error: any) {
             toast.error(error.response?.data?.message || t("addError"));
@@ -144,8 +150,8 @@ export default function MemberDetails() {
                     <Badge variant="outline" className="px-3 py-1 font-medium bg-background/50">
                         {t(user.role)}
                     </Badge>
-                    <Button variant="ghost" size="icon" onClick={() => router.back()} >
-                        <ArrowLeft className="h-5 w-5" />
+                    <Button variant="outline" size="icon" onClick={() => router.back()}>
+                        <ArrowLeft className="h-4 w-4" />
                     </Button>
                 </div>
             </div>

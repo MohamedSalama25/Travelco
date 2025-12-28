@@ -17,25 +17,25 @@ export const TreasuryStats = ({ stats }: TreasuryStatsProps) => {
             title: t('currentBalance'),
             value: stats?.currentBalance || 0,
             icon: <Wallet className="h-5 w-5 text-blue-600" />,
-            bgColor: "bg-blue-50"
+            bgColor: "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
         },
         {
             title: t('totalIn'),
             value: stats?.totalIn || 0,
-            icon: <TrendingUp className="h-5 w-5 text-green-600" />,
-            bgColor: "bg-green-50"
+            icon: <TrendingUp className="h-5 w-5 text-green-700" />,
+            bgColor: "bg-green-50  dark:bg-green-950/30 dark:text-green-400"
         },
         {
             title: t('totalOut'),
             value: stats?.totalOut || 0,
-            icon: <TrendingDown className="h-5 w-5 text-red-600" />,
-            bgColor: "bg-red-50"
+            icon: <TrendingDown className="h-5 w-5 text-red-700" />,
+            bgColor: "bg-red-50 dark:bg-red-950/30 dark:text-red-400"
         },
         {
             title: t('netChange'),
             value: stats?.netChange || 0,
-            icon: <ArrowUpRight className="h-5 w-5 text-purple-600" />,
-            bgColor: "bg-purple-50"
+            icon: <ArrowUpRight className="h-5 w-5 text-yellow-700" />,
+            bgColor: "bg-yellow-50 dark:bg-yellow-950/30 dark:text-yellow-400"
         }
     ];
 

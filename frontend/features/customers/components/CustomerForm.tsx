@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { customerSchema, type CustomerSchemaType } from "../types/schema";
 import { Customer } from "../types/types";
+import { Loader } from "lucide-react";
 
 interface CustomerFormProps {
     customer?: Customer;
@@ -139,6 +140,7 @@ export function CustomerForm({ customer, onSubmit, isLoading }: CustomerFormProp
             <div className="flex justify-end gap-2 pt-4">
                 <Button type="submit" disabled={isLoading}>
                     {isLoading ? t("saving") : t("save")}
+                    {isLoading && <Loader className="ml-2 h-4 w-4 animate-spin" />}
                 </Button>
             </div>
         </form>

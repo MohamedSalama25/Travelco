@@ -9,6 +9,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useCustomer } from "../hooks/useCustomers";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export const CustomerDetails = () => {
     const params = useParams();
@@ -53,13 +54,20 @@ export const CustomerDetails = () => {
         {
             accessorKey: "status",
             header: t("status"),
-            cell: ({ row }: any) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${row.original.status === 'paid' ? 'bg-green-100 text-green-800' :
-                    row.original.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                    }`}>
+            cell: ({ row }) => (
+                <Badge variant={
+                    row.original.status === 'paid' ? 'default' :
+                        row.original.status === 'partial' ? 'secondary' :
+                            'destructive'
+                }
+                    className={
+                        row.original.status === 'paid' ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400' :
+                            row.original.status === 'partial' ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400' :
+                                'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400'
+                    }
+                >
                     {t(row.original.status)}
-                </span>
+                </Badge>
             )
         },
     ], [t]);
@@ -99,12 +107,9 @@ export const CustomerDetails = () => {
                     <h1 className="text-3xl font-bold">{customer.name}</h1>
                     <p className="text-muted-foreground">{t("customerDetails")}</p>
                 </div>
-                <Link href="/customers">
-                    <Button variant="ghost" size="sm" className="gap-2">
-                        <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
-                        {t("back")}
-                    </Button>
-                </Link>
+                <Button variant="outline" size="icon" onClick={() => router.back()}>
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
             </div>
 
             {/* Customer Info Card */}

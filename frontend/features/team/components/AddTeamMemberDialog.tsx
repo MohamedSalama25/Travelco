@@ -22,6 +22,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { teamMemberSchema, type TeamMemberFormData, type TeamMember } from "../types/team";
+import { Loader } from "lucide-react";
 
 interface AddTeamMemberDialogProps {
     open: boolean;
@@ -226,7 +227,8 @@ export default function AddTeamMemberDialog({
                             {tCommon("cancel")}
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? "..." : tCommon("save")}
+                            {tCommon("save")}
+                            {isSubmitting && <Loader className="ml-2 h-4 w-4 animate-spin" />}
                         </Button>
                     </DialogFooter>
                 </form>
