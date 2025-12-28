@@ -19,6 +19,7 @@ import { cancelTraveler } from '../services/travelerService';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CancelTicketDialogProps {
     isOpen: boolean;
@@ -41,6 +42,7 @@ export const CancelTicketDialog = ({
         cancel_commission: 0,
         is_refunded: false
     });
+    const queryClient = useQueryClient();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,6 +56,7 @@ export const CancelTicketDialog = ({
         try {
             await cancelTraveler(travelerId, formData);
             toast.success(t('cancelSuccess') || 'Ticket cancelled successfully');
+            queryClient.invalidateQueries({ queryKey: ['travelers'] });
             onSuccess();
             onClose();
         } catch (error: any) {

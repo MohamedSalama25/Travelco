@@ -21,6 +21,7 @@ import { formatDateToLocal, getTodayLocal } from '@/lib/dateUtils';
 import { addPayment } from '../services/travelerService';
 import { toast } from 'sonner';
 import { Loader } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AddPaymentDialogProps {
     isOpen: boolean;
@@ -39,6 +40,7 @@ export const AddPaymentDialog = ({
 }: AddPaymentDialogProps) => {
     const t = useTranslations('travelers');
     const [isLoading, setIsLoading] = useState(false);
+    const queryClient = useQueryClient();
 
     const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
         defaultValues: {
@@ -64,6 +66,7 @@ export const AddPaymentDialog = ({
                 ...data
             });
             toast.success(t('paymentSuccess') || 'Payment added successfully');
+            queryClient.invalidateQueries({ queryKey: ['traveler-transfers'] });
             reset();
             onSuccess();
             onClose();
@@ -137,7 +140,7 @@ export const AddPaymentDialog = ({
                 </form>
                 <DialogFooter className="flex-row-reverse gap-2">
                     <Button type="submit" onClick={handleSubmit(onSubmit)} disabled={isLoading}>
-                        {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />} إضافة
+                        إضافة{isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                     </Button>
                     <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
                         إلغاء

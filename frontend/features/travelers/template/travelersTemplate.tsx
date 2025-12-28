@@ -63,6 +63,7 @@ export default function TravelersTemplate() {
             setIsSubmitting(true);
             if (selectedTraveler) {
                 await updateTraveler(selectedTraveler._id, data);
+                queryClient.invalidateQueries({ queryKey: ['traveler', selectedTraveler._id] });
                 showSuccessToast("تم تعديل التذكرة بنجاح ");
             } else {
                 await createTraveler(data);
