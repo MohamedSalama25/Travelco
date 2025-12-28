@@ -32,10 +32,10 @@ export default function MemberDetails() {
 
     const handleApprove = async (id: string) => {
         try {
-            await updateAdvanceMutation.mutateAsync({ id, status: 'approved' });
+            const res = await updateAdvanceMutation.mutateAsync({ id, status: 'approved' });
             queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
-            toast.success(t("approveSuccess"));
+            toast.success(res.message || t("approveSuccess"));
         } catch (error: any) {
             toast.error(error.response?.data?.message || t("approveError"));
         }
@@ -43,8 +43,8 @@ export default function MemberDetails() {
 
     const handleReject = async (id: string) => {
         try {
-            await updateAdvanceMutation.mutateAsync({ id, status: 'rejected' });
-            toast.success(t("rejectSuccess"));
+            const res = await updateAdvanceMutation.mutateAsync({ id, status: 'rejected' });
+            toast.success(res.message || t("rejectSuccess"));
         } catch (error: any) {
             toast.error(error.response?.data?.message || t("rejectError"));
         }
@@ -53,8 +53,8 @@ export default function MemberDetails() {
     const handleDelete = async (id: string) => {
         if (!window.confirm(tCommon("confirmDelete"))) return;
         try {
-            await deleteAdvanceMutation.mutateAsync(id);
-            toast.success(tCommon("deleteSuccess"));
+            const res = await deleteAdvanceMutation.mutateAsync(id);
+            toast.success(res.message || tCommon("deleteSuccess"));
         } catch (error: any) {
             toast.error(error.response?.data?.message || tCommon("deleteError"));
         }
@@ -123,10 +123,10 @@ export default function MemberDetails() {
 
     const handleAddAdvance = async (data: any) => {
         try {
-            await createAdvanceMutation.mutateAsync({ ...data, user: user._id });
+            const res = await createAdvanceMutation.mutateAsync({ ...data, user: user._id });
             queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
-            toast.success(t("addSuccess"));
+            toast.success(res.message || t("addSuccess"));
         } catch (error: any) {
             toast.error(error.response?.data?.message || t("addError"));
         }

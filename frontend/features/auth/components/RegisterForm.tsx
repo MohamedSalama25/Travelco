@@ -36,16 +36,16 @@ export default function RegisterForm() {
                 password: data.password
             },
             {
-                onSuccess: async () => {
-                    showSuccessToast(t("registerSuccess"));
+                onSuccess: (data: any) => {
+                    showSuccessToast(data.message || t("registerSuccess"));
                     // Wait a bit for cookie to be set
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    router.push("/dashboard");
+                    setTimeout(() => {
+                        router.push("/dashboard");
+                    }, 500);
                 },
                 onError: (error: any) => {
                     showErrorToast(
-                        t("registerError"),
-                        error?.response?.data?.message
+                        error?.response?.data?.message || t("registerError")
                     );
                 },
             }

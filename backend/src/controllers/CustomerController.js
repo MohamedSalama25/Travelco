@@ -170,7 +170,7 @@ const getCustomerById = async (req, res) => {
         if (!customer) {
             return res.status(404).json({
                 success: false,
-                message: "Customer not found"
+                message: "العميل غير موجود"
             });
         }
 
@@ -198,7 +198,7 @@ const getCustomerTransfers = async (req, res) => {
         if (!customer) {
             return res.status(404).json({
                 success: false,
-                message: "Customer not found"
+                message: "العميل غير موجود"
             });
         }
 
@@ -270,7 +270,7 @@ const addCustomer = async (req, res) => {
         if (!name || !phone) {
             return res.status(400).json({
                 success: false,
-                message: "Name and phone are required"
+                message: "الاسم ورقم الهاتف مطلوبان"
             });
         }
 
@@ -291,7 +291,7 @@ const addCustomer = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Customer added successfully",
+            message: "تم إضافة العميل بنجاح",
             data: newCustomer
         });
     } catch (error) {
@@ -342,7 +342,7 @@ const updateCustomer = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Customer updated successfully",
+            message: "تم تحديث بيانات العميل بنجاح",
             data: customer
         });
     } catch (error) {
@@ -372,7 +372,7 @@ const deleteCustomer = async (req, res) => {
         if (transferCount > 0) {
             return res.status(400).json({
                 success: false,
-                message: `Cannot delete customer. They have ${transferCount} ticket(s) linked.`
+                message: `لا يمكن حذف العميل لوجود عدد (${transferCount}) من التذاكر المرتبطة به.`
             });
         }
 
@@ -380,7 +380,7 @@ const deleteCustomer = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Customer deleted successfully"
+            message: "تم حذف العميل بنجاح"
         });
     } catch (error) {
         return res.status(500).json({

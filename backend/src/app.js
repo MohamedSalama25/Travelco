@@ -43,7 +43,7 @@ app.use('/api/expenses', auth, require('./routes/expenseRoutes'));
 app.use((err, req, res, next) => {
     res.status(err.status || 500).json({
         success: false,
-        message: !(err.status) ? 'Internal server error' : err.message
+        message: !(err.status) ? 'خطأ داخلي في الخادم' : err.message
     });
 });
 

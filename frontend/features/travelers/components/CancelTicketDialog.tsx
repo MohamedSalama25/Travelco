@@ -54,13 +54,13 @@ export const CancelTicketDialog = ({
 
         setIsLoading(true);
         try {
-            await cancelTraveler(travelerId, formData);
-            toast.success(t('cancelSuccess') || 'Ticket cancelled successfully');
+            const res = await cancelTraveler(travelerId, formData);
+            toast.success(res.message || t('cancelSuccess'));
             queryClient.invalidateQueries({ queryKey: ['travelers'] });
             onSuccess();
             onClose();
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to cancel ticket');
+            toast.error(error.response?.data?.message || t('cancelError') || 'Failed to cancel ticket');
         } finally {
             setIsLoading(false);
         }

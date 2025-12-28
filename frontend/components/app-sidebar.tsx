@@ -23,6 +23,7 @@ import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import { LanguageSelector } from "@/components/language-selector";
+import { CommandMenu } from "@/components/command-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +38,7 @@ import Image from "next/image";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations();
+  const [open, setOpen] = React.useState(false);
 
   const data = {
     user: {
@@ -149,6 +151,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: t("common.search"),
         url: "#",
         icon: IconSearch,
+        onClick: () => setOpen(true),
       },
     ],
     documents: [
@@ -203,6 +206,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <LanguageSelector />
         <NavUser />
       </SidebarFooter>
+      <CommandMenu open={open} setOpen={setOpen} />
     </Sidebar>
   );
 }

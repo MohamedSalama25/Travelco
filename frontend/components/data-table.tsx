@@ -50,7 +50,6 @@ const UniTable = <TData extends object>({
 }: UniTableProps<TData>) => {
   const t = useTranslations('table');
   const locale = useLocale();
-  console.log("UniTable Props:", { columns, data, actions, filterActions, onRowSelect, totalItems, itemsPerPage, onPageChange, headerActions, currentPage, tableName, onRowClick });
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState({

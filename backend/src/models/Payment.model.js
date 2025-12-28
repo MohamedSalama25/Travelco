@@ -4,16 +4,16 @@ const paymentSchema = new mongoose.Schema({
     transfer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Transfer',
-        required: [true, "Transfer reference is required"]
+        required: [true, "الحجز مطلوب"]
     },
     amount: {
         type: Number,
-        required: [true, "Payment amount is required"],
-        min: [0, "Amount cannot be negative"]
+        required: [true, "مبلغ الدفعة مطلوب"],
+        min: [0, "لا يمكن أن يكون المبلغ سلبيًا"]
     },
     payment_date: {
         type: Date,
-        required: [true, "Payment date is required"],
+        required: [true, "تاريخ الدفع مطلوب"],
         default: Date.now
     },
     payment_method: {

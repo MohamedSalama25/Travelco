@@ -68,27 +68,27 @@ export default function ExpensesTemplate() {
     const handleDelete = async () => {
         if (!deleteId) return;
         try {
-            await deleteMutation.mutateAsync(deleteId);
-            toast.success(t("deleteSuccess"));
+            const res = await deleteMutation.mutateAsync(deleteId);
+            toast.success(res.message || t("deleteSuccess"));
             setDeleteId(null);
-        } catch (error) {
-            toast.error(t("deleteError"));
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || t("deleteError"));
         }
     };
 
     const handleFormSubmit = async (data: any) => {
         try {
             if (editingExpense) {
-                await updateMutation.mutateAsync({ id: editingExpense._id, data });
-                toast.success(t("updateSuccess"));
+                const res = await updateMutation.mutateAsync({ id: editingExpense._id, data });
+                toast.success(res.message || t("updateSuccess"));
             } else {
-                await createMutation.mutateAsync(data);
-                toast.success(t("createSuccess"));
+                const res = await createMutation.mutateAsync(data);
+                toast.success(res.message || t("createSuccess"));
             }
             setIsDialogOpen(false);
             setEditingExpense(null);
-        } catch (error) {
-            toast.error(editingExpense ? t("updateError") : t("createError"));
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || (editingExpense ? t("updateError") : t("createError")));
         }
     };
 

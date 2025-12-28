@@ -61,11 +61,11 @@ export const AddPaymentDialog = ({
 
         setIsLoading(true);
         try {
-            await addPayment({
+            const res = await addPayment({
                 transfer: transferId,
                 ...data
             });
-            toast.success(t('paymentSuccess') || 'Payment added successfully');
+            toast.success(res.message || t('paymentSuccess') || 'Payment added successfully');
             queryClient.invalidateQueries({ queryKey: ['traveler-transfers'] });
             reset();
             onSuccess();

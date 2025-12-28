@@ -62,18 +62,18 @@ export default function TravelersTemplate() {
         try {
             setIsSubmitting(true);
             if (selectedTraveler) {
-                await updateTraveler(selectedTraveler._id, data);
+                const res = await updateTraveler(selectedTraveler._id, data);
                 queryClient.invalidateQueries({ queryKey: ['traveler', selectedTraveler._id] });
-                showSuccessToast("تم تعديل التذكرة بنجاح ");
+                showSuccessToast(res.message || "تم تعديل التذكرة بنجاح ");
             } else {
-                await createTraveler(data);
-                showSuccessToast("تم اضافة التذكرة بنجاح ");
+                const res = await createTraveler(data);
+                showSuccessToast(res.message || "تم اضافة التذكرة بنجاح ");
             }
             queryClient.invalidateQueries({ queryKey: ['travelers'] });
             setIsDialogOpen(false);
 
-        } catch (error) {
-            showErrorToast("Operation failed");
+        } catch (error: any) {
+            showErrorToast(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

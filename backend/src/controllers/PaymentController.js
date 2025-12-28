@@ -76,7 +76,7 @@ const getPaymentsByTransfer = async (req, res) => {
         if (!transfer) {
             return res.status(404).json({
                 success: false,
-                message: "Transfer not found"
+                message: "الحجز غير موجود"
             });
         }
 
@@ -123,14 +123,14 @@ const addPayment = async (req, res) => {
         if (!transferId || !amount) {
             return res.status(400).json({
                 success: false,
-                message: "Transfer ID and amount are required"
+                message: "معرف الحجز والمبلغ مطلوبان"
             });
         }
 
         if (amount <= 0) {
             return res.status(400).json({
                 success: false,
-                message: "Amount must be greater than 0"
+                message: "يجب أن يكون المبلغ أكبر من 0"
             });
         }
 
@@ -138,7 +138,7 @@ const addPayment = async (req, res) => {
         if (!transfer) {
             return res.status(404).json({
                 success: false,
-                message: "Transfer not found"
+                message: "الحجز غير موجود"
             });
         }
 
@@ -146,7 +146,7 @@ const addPayment = async (req, res) => {
         if (amount > transfer.remaining_amount && transfer.remaining_amount > 0) {
             return res.status(400).json({
                 success: false,
-                message: `Payment amount exceeds remaining amount (${transfer.remaining_amount})`
+                message: `مبلغ الدفعة يتجاوز المبلغ المتبقي (${transfer.remaining_amount})`
             });
         }
 
@@ -176,7 +176,7 @@ const addPayment = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Payment added successfully",
+            message: "تم إضافة الدفعة بنجاح",
             data: {
                 payment: newPayment,
                 transfer: {
@@ -204,7 +204,7 @@ const deletePayment = async (req, res) => {
         if (!payment) {
             return res.status(404).json({
                 success: false,
-                message: "Payment not found"
+                message: "عملية الدفع غير موجودة"
             });
         }
 
@@ -227,7 +227,7 @@ const deletePayment = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Payment deleted successfully",
+            message: "تم حذف الدفعة بنجاح",
             data: transfer ? {
                 transfer: {
                     total_paid: transfer.total_paid,

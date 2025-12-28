@@ -26,7 +26,8 @@
         "other": "Other",
         "areYouSure": "Are you sure?",
         "check": "Check",
-        "clearFilters": "Clear Filters"
+        "clearFilters": "Clear Filters",
+        "noResults": "No results found"
     },
     "nav": {
         "dashboard": "Dashboard",

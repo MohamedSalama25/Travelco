@@ -44,8 +44,8 @@ export const TravelersDetails = () => {
 
         setIsRefundLoading(true);
         try {
-            await refundTraveler(id as string);
-            toast.success(t('refundSuccess') || 'تم تنفيذ الاسترداد بنجاح');
+            const res = await refundTraveler(id as string);
+            toast.success(res.message || t('refundSuccess') || 'تم تنفيذ الاسترداد بنجاح');
             queryClient.invalidateQueries({ queryKey: ['traveler', id] });
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'فشل تنفيذ الاسترداد');

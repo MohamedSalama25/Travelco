@@ -4,22 +4,22 @@ const validator = require("validator");
 const userSchema = new mongoose.Schema({
   user_name: {
     type: String,
-    required: [true, "User name is required"],
-    minlength: [3, "User name must be at least 3 characters"],
-    maxlength: [50, "User name must be less than 50 characters"],
+    required: [true, "اسم المستخدم مطلوب"],
+    minlength: [3, "يجب أن يكون اسم المستخدم 3 أحرف على الأقل"],
+    maxlength: [50, "يجب أن يكون اسم المستخدم أقل من 50 حرفًا"],
     trim: true
   },
 
   email: {
     type: String,
-    required: [true, "Email is required"],
+    required: [true, "البريد الإلكتروني مطلوب"],
     unique: true, // مهم لتفادي التكرار
     trim: true,
     validate: {
       validator: function (value) {
         return validator.isEmail(value);
       },
-      message: "Invalid email format"
+      message: "تنسيق البريد الإلكتروني غير صحيح"
     }
   },
 
@@ -32,8 +32,8 @@ const userSchema = new mongoose.Schema({
 
   password: {
     type: String,
-    required: [true, "Password is required"],
-    minlength: [6, "Password must be at least 6 characters"],
+    required: [true, "كلمة المرور مطلوبة"],
+    minlength: [6, "يجب أن تكون كلمة المرور 6 أحرف على الأقل"],
     select: false,
     validate: {
       validator: function (value) {
@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
           minSymbols: 0
         });
       },
-      message: "Weak password. Must contain at least one number."
+      message: "كلمة المرور ضعيفة. يجب أن تحتوي على رقم واحد على الأقل."
     }
   },
   phone: {

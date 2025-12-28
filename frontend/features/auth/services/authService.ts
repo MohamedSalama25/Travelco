@@ -28,6 +28,7 @@ export interface LoginResponse {
         role?: string;
     };
     token: string;
+    message: string;
 }
 
 export async function loginUser(payload: LoginPayload): Promise<LoginResponse> {

@@ -107,3 +107,9 @@ export interface CancelTravelerPayload {
     cancel_tax: number;
     cancel_commission: number;
 }
+
+export interface TravelerResponse {
+    success: boolean;
+    data: Traveler;
+    message: string;
+}

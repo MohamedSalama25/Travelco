@@ -11,13 +11,13 @@ const register = async (req, res) => {
     if (!user_name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required"
+        message: "جميع الحقول مطلوبة"
       });
     }
 
     const emailExists = await User.findOne({ email });
     if (emailExists) {
-      return errorRes("Email is Already Exist",res);
+      return errorRes("البريد الإلكتروني موجود بالفعل", res);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -27,7 +27,7 @@ const register = async (req, res) => {
       email,
       password: hashedPassword
     });
-  const token = jwt.sign(
+    const token = jwt.sign(
       { id: newUser._id },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -35,7 +35,7 @@ const register = async (req, res) => {
     return res.status(201).json({
       success: true,
       token,
-      message: "User registered successfully"
+      message: "تم تسجيل المستخدم بنجاح"
     });
 
   } catch (error) {
@@ -48,7 +48,7 @@ const register = async (req, res) => {
       });
     }
 
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "خطأ في الخادم" });
   }
 };
 
@@ -62,7 +62,7 @@ const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required"
+        message: "البريد الإلكتروني وكلمة المرور مطلوبان"
       });
     }
 
@@ -72,7 +72,7 @@ const login = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Invalid email or password"
+        message: "البريد الإلكتروني أو كلمة المرور غير صحيحة"
       });
     }
 
@@ -81,7 +81,7 @@ const login = async (req, res) => {
     if (!match) {
       return res.status(400).json({
         success: false,
-        message: "Invalid email or password"
+        message: "البريد الإلكتروني أو كلمة المرور غير صحيحة"
       });
     }
 
@@ -94,13 +94,13 @@ const login = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Login successfully",
+      message: "تم تسجيل الدخول بنجاح",
       token,
     });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "خطأ في الخادم" });
   }
 };
 

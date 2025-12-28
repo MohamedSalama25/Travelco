@@ -69,7 +69,7 @@ const addExpense = async (req, res) => {
         if (!title || !amount) {
             return res.status(400).json({
                 success: false,
-                message: 'Title and Amount are required'
+                message: 'العنوان والمبلغ مطلوبان'
             });
         }
 
@@ -93,7 +93,7 @@ const addExpense = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: 'Expense added successfully',
+            message: 'تم إضافة المصروف بنجاح',
             data: expense
         });
     } catch (error) {
@@ -146,7 +146,7 @@ const updateExpense = async (req, res) => {
             // New deduction: -120
             // Adjustment: -20
             // Formula: -(New - Old) = Old - New.
-            
+
             await updateTreasury(difference, `Update Expense Adjustment: ${title}`, {
                 relatedModel: 'Expense',
                 relatedId: expense._id,
@@ -156,7 +156,7 @@ const updateExpense = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Expense updated successfully',
+            message: 'تم تحديث المصروف بنجاح',
             data: expense
         });
     } catch (error) {
@@ -178,7 +178,7 @@ const deleteExpense = async (req, res) => {
         if (!expense) {
             return res.status(404).json({
                 success: false,
-                message: 'Expense not found'
+                message: 'المصروف غير موجود'
             });
         }
 
@@ -193,7 +193,7 @@ const deleteExpense = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Expense deleted successfully'
+            message: 'تم حذف المصروف بنجاح'
         });
     } catch (error) {
         return res.status(500).json({

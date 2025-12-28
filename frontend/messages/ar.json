@@ -25,7 +25,8 @@
         "other": "أخرى",
         "areYouSure": "هل أنت متأكد؟",
         "check": "تحقق",
-        "clearFilters": "مسح الفلاتر"
+        "clearFilters": "مسح الفلاتر",
+        "noResults": "لا توجد نتائج"
     },
     "nav": {
         "dashboard": "لوحة التحكم",

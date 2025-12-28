@@ -271,7 +271,7 @@ const getStatsByAirComp = async (req, res) => {
             {
                 $project: {
                     _id: 1,
-                    name: { $ifNull: ["$airCompInfo.name", "Unknown"] },
+                    name: { $ifNull: ["$airCompInfo.name", "غير معروف"] },
                     ticketsCount: 1,
                     totalSales: 1,
                     totalCost: 1,
@@ -503,7 +503,7 @@ const exportAirCompStatsToExcel = async (req, res) => {
             },
             {
                 $project: {
-                    name: { $ifNull: ["$airCompInfo.name", "Unknown"] },
+                    name: { $ifNull: ["$airCompInfo.name", "غير معروف"] },
                     ticketsCount: 1,
                     totalSales: 1,
                     totalCost: 1,

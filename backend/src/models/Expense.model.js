@@ -3,13 +3,13 @@ const mongoose = require("mongoose");
 const expenseSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true,
+        required: [true, "العنوان مطلوب"],
         trim: true
     },
     amount: {
         type: Number,
-        required: true,
-        min: 0
+        required: [true, "المبلغ مطلوب"],
+        min: [0, "لا يمكن أن يكون المبلغ أقل من 0"]
     },
     date: {
         type: Date,

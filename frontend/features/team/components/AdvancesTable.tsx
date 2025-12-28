@@ -33,10 +33,10 @@ export default function AdvancesTable() {
     const handleApprove = async (advance: Advance) => {
         if (confirm(t("confirmApprove"))) {
             try {
-                await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'approved' });
+                const res = await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'approved' });
                 queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
                 queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
-                toast.success(t("updateSuccess"));
+                toast.success(res.message || t("updateSuccess"));
             } catch (error: any) {
                 toast.error(error.response?.data?.message || t("updateError"));
             }
@@ -46,9 +46,9 @@ export default function AdvancesTable() {
     const handleReject = async (advance: Advance) => {
         if (confirm(t("confirmReject"))) {
             try {
-                await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'rejected' });
+                const res = await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'rejected' });
                 queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
-                toast.success(t("updateSuccess"));
+                toast.success(res.message || t("updateSuccess"));
             } catch (error: any) {
                 toast.error(error.response?.data?.message || t("updateError"));
             }
@@ -58,10 +58,10 @@ export default function AdvancesTable() {
     const handleRepay = async (advance: Advance) => {
         if (confirm(t("confirmRepay"))) {
             try {
-                await repayAdvanceMutation.mutateAsync(advance._id);
+                const res = await repayAdvanceMutation.mutateAsync(advance._id);
                 queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
                 queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
-                toast.success(t("updateSuccess"));
+                toast.success(res.message || t("updateSuccess"));
             } catch (error: any) {
                 toast.error(error.response?.data?.message || t("updateError"));
             }

@@ -42,11 +42,11 @@ export const TreasuryTemplate = () => {
 
     const handleSubmitAction = async (data: { type: 'in' | 'out', amount: number, description: string }) => {
         try {
-            await createTransaction(data);
-            toast.success(t('transactionSuccess') || 'Transaction added successfully');
+            const res = await createTransaction(data);
+            toast.success(res.message || t('transactionSuccess') || 'Transaction added successfully');
             setActionDialogOpen(false);
-        } catch (error) {
-            toast.error(t('transactionError') || 'Failed to add transaction');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || t('transactionError') || 'Failed to add transaction');
         }
     };
 

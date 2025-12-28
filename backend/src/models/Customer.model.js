@@ -4,16 +4,16 @@ const validator = require("validator");
 const customerSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, "Name is required"],
-        minlength: [3, "Name must be at least 3 characters"],
-        maxlength: [100, "Name must be less than 100 characters"],
+        required: [true, "الاسم مطلوب"],
+        minlength: [3, "يجب أن يكون الاسم 3 أحرف على الأقل"],
+        maxlength: [100, "يجب أن يكون الاسم أقل من 100 حرف"],
         trim: true
     },
     phone: {
         type: String,
-        required: [true, "Phone is required"],
-        minlength: [10, "Phone must be at least 10 digits"],
-        maxlength: [15, "Phone must be less than 15 digits"]
+        required: [true, "رقم الهاتف مطلوب"],
+        minlength: [10, "يجب أن يتكون رقم الهاتف من 10 أرقام على الأقل"],
+        maxlength: [15, "يجب أن يكون رقم الهاتف أقل من 15 رقمًا"]
     },
     email: {
         type: String,
@@ -22,7 +22,7 @@ const customerSchema = new mongoose.Schema({
             validator: function (value) {
                 return !value || validator.isEmail(value);
             },
-            message: "Invalid email format"
+            message: "تنسيق البريد الإلكتروني غير صحيح"
         }
     },
     national_id: {

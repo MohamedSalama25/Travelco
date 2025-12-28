@@ -67,7 +67,7 @@ const getTransferById = asyncWrapper(
       .populate('updatedBy', 'email');
 
     if (!transfer) {
-      const error = new AppError("Transfer not found", 404);
+      const error = new AppError("الحجز غير موجود", 404);
       return next(error);
     }
 
@@ -107,7 +107,7 @@ const addTransfer = async (req, res) => {
     if (!booking_number || !customer || !air_comp) {
       return res.status(400).json({
         success: false,
-        message: "Booking number, Customer, and air company are required"
+        message: "رقم الحجز، العميل، وشركة الطيران مطلوبة"
       });
     }
 
@@ -157,7 +157,7 @@ const addTransfer = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Transfer added successfully",
+      message: "تم إضافة الحجز بنجاح",
       data: {
         transfer: newTransfer,
         initialPayment: paymentRecord
@@ -182,7 +182,7 @@ const updateTransfer = async (req, res) => {
     if (!transfer) {
       return res.status(404).json({
         success: false,
-        message: "Transfer not found"
+        message: "الحجز غير موجود"
       });
     }
 
@@ -201,7 +201,7 @@ const updateTransfer = async (req, res) => {
     if (transfer_pay !== undefined && transfer_pay !== transfer.transfer_pay) {
       return res.status(400).json({
         success: false,
-        message: "Cannot modify initial payment (transfer_pay). Please add/delete payments instead."
+        message: "لا يمكن تعديل الدفعة الأولى. يرجى إضافة أو حذف دفعات بدلاً من ذلك."
       });
     }
 
@@ -226,7 +226,7 @@ const updateTransfer = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Transfer updated successfully",
+      message: "تم تحديث الحجز بنجاح",
       data: transfer
     });
 
@@ -248,7 +248,7 @@ const deleteTransfer = async (req, res) => {
     if (!transfer) {
       return res.status(404).json({
         success: false,
-        message: 'Transfer not found'
+        message: 'الحجز غير موجود'
       });
     }
 
@@ -257,7 +257,7 @@ const deleteTransfer = async (req, res) => {
     if (paymentCount > 0) {
       return res.status(400).json({
         success: false,
-        message: `Cannot delete transfer. It has ${paymentCount} payment(s) linked. Please delete payments first.`
+        message: `لا يمكن حذف الحجز لوجود عدد (${paymentCount}) من عمليات الدفع المرتبطة به. يرجى حذف عمليات الدفع أولاً.`
       });
     }
 
@@ -265,7 +265,7 @@ const deleteTransfer = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Transfer deleted successfully'
+      message: 'تم حذف الحجز بنجاح'
     });
   } catch (error) {
     return res.status(500).json({

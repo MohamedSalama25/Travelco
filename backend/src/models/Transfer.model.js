@@ -4,46 +4,46 @@ const validator = require("validator");
 const transferSchema = mongoose.Schema({
     booking_number: {
         type: String,
-        required: [true, "Booking number is required"],
+        required: [true, "رقم الحجز مطلوب"],
         trim: true
     },
     customer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer',
-        required: [true, "Customer is required"]
+        required: [true, "العميل مطلوب"]
     },
     air_comp: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'AirComp',
-        required: [true, "Air Company is required"],
+        required: [true, "جهة الإصدار مطلوبة"],
     },
     airPort: {
         type: String,
-        required: [true, "AirPort is required"],
-        minlength: [3, "AirPort must be at least 3 characters"],
-        maxlength: [35, "AirPort must be less than 35 characters"],
+        required: [true, "المطار مطلوب"],
+        minlength: [3, "يجب أن يكون اسم المطار 3 أحرف على الأقل"],
+        maxlength: [35, "يجب أن يكون اسم المطار أقل من 35 حرفًا"],
     },
     country: {
         type: String,
-        required: [true, "Country is required"],
-        minlength: [3, "Country must be at least 3 characters"],
-        maxlength: [35, "Country must be less than 35 characters"],
+        required: [true, "الدولة مطلوبة"],
+        minlength: [3, "يجب أن يكون اسم الدولة 3 أحرف على الأقل"],
+        maxlength: [35, "يجب أن يكون اسم الدولة أقل من 35 حرفًا"],
     },
     take_off_date: {
         type: Date,
-        required: [true, "Take Off Date is required"],
+        required: [true, "تاريخ الإقلاع مطلوب"],
     },
     ticket_salary: {
         type: Number,
-        required: [true, "Ticket Salary is required"],
+        required: [true, "صافي سعر التذكرة مطلوب"],
     },
     ticket_price: {
         type: Number,
-        required: [true, "Ticket Price is required"],
+        required: [true, "سعر التذكرة مطلوب"],
     },
     transfer_pay: {
         type: Number,
-        required: [true, "Transfer Pay is required"],
+        required: [true, "سعر البيع مطلوب"],
     },
     total_paid: {
         type: Number,

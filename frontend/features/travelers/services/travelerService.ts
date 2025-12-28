@@ -1,6 +1,6 @@
 import { clientAxios } from '@/lib/api/axios';
 import { API_CONFIG } from '@/lib/api/config';
-import { TravelersListResponse, Traveler, TravelerFilters } from '../types/types';
+import { TravelersListResponse, Traveler, TravelerFilters, TravelerResponse } from '../types/types';
 
 export async function getTravelers(
     page: number = 1,
@@ -67,9 +67,9 @@ export async function getTraveler(id: string): Promise<Traveler> {
     }
 }
 
-export async function createTraveler(traveler: any): Promise<Traveler> {
+export async function createTraveler(traveler: any): Promise<TravelerResponse> {
     try {
-        const response = await clientAxios.post(
+        const response = await clientAxios.post<TravelerResponse>(
             API_CONFIG.ENDPOINTS.TRAVELERS.CREATE,
             traveler
         );
@@ -80,9 +80,9 @@ export async function createTraveler(traveler: any): Promise<Traveler> {
     }
 }
 
-export async function updateTraveler(id: string, traveler: any): Promise<Traveler> {
+export async function updateTraveler(id: string, traveler: any): Promise<TravelerResponse> {
     try {
-        const response = await clientAxios.put(
+        const response = await clientAxios.put<TravelerResponse>(
             API_CONFIG.ENDPOINTS.TRAVELERS.UPDATE(id),
             traveler
         );
@@ -95,13 +95,10 @@ export async function updateTraveler(id: string, traveler: any): Promise<Travele
 
 export async function deleteTraveler(id: string): Promise<{ success: boolean, message: string }> {
     try {
-        await clientAxios.delete(
+        const response = await clientAxios.delete(
             API_CONFIG.ENDPOINTS.TRAVELERS.DELETE(id)
         );
-        return {
-            success: true,
-            message: "Traveler deleted successfully"
-        }
+        return response.data;
     } catch (error) {
         throw error;
     }

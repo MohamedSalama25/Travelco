@@ -62,7 +62,7 @@ const getAirCompById = asyncWrapper(
     async (req, res, next) => {
         const airComp = await AirComp.findById(req.params.id);
         if (!airComp) {
-            const error = new AppError("AirComp not found", 404);
+            const error = new AppError("جهة الإصدار غير موجودة", 404);
             return next(error);
         }
         return res.status(200).json({
@@ -81,7 +81,7 @@ const addAirComp = async (req, res) => {
     if (!name || !phone) {
         return res.status(400).json({
             success: false,
-            message: 'Name and phone are required'
+            message: 'الاسم ورقم الهاتف مطلوبان'
         });
     }
 
@@ -96,7 +96,7 @@ const addAirComp = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: 'AirComp added successfully',
+            message: 'تم إضافة جهة الإصدار بنجاح',
             data: newAirComp
         });
     } catch (error) {
@@ -117,7 +117,7 @@ const updateAirComp = async (req, res) => {
         if (!airComp) {
             return res.status(404).json({
                 success: false,
-                message: 'AirCompany not found'
+                message: 'جهة الإصدار غير موجودة'
             });
         }
 
@@ -132,7 +132,7 @@ const updateAirComp = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'AirCompany updated successfully',
+            message: 'تم تحديث بيانات جهة الإصدار بنجاح',
             data: airComp
         });
     } catch (error) {
@@ -153,7 +153,7 @@ const deleteAirComp = async (req, res) => {
         if (!airComp) {
             return res.status(404).json({
                 success: false,
-                message: 'AirCompany not found'
+                message: 'جهة الإصدار غير موجودة'
             });
         }
 
@@ -162,7 +162,7 @@ const deleteAirComp = async (req, res) => {
         if (transferCount > 0) {
             return res.status(400).json({
                 success: false,
-                message: `Cannot delete. This issuer has ${transferCount} ticket(s) linked.`
+                message: `لا يمكن الحذف. جهة الإصدار هذه مرتبطة بعدد (${transferCount}) من التذاكر.`
             });
         }
 
@@ -170,7 +170,7 @@ const deleteAirComp = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'AirCompany deleted successfully'
+            message: 'تم حذف جهة الإصدار بنجاح'
         });
     } catch (error) {
         return res.status(500).json({
@@ -192,7 +192,7 @@ const getAirCompStats = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(airCompId)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid air company ID'
+                message: 'معرف جهة الإصدار غير صحيح'
             });
         }
 
@@ -200,7 +200,7 @@ const getAirCompStats = async (req, res) => {
         if (!airComp) {
             return res.status(404).json({
                 success: false,
-                message: 'AirCompany not found'
+                message: 'جهة الإصدار غير موجودة'
             });
         }
 
@@ -457,7 +457,7 @@ const addAirCompPayment = async (req, res) => {
         if (!amount || amount <= 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid payment amount'
+                message: 'مبلغ الدفعة غير صحيح'
             });
         }
 
@@ -465,7 +465,7 @@ const addAirCompPayment = async (req, res) => {
         if (!airComp) {
             return res.status(404).json({
                 success: false,
-                message: 'Air Company not found'
+                message: 'جهة الإصدار غير موجودة'
             });
         }
 
@@ -505,7 +505,7 @@ const addAirCompPayment = async (req, res) => {
         if (amount > remainingAmount) {
             return res.status(400).json({
                 success: false,
-                message: `Payment amount (${amount}) exceeds remaining amount (${remainingAmount})`
+                message: `مبلغ الدفعة (${amount}) يتجاوز المبلغ المتبقي (${remainingAmount})`
             });
         }
 
@@ -559,7 +559,7 @@ const getAirCompDetails = async (req, res) => {
         if (!airComp) {
             return res.status(404).json({
                 success: false,
-                message: 'Air Company not found'
+                message: 'جهة الإصدار غير موجودة'
             });
         }
 

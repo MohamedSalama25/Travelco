@@ -52,14 +52,11 @@ export async function getCustomers(
 
 export async function createCustomer(customer: CustomerSchemaType): Promise<CustomerResponse> {
     try {
-        const response = await clientAxios.post<Customer>(
+        const response = await clientAxios.post<{ success: boolean, data: Customer, message: string }>(
             API_CONFIG.ENDPOINTS.CUSTOMERS.CREATE,
             customer
         );
-        return {
-            success: true,
-            data: response.data,
-        };
+        return response.data;
     } catch (error) {
         console.error("Failed to create customer", error);
         const err = error as AxiosError<{ message?: string }>;
@@ -71,14 +68,11 @@ export async function createCustomer(customer: CustomerSchemaType): Promise<Cust
 
 export async function updateCustomer(customer: CustomerSchemaType, id: string): Promise<CustomerResponse> {
     try {
-        const response = await clientAxios.put<Customer>(
+        const response = await clientAxios.put<{ success: boolean, data: Customer, message: string }>(
             API_CONFIG.ENDPOINTS.CUSTOMERS.UPDATE(id),
             customer
         );
-        return {
-            success: true,
-            data: response.data,
-        };
+        return response.data;
     } catch (error) {
         console.error("Failed to update customer", error);
         const err = error as AxiosError<{ message?: string }>;
@@ -90,13 +84,10 @@ export async function updateCustomer(customer: CustomerSchemaType, id: string): 
 
 export async function deleteCustomer(id: string): Promise<CustomerResponse> {
     try {
-        const response = await clientAxios.delete<Customer>(
+        const response = await clientAxios.delete<{ success: boolean, data: Customer, message: string }>(
             API_CONFIG.ENDPOINTS.CUSTOMERS.DELETE(id)
         );
-        return {
-            success: true,
-            data: response.data,
-        };
+        return response.data;
     } catch (error) {
         console.error("Failed to delete customer", error);
         const err = error as AxiosError<{ message?: string }>;

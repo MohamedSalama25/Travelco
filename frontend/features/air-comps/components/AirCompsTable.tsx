@@ -55,10 +55,10 @@ export function AirCompsTable({
 
         if (confirmed) {
             try {
-                await deleteMutation.mutateAsync(airComp._id);
-                showSuccessToast(t("deleteSuccess"));
-            } catch (error) {
-                showErrorToast(t("deleteError"));
+                const res = await deleteMutation.mutateAsync(airComp._id);
+                showSuccessToast(res.message || t("deleteSuccess"));
+            } catch (error: any) {
+                showErrorToast(error.response?.data?.message || t("deleteError"));
             }
         }
     };

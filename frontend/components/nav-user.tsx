@@ -45,8 +45,6 @@ export function NavUser() {
   const confirm = useConfirmation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  console.log("user", user)
-
   const handleLogout = async () => {
     const confirmed = await confirm(
       t("errors.logoutConfirmTitle"),

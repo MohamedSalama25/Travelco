@@ -152,21 +152,21 @@ const addTransaction = async (req, res) => {
         if (!type || !amount || !description) {
             return res.status(400).json({
                 success: false,
-                message: 'All fields are required'
+                message: 'جميع الحقول مطلوبة'
             });
         }
 
         if (amount <= 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Amount must be greater than 0'
+                message: 'يجب أن يكون المبلغ أكبر من 0'
             });
         }
 
         if (!['in', 'out'].includes(type)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid transaction type'
+                message: 'نوع المعاملة غير صحيح'
             });
         }
 
@@ -183,7 +183,7 @@ const addTransaction = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Transaction added successfully',
+            message: 'تم إضافة المعاملة بنجاح',
             data: {
                 balance: treasury?.balance || 0
             }

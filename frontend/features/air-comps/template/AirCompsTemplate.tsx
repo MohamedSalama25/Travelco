@@ -37,17 +37,17 @@ export default function AirCompsTemplate() {
     const handleFormSubmit = async (formData: { name: string; phone: string; address?: string }) => {
         try {
             if (selectedAirComp) {
-                await updateMutation.mutateAsync({
+                const res = await updateMutation.mutateAsync({
                     id: selectedAirComp._id,
                     data: formData
                 });
-                showSuccessToast(t("updateSuccess"));
+                showSuccessToast(res.message || t("updateSuccess"));
             } else {
-                await createMutation.mutateAsync(formData);
-                showSuccessToast(t("createSuccess"));
+                const res = await createMutation.mutateAsync(formData);
+                showSuccessToast(res.message || t("createSuccess"));
             }
-        } catch (error) {
-            showErrorToast(selectedAirComp ? t("updateError") : t("createError"));
+        } catch (error: any) {
+            showErrorToast(error.response?.data?.message || (selectedAirComp ? t("updateError") : t("createError")));
             throw error;
         }
     };

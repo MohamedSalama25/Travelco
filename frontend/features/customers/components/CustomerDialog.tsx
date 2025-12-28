@@ -34,26 +34,28 @@ export function CustomerDialog({
     };
 
     const handleSubmit = async (data: CustomerSchemaType) => {
-        if (isEdit && customer) {
-
-            const result = await updateCustomer(data, customer._id);
-            if (result.success) {
-                queryClient.invalidateQueries({
-                    queryKey: ["customers"],
-                });
-                showSuccessToast(t("customerUpdated"));
-                handleClose();
+        try {
+            if (isEdit && customer) {
+                const result = await updateCustomer(data, customer._id);
+                if (result.success) {
+                    queryClient.invalidateQueries({
+                        queryKey: ["customers"],
+                    });
+                    showSuccessToast(result.message || t("customerUpdated"));
+                    handleClose();
+                }
+            } else {
+                const result = await createCustomer(data);
+                if (result.success) {
+                    queryClient.invalidateQueries({
+                        queryKey: ["customers"],
+                    });
+                    showSuccessToast(result.message || t("customerCreated"));
+                    handleClose();
+                }
             }
-
-        } else {
-            const result = await createCustomer(data);
-            if (result.success) {
-                queryClient.invalidateQueries({
-                    queryKey: ["customers"],
-                });
-                showSuccessToast(t("customerCreated"));
-                handleClose();
-            }
+        } catch (error: any) {
+            showErrorToast(error.response?.data?.message || t("errorOccurred") || "حدث خطأ ما");
         }
     };
 

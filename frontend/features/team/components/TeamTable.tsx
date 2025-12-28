@@ -40,8 +40,8 @@ export default function TeamTable() {
 
     const handleAddMember = async (data: TeamMemberFormData) => {
         try {
-            await createUserMutation.mutateAsync(data);
-            toast.success(tTeam("addSuccess"));
+            const res = await createUserMutation.mutateAsync(data);
+            toast.success(res.message || tTeam("addSuccess"));
         } catch (error: any) {
             toast.error(error.response?.data?.message || tTeam("addError"));
         }
@@ -50,8 +50,8 @@ export default function TeamTable() {
     const handleEditMember = async (data: TeamMemberFormData) => {
         if (!editingMember) return;
         try {
-            await updateUserMutation.mutateAsync({ id: editingMember._id, data });
-            toast.success(tTeam("updateSuccess"));
+            const res = await updateUserMutation.mutateAsync({ id: editingMember._id, data });
+            toast.success(res.message || tTeam("updateSuccess"));
             setEditingMember(null);
         } catch (error: any) {
             toast.error(error.response?.data?.message || tTeam("updateError"));
@@ -75,8 +75,8 @@ export default function TeamTable() {
 
         if (confirmed) {
             try {
-                await deleteUserMutation.mutateAsync(member._id);
-                toast.success(tTeam("deleteSuccess"));
+                const res = await deleteUserMutation.mutateAsync(member._id);
+                toast.success(res.message || tTeam("deleteSuccess"));
             } catch (error: any) {
                 toast.error(error.response?.data?.message || tTeam("deleteError"));
             }

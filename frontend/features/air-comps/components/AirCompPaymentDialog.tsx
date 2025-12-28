@@ -66,14 +66,14 @@ export default function AirCompPaymentDialog({
 
     const onSubmit = async (data: any) => {
         try {
-            await createPaymentMutation.mutateAsync({
+            const res = await createPaymentMutation.mutateAsync({
                 id: airCompId,
                 data: {
                     ...data,
                     amount: Number(data.amount),
                 },
             });
-            toast.success(tCommon("saveSuccess"));
+            toast.success(res.message || tCommon("saveSuccess"));
             reset();
             onClose();
         } catch (error: any) {

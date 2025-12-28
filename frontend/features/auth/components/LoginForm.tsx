@@ -31,12 +31,12 @@ export default function LoginForm() {
         login(
             { email: data.email, password: data.password },
             {
-                onSuccess: async () => {
-                    showSuccessToast(t("loginSuccess"));
+                onSuccess: (data: any) => {
+                    showSuccessToast(data.message || t("loginSuccess"));
                     router.push("/dashboard");
                 },
                 onError: (error: any) => {
-                    showErrorToast(tErrors("invalidCredentials"));
+                    showErrorToast(error.response?.data?.message || tErrors("invalidCredentials"));
                 },
             }
         );

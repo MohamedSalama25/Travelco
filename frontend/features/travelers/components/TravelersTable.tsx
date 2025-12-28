@@ -103,8 +103,8 @@ export function TravelersTable({
                         queryKey: ["travelers-stats"],
                     });
                 }
-            } catch (error) {
-                showErrorToast("لا يمكنك حذف هذا المسافر حاليا !!");
+            } catch (error: any) {
+                showErrorToast(error.response?.data?.message || "فشل حذف المسافر");
             }
         }
     };

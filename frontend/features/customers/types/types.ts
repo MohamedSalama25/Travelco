@@ -99,4 +99,5 @@ export interface CustomerDetailsResponse {
 export interface CustomerResponse {
     success: boolean;
     data: Customer;
+    message?: string;
 }

@@ -4,16 +4,16 @@ const advanceSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: [true, "User is required"]
+        required: [true, "الموظف مطلوب"]
     },
     amount: {
         type: Number,
-        required: [true, "Amount is required"],
-        min: [1, "Amount must be at least 1"]
+        required: [true, "المبلغ مطلوب"],
+        min: [1, "يجب أن يكون المبلغ 1 على الأقل"]
     },
     reason: {
         type: String,
-        required: [true, "Reason is required"],
+        required: [true, "السبب مطلوب"],
         trim: true
     },
     status: {
