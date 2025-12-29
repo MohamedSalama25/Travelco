@@ -14,6 +14,7 @@ import AddAdvanceDialog from "./AddAdvanceDialog";
 import { useMemo, useState } from "react";
 import UniTable from "@/components/data-table";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "../../auth/store/authStore";
 
 export default function MemberDetails() {
     const { id } = useParams();
@@ -23,6 +24,8 @@ export default function MemberDetails() {
     const [page, setPage] = useState(1);
     const { data: userDetails, isLoading } = useUserDetails(id as string, page);
     const queryClient = useQueryClient();
+    const currentUser = useCurrentUser();
+    const isManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
     const [advanceDialogOpen, setAdvanceDialogOpen] = useState(false);
 
@@ -112,6 +115,7 @@ export default function MemberDetails() {
 
     const filterActions = (row: any, allActions: any[]) => {
         if (row.status !== 'pending') return [];
+        if (!isManager) return [];
         return allActions;
     };
 

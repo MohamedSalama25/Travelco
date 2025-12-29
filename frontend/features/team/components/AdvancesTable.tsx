@@ -12,6 +12,7 @@ import { useAdvances, useUpdateAdvanceStatus, useAdvanceStats, useRepayAdvance }
 import { toast } from "sonner";
 import { AdvancesStats } from "./AdvancesStats";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "../../auth/store/authStore";
 
 export default function AdvancesTable() {
     const t = useTranslations("team");
@@ -19,6 +20,8 @@ export default function AdvancesTable() {
     const [currentPage, setCurrentPage] = useState(1);
     const [statusFilter, setStatusFilter] = useState<string>("pending");
     const queryClient = useQueryClient();
+    const user = useCurrentUser();
+    const isManager = user?.role === 'admin' || user?.role === 'manager';
 
     const { data: advancesData, isLoading } = useAdvances({
         page: currentPage,
@@ -116,19 +119,19 @@ export default function AdvancesTable() {
         {
             label: t("approve"),
             onClick: handleApprove,
-            show: (item: Advance) => item.status === 'pending',
+            show: (item: Advance) => item.status === 'pending' && isManager,
         },
         {
             label: t("reject"),
             onClick: handleReject,
-            show: (item: Advance) => item.status === 'pending',
+            show: (item: Advance) => item.status === 'pending' && isManager,
         },
         {
             label: t("repay"),
             onClick: handleRepay,
-            show: (item: Advance) => item.status === 'approved',
+            show: (item: Advance) => item.status === 'approved' && isManager,
         },
-    ], [handleApprove, handleReject, handleRepay, t]);
+    ], [handleApprove, handleReject, handleRepay, t, isManager]);
 
     return (
         <div className="space-y-4">

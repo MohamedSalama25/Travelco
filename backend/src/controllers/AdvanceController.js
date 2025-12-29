@@ -82,6 +82,14 @@ const updateAdvanceStatus = async (req, res) => {
         const { status, notes } = req.body;
         const advanceId = req.params.id;
 
+        // Check permissions
+        if (!['admin', 'manager'].includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: "غير مسموح لك بالقيام بهذا الإجراء"
+            });
+        }
+
         if (!['approved', 'rejected'].includes(status)) {
             return res.status(400).json({
                 success: false,
@@ -139,6 +147,14 @@ const updateAdvanceStatus = async (req, res) => {
 
 const deleteAdvance = async (req, res) => {
     try {
+        // Check permissions
+        if (!['admin', 'manager'].includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: "غير مسموح لك بحذف السلف"
+            });
+        }
+
         const advance = await Advance.findById(req.params.id);
         if (!advance) {
             return res.status(404).json({
@@ -219,6 +235,14 @@ const getAdvanceStats = async (req, res) => {
 
 const repayAdvance = async (req, res) => {
     try {
+        // Check permissions
+        if (!['admin', 'manager'].includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: "غير مسموح لك بالقيام بهذا الإجراء"
+            });
+        }
+
         const advanceId = req.params.id;
         const advance = await Advance.findById(advanceId).populate("user", "user_name");
 
