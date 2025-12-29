@@ -23,11 +23,11 @@ const calculateChange = (current, previous) => {
 const getAirComp = async (req, res) => {
     try {
         const { limit, skip } = getPagination(req);
-        const { name } = req.query;
+        const { search } = req.query;
 
         const filter = {};
-        if (name) {
-            filter.name = { $regex: name, $options: 'i' };
+        if (search) {
+            filter.name = { $regex: search, $options: 'i' };
         }
 
         const airComps = await AirComp.find(filter, { "__v": false })

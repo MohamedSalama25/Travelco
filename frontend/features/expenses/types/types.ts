@@ -35,4 +35,5 @@ export interface ExpenseFilters {
     search?: string;
     fromDate?: string;
     toDate?: string;
+    date?: string;
 }

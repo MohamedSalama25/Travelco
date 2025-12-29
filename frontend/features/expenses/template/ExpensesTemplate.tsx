@@ -15,7 +15,7 @@ import {
 import { DatePicker } from "@/components/globalComponents/date-picker";
 import { formatDateToLocal } from "@/lib/dateUtils";
 import { format } from "date-fns";
-import { Plus, Search, ArrowUpCircle, X, RefreshCcw } from "lucide-react";
+import { Plus, Search, ArrowUpCircle, X, RefreshCcw, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
     AlertDialog,
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import ExpenseDialog from "../components/ExpenseDialog";
 import { ExpensesTable } from "../components/ExpensesTable";
+import { Label } from "@/components/ui/label";
 
 export default function ExpensesTemplate() {
     const t = useTranslations("expenses");
@@ -40,7 +41,8 @@ export default function ExpensesTemplate() {
         limit: 10,
         search: '',
         fromDate: '',
-        toDate: ''
+        toDate: '',
+        date: ''
     });
 
     // Dialogs state
@@ -56,7 +58,7 @@ export default function ExpensesTemplate() {
         setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }));
     };
 
-    const handleDateChange = (field: 'fromDate' | 'toDate', value: string) => {
+    const handleDateChange = (field: 'fromDate' | 'toDate' | 'date', value: string) => {
         setFilters(prev => ({ ...prev, [field]: value, page: 1 }));
     };
 
@@ -137,22 +139,38 @@ export default function ExpensesTemplate() {
                         />
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <div className="max-w-[320px]">
-                        <DatePicker
-                            value={filters.fromDate ? new Date(filters.fromDate) : undefined}
-                            onChange={(date) => handleDateChange('fromDate', date ? formatDateToLocal(date) : "")}
-                        />
+                <div className="flex gap-4 items-end flex-wrap">
+                    <div className="flex flex-col gap-1.5">
+                        <Label className="text-xs text-muted-foreground mr-1">{tCommon("fromDate")}</Label>
+                        <div className="max-w-[200px]">
+                            <DatePicker
+                                value={filters.fromDate ? new Date(filters.fromDate) : undefined}
+                                onChange={(date) => handleDateChange('fromDate', date ? formatDateToLocal(date) : "")}
+                            />
+                        </div>
                     </div>
-                    <div className="max-w-[320px]">
-                        <DatePicker
-                            value={filters.toDate ? new Date(filters.toDate) : undefined}
-                            onChange={(date) => handleDateChange('toDate', date ? formatDateToLocal(date) : "")}
-                        />
+                    <div className="flex flex-col gap-1.5">
+                        <Label className="text-xs text-muted-foreground mr-1">{tCommon("toDate")}</Label>
+                        <div className="max-w-[200px]">
+                            <DatePicker
+                                value={filters.toDate ? new Date(filters.toDate) : undefined}
+                                onChange={(date) => handleDateChange('toDate', date ? formatDateToLocal(date) : "")}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <Label className="text-xs text-muted-foreground mr-1">{tCommon("specificDate")}</Label>
+                        <div className="max-w-[200px]">
+                            <DatePicker
+                                value={filters.date ? new Date(filters.date) : undefined}
+                                onChange={(date) => handleDateChange('date', date ? formatDateToLocal(date) : "")}
+                            />
+                        </div>
                     </div>
                     <Button
+                        variant="outline"
                         className="gap-1 bg-primary text-primary-foreground hover:opacity-90 cursor-pointer"
-                        onClick={() => setFilters({ page: 1, limit: 10, search: '', fromDate: '', toDate: '' })}
+                        onClick={() => setFilters({ page: 1, limit: 10, search: '', fromDate: '', toDate: '', date: '' })}
                     >
                         <RefreshCcw className="h-4 w-4 " />
                         {tCommon('clearFilters') || 'مسح الفلاتر'}

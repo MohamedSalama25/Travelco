@@ -137,11 +137,13 @@ export default function ExpenseDialog({ isOpen, onClose, onSubmit, isSubmitting,
                                 control={form.control}
                                 name="date"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="flex flex-col">
                                         <FormLabel>{tCommon("date")}</FormLabel>
-                                        <FormControl>
-                                            <Input type="date" disabled={isSubmitting} {...field} />
-                                        </FormControl>
+                                        <DatePicker
+                                            value={field.value ? new Date(field.value) : undefined}
+                                            onChange={(date) => field.onChange(date ? formatDateToLocal(date) : "")}
+                                            disabled={isSubmitting}
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}

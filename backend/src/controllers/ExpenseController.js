@@ -8,7 +8,7 @@ const getPagination = require("../utils/pagination");
 const getExpenses = async (req, res) => {
     try {
         const { limit, skip } = getPagination(req);
-        const { fromDate, toDate, search } = req.query;
+        const { fromDate, toDate, search, date } = req.query;
         const filter = {};
 
         if (search) {
@@ -18,10 +18,19 @@ const getExpenses = async (req, res) => {
             ];
         }
 
-        if (fromDate || toDate) {
+        if (date) {
+            const startOfDay = new Date(date);
+            const endOfDay = new Date(date);
+            endOfDay.setHours(23, 59, 59, 999);
+            filter.date = { $gte: startOfDay, $lte: endOfDay };
+        } else if (fromDate || toDate) {
             filter.date = {};
             if (fromDate) filter.date.$gte = new Date(fromDate);
-            if (toDate) filter.date.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                filter.date.$lte = endOfDay;
+            }
         }
 
         const expenses = await Expense.find(filter)
