@@ -22,6 +22,8 @@ export default function AdvancesTable() {
     const queryClient = useQueryClient();
     const user = useCurrentUser();
     const isManager = user?.role === 'admin' || user?.role === 'manager';
+    console.log('isManager:', isManager);
+    console.log('User:', user);
 
     const { data: advancesData, isLoading } = useAdvances({
         page: currentPage,
@@ -162,7 +164,7 @@ export default function AdvancesTable() {
                 itemsPerPage={10}
                 currentPage={currentPage}
                 tableName={t("advances")}
-                actions={actions}
+                actions={isManager ? actions : []}
                 onPageChange={setCurrentPage}
                 isLoading={isLoading}
             />

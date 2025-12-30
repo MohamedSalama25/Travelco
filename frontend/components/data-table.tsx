@@ -12,6 +12,7 @@ export interface Action<TData> {
   classname?: string | ((rowData: TData) => string);
   onClick: (rowData: TData) => void;
   icon?: React.ElementType; // Optional icon override
+  show?: (rowData: TData) => boolean; // Function to determine if action should be shown
 }
 
 interface UniTableProps<TData> {
@@ -58,8 +59,8 @@ const UniTable = <TData extends object>({
   })
 
   // Get user data and role inside the component
-  const user = { role: 'admin' };
-  const userRole = user?.role;
+  // Remove hardcoded user role - let parent component control access
+  const userRole = null;
 
   const getResolvedLabel = (action: Action<TData>, rowData: TData) =>
     typeof action.label === 'function' ? action.label(rowData) : action.label;
@@ -88,16 +89,12 @@ const UniTable = <TData extends object>({
   const columnsWithSorting = columns.map(column => ({
     ...column,
     enableSorting: column.enableSorting !== false // Default to true unless explicitly set to false
-  })).filter(column => { // Filter out 'status' column if user is a 'user'
-    if (userRole === 'user' && column.id === 'status') { // Changed accessorKey to id
-      return false;
-    }
-    return true;
-  });
+  }));
+  // Remove role-based filtering - let parent component control column visibility
 
 
   const columnsWithActions = [
-    ...(headerActions && headerActions.length > 0 && userRole !== 'user' ? [{ // Hide header actions if user is 'user'
+    ...(headerActions && headerActions.length > 0 ? [{
       id: 'header-actions',
       header: t('actions'),
       cell: () => (
@@ -140,15 +137,25 @@ const UniTable = <TData extends object>({
     }] : []),
     // User provided columns with sorting enabled by default
     ...columnsWithSorting,
-    // Actions column (only if actions exist and not empty, and user is not 'user')
+    // Actions column (only if actions exist and not empty)
     ...(actions && actions.length > 0 ? [{
       id: 'actions',
       header: t('actions'),
       cell: ({ row }: { row: Row<TData> }) => {
         // Apply filterActions if provided, otherwise use original actions
-        const filteredActions = filterActions
+        let filteredActions = filterActions
           ? filterActions(row.original, actions)
           : actions;
+        
+        // Apply individual action show functions
+        filteredActions = filteredActions.filter(action => {
+          // If action has a show function, call it to determine visibility
+          if (action.show && typeof action.show === 'function') {
+            return action.show(row.original);
+          }
+          // If no show function, show the action by default
+          return true;
+        });
 
         // If no actions remain after filtering, return null to hide the column
         if (!filteredActions || filteredActions.length === 0) {

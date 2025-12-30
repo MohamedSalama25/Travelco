@@ -35,6 +35,12 @@ const register = async (req, res) => {
     return res.status(201).json({
       success: true,
       token,
+      user: {
+        id: newUser._id,
+        user_name: newUser.user_name,
+        role:"accountant",
+        email: newUser.email
+      },
       message: "تم تسجيل المستخدم بنجاح"
     });
 
@@ -94,6 +100,12 @@ const login = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      user: {
+        id: user._id,
+        user_name: user.user_name,
+        role:user.role,
+        email: user.email
+      },
       message: "تم تسجيل الدخول بنجاح",
       token,
     });

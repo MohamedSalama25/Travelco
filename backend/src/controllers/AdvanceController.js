@@ -83,12 +83,12 @@ const updateAdvanceStatus = async (req, res) => {
         const advanceId = req.params.id;
 
         // Check permissions
-        if (!['admin', 'manager'].includes(req.user.role)) {
-            return res.status(403).json({
-                success: false,
-                message: "غير مسموح لك بالقيام بهذا الإجراء"
-            });
-        }
+        // if (!['admin', 'manager'].includes(req.user.role)) {
+        //     return res.status(403).json({
+        //         success: false,
+        //         message: "غير مسموح لك بالقيام بهذا الإجراء"
+        //     });
+        // }
 
         if (!['approved', 'rejected'].includes(status)) {
             return res.status(400).json({

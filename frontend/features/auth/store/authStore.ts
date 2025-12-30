@@ -43,13 +43,12 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
 
             /**
-             * Initialize auth from cookies
+             * Initialize auth - now handled by Zustand persist middleware
+             * This function is kept for backward compatibility
              */
             initializeAuth: () => {
-                const token = Cookies.get(AUTH_COOKIE_KEY);
-                if (token) {
-                    set({ token, isAuthenticated: true });
-                }
+                // Zustand persist middleware handles everything automatically
+                // No manual initialization needed
             },
 
             /**
@@ -116,10 +115,11 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'auth-storage',
-            // إحنا هنا بس بنخزن الـ user في localStorage
-            // التوكين بقى في الكوكيز بس
+            // Store all auth data in localStorage for persistence
             partialize: (state) => ({
                 user: state.user,
+                token: state.token,
+                isAuthenticated: state.isAuthenticated,
             }),
         }
     )
