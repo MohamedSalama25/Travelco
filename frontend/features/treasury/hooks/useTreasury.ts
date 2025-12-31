@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTreasuryHistory, getTreasuryStats, addTransaction } from "../services/treasuryService";
+import { getTreasuryHistory, getTreasuryStats, addTransaction, getInventory } from "../services/treasuryService";
 import { TreasuryFilters } from "../types/types";
 
 export const useTreasuryHistory = (filters: TreasuryFilters) => {
@@ -16,6 +16,13 @@ export const useTreasuryStats = (filters: { fromDate?: string; toDate?: string }
     });
 };
 
+export const useInventory = (filters: { fromDate?: string; toDate?: string }) => {
+    return useQuery({
+        queryKey: ['treasury-inventory', filters],
+        queryFn: () => getInventory(filters),
+    });
+};
+
 export const useTreasuryMutation = () => {
     const queryClient = useQueryClient();
 
@@ -24,6 +31,7 @@ export const useTreasuryMutation = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });
         },
     });
 };

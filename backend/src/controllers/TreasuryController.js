@@ -1,5 +1,8 @@
 const TreasuryHistory = require("../models/TreasuryHistory.model");
 const Treasury = require("../models/Treasury.model");
+const Transfer = require("../models/Transfer.model");
+const Expense = require("../models/Expense.model");
+const Payment = require("../models/Payment.model");
 const getPagination = require("../utils/pagination");
 const { generateTreasuryExcel } = require("../utils/excelExport");
 const { updateTreasury } = require("../utils/treasury.helper");
@@ -196,9 +199,79 @@ const addTransaction = async (req, res) => {
     }
 };
 
+/**
+ * Get Inventory (Jard) summary 
+ */
+const getInventory = async (req, res) => {
+    try {
+        const { fromDate, toDate } = req.query;
+        const filter = {};
+
+        if (fromDate || toDate) {
+            filter.createdAt = {};
+            if (fromDate) filter.createdAt.$gte = new Date(fromDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                filter.createdAt.$lte = endOfDay;
+            }
+        }
+
+        // 1. Calculate Revenue and Profit from Transfers
+        const transferStats = await Transfer.aggregate([
+            { $match: filter },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: "$ticket_price" },
+                    totalCost: { $sum: "$ticket_salary" },
+                }
+            }
+        ]);
+
+        const revenue = transferStats[0]?.totalRevenue || 0;
+        const profit = (transferStats[0]?.totalRevenue || 0) - (transferStats[0]?.totalCost || 0);
+
+        // 2. Calculate Expenses from Expense model
+        const expenseFilter = {};
+        if (fromDate || toDate) {
+            expenseFilter.date = {};
+            if (fromDate) expenseFilter.date.$gte = new Date(fromDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                expenseFilter.date.$lte = endOfDay;
+            }
+        }
+
+        const expenseStats = await Expense.aggregate([
+            { $match: expenseFilter },
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+
+        const expenses = expenseStats[0]?.total || 0;
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                totalRevenue: revenue,
+                totalExpenses: expenses,
+                totalProfit: profit,
+                netProfit: profit - expenses
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     getTreasuryHistory,
     getTreasuryStats,
     exportTreasuryToExcel,
-    addTransaction
+    addTransaction,
+    getInventory
 };

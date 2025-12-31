@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { AdvancesStats } from "./AdvancesStats";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "../../auth/store/authStore";
+import { useConfirmation } from "@/hooks/useConfirmation";
 
 export default function AdvancesTable() {
     const t = useTranslations("team");
@@ -35,8 +36,16 @@ export default function AdvancesTable() {
     const updateAdvanceMutation = useUpdateAdvanceStatus();
     const repayAdvanceMutation = useRepayAdvance();
 
+    const confirm = useConfirmation();
+
     const handleApprove = async (advance: Advance) => {
-        if (confirm(t("confirmApprove"))) {
+        const isConfirmed = await confirm(
+            t("confirmApprove"),
+            t("confirmApproveDesc"),
+            <Check className="w-12 h-12 text-green-500 mb-4" />
+        );
+
+        if (isConfirmed) {
             try {
                 const res = await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'approved' });
                 queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
@@ -49,7 +58,13 @@ export default function AdvancesTable() {
     };
 
     const handleReject = async (advance: Advance) => {
-        if (confirm(t("confirmReject"))) {
+        const isConfirmed = await confirm(
+            t("confirmReject"),
+            t("confirmRejectDesc"),
+            <X className="w-12 h-12 text-red-500 mb-4" />
+        );
+
+        if (isConfirmed) {
             try {
                 const res = await updateAdvanceMutation.mutateAsync({ id: advance._id, status: 'rejected' });
                 queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
@@ -61,7 +76,13 @@ export default function AdvancesTable() {
     };
 
     const handleRepay = async (advance: Advance) => {
-        if (confirm(t("confirmRepay"))) {
+        const isConfirmed = await confirm(
+            t("confirmRepay"),
+            t("confirmRepayDesc"),
+            <Check className="w-12 h-12 text-blue-500 mb-4" />
+        );
+
+        if (isConfirmed) {
             try {
                 const res = await repayAdvanceMutation.mutateAsync(advance._id);
                 queryClient.invalidateQueries({ queryKey: ['treasury-history'] });

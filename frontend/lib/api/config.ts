@@ -43,6 +43,7 @@ export const API_CONFIG = {
         TREASURY: {
             LIST: 'treasury/history',
             STATS: 'treasury/stats',
+            INVENTORY: 'treasury/inventory',
             EXPORT_EXCEL: 'treasury/export/excel',
             TRANSACTIONS: 'treasury/transactions',
         },

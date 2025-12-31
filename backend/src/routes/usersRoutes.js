@@ -3,6 +3,9 @@ const router = express.Router();
 const UsersControllers = require("../controllers/usersController");
 const authRole = require("../middlewares/authRole");
 
+const auth = require("../middlewares/auth");
+
+router.put("/profile", auth, UsersControllers.updateProfile);
 router.get("/", authRole("admin"), UsersControllers.getUsers);
 router.get("/:id", UsersControllers.getUserById);
 router.post("/", authRole("admin"), UsersControllers.addUser);

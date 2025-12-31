@@ -180,6 +180,74 @@ const updateUser = async (req, res) => {
     }
 };
 
+
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { user_name, email, password, phone } = req.body;
+
+        const user = await Users.findById(userId).select("+password");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "المستخدم غير موجود"
+            });
+        }
+
+        if (email && email !== user.email) {
+            const emailExists = await Users.findOne({ email });
+            if (emailExists && String(emailExists._id) !== String(user._id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "البريد الإلكتروني مسجل بالفعل لمستخدم آخر"
+                });
+            }
+        }
+
+        if (phone && phone !== user.phone) {
+            const phoneExists = await Users.findOne({ phone });
+            if (phoneExists && String(phoneExists._id) !== String(user._id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "الهاتف مسجل بالفعل لمستخدم آخر"
+                });
+            }
+        }
+
+        if (user_name !== undefined) user.user_name = user_name;
+        if (email !== undefined) user.email = email;
+        if (phone !== undefined) user.phone = phone;
+
+        if (password !== undefined && password !== "") {
+            user.password = await bcrypt.hash(password, 10);
+        }
+
+        await user.save();
+
+        const userSafe = user.toObject();
+        delete userSafe.password;
+
+        return res.status(200).json({
+            success: true,
+            message: "تم تحديث الملف الشخصي بنجاح",
+            data: userSafe
+        });
+    } catch (error) {
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                success: false,
+                message: Object.values(error.errors)[0].message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 const deleteUser = async (req, res) => {
     try {
         const user = await Users.findById(req.params.id);
@@ -229,11 +297,10 @@ const getUserById = async (req, res) => {
         const totalTransfers = await Transfer.countDocuments({ createdBy: user._id });
 
         const transferStatsAgg = await Transfer.aggregate([
-            { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
+            { $match: { createdBy: user._id } },
             {
                 $group: {
                     _id: null,
-                    totalTickets: { $sum: 1 },
                     totalSales: { $sum: "$ticket_price" },
                     totalCost: { $sum: "$ticket_salary" },
                     totalPaid: { $sum: "$total_paid" },
@@ -243,12 +310,11 @@ const getUserById = async (req, res) => {
         ]);
 
         const transferStatusCounts = await Transfer.aggregate([
-            { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
+            { $match: { createdBy: user._id } },
             { $group: { _id: "$status", count: { $sum: 1 } } }
         ]);
 
         const transferStatsBase = transferStatsAgg[0] || {
-            totalTickets: 0,
             totalSales: 0,
             totalCost: 0,
             totalPaid: 0,
@@ -257,16 +323,21 @@ const getUserById = async (req, res) => {
 
         const transferStats = {
             ...transferStatsBase,
+            totalTickets: totalTransfers,
             totalProfit: transferStatsBase.totalSales - transferStatsBase.totalCost,
             ticketsByStatus: {
                 paid: transferStatusCounts.find(s => s._id === "paid")?.count || 0,
                 partial: transferStatusCounts.find(s => s._id === "partial")?.count || 0,
-                unpaid: transferStatusCounts.find(s => s._id === "unpaid")?.count || 0
+                unpaid: transferStatusCounts.find(s => s._id === "unpaid")?.count || 0,
+                cancel: transferStatusCounts.find(s => s._id === "cancel")?.count || 0
             }
         };
 
+        // Add overdue count (unpaid + partial)
+        transferStats.overdueTickets = transferStats.ticketsByStatus.unpaid + transferStats.ticketsByStatus.partial;
+
         const paymentStatsAgg = await Payment.aggregate([
-            { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
+            { $match: { createdBy: user._id } },
             {
                 $group: {
                     _id: null,
@@ -293,11 +364,29 @@ const getUserById = async (req, res) => {
         const totalAdvancesCount = await Advance.countDocuments({ user: user._id });
 
         const advanceStatsAgg = await Advance.aggregate([
-            { $match: { user: new mongoose.Types.ObjectId(userId), status: 'approved' } },
-            { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
+            { $match: { user: user._id, status: { $in: ['approved', 'repaid'] } } },
+            {
+                $group: {
+                    _id: null,
+                    totalApproved: {
+                        $sum: { $cond: [{ $eq: ["$status", "approved"] }, "$amount", 0] }
+                    },
+                    totalRepaid: {
+                        $sum: { $cond: [{ $eq: ["$status", "repaid"] }, "$amount", 0] }
+                    },
+                    totalAmount: { $sum: "$amount" } // This might not be needed if we want specific split
+                }
+            }
         ]);
 
-        const totalAdvances = advanceStatsAgg[0]?.totalAmount || 0;
+        const advStatsResult = advanceStatsAgg[0] || { totalApproved: 0, totalRepaid: 0 };
+        const totalAdvances = advStatsResult.totalApproved + advStatsResult.totalRepaid;
+        const totalRepaidAmount = advStatsResult.totalRepaid;
+        const outstandingAmount = advStatsResult.totalApproved; // Because 'repaid' items are no longer 'approved' status? 
+        // Wait, if status is 'repaid', it was once approved. 
+        // If the user wants "Total Advances taken", it should be Approved + Repaid.
+        // If "Repaid" is what was paid back.
+        // If "Outstanding" is what is still "Approved" but not yet "repaid".
 
         return res.status(200).json({
             success: true,
@@ -312,7 +401,9 @@ const getUserById = async (req, res) => {
                         totalCustomersCreated
                     },
                     advances: {
-                        totalAdvances
+                        totalAdvances,
+                        totalRepaid: totalRepaidAmount,
+                        outstanding: outstandingAmount
                     }
                 }
             },
@@ -344,5 +435,6 @@ module.exports = {
     addUser,
     updateUser,
     deleteUser,
-    getUserById
+    getUserById,
+    updateProfile
 };

@@ -15,12 +15,17 @@ import { useMemo, useState } from "react";
 import UniTable from "@/components/data-table";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "../../auth/store/authStore";
+import { useConfirmation } from "@/hooks/useConfirmation";
+import { EditProfileDialog } from "../../auth/components/EditProfileDialog";
+import { IconUserCircle } from "@tabler/icons-react";
 
 export default function MemberDetails() {
     const { id } = useParams();
     const router = useRouter();
     const t = useTranslations("team");
+    const tAuth = useTranslations("auth");
     const tCommon = useTranslations("common");
+    const tTravelers = useTranslations("travelers");
     const [page, setPage] = useState(1);
     const { data: userDetails, isLoading } = useUserDetails(id as string, page);
     const queryClient = useQueryClient();
@@ -28,6 +33,7 @@ export default function MemberDetails() {
     const isManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
     const [advanceDialogOpen, setAdvanceDialogOpen] = useState(false);
+    const [editProfileOpen, setEditProfileOpen] = useState(false);
 
     const updateAdvanceMutation = useUpdateAdvanceStatus();
     const deleteAdvanceMutation = useDeleteAdvance();
@@ -53,44 +59,75 @@ export default function MemberDetails() {
         }
     };
 
+    const confirm = useConfirmation();
+
     const handleDelete = async (id: string) => {
-        if (!window.confirm(tCommon("confirmDelete"))) return;
-        try {
-            const res = await deleteAdvanceMutation.mutateAsync(id);
-            toast.success(res.message || tCommon("deleteSuccess"));
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || tCommon("deleteError"));
+        const isConfirmed = await confirm(
+            tCommon("confirmDelete"),
+            tCommon("confirmDeleteDesc") || "Are you sure you want to delete this item?",
+            <Trash2 className="w-12 h-12 text-red-500 mb-4" />
+        );
+
+        if (isConfirmed) {
+            try {
+                const res = await deleteAdvanceMutation.mutateAsync(id);
+                toast.success(res.message || tCommon("deleteSuccess"));
+            } catch (error: any) {
+                toast.error(error.response?.data?.message || tCommon("deleteError"));
+            }
         }
     };
 
     const columns = useMemo(() => [
         {
             accessorKey: "date",
-            header: t("date"),
-            cell: ({ row }: any) => <span>{row.original.date ? new Date(row.original.date).toLocaleDateString() : '-'}</span>
+            header: () => <div className="text-right">{t("date")}</div>,
+            cell: ({ row }: any) => (
+                <div className="text-right">
+                    {row.original.date
+                        ? new Date(row.original.date).toLocaleDateString("ar-EG")
+                        : "-"}
+                </div>
+            ),
         },
         {
             accessorKey: "amount",
-            header: t("amount"),
-            cell: ({ row }: any) => <span className="font-bold text-lg">{row.original.amount?.toLocaleString() ?? 0}</span>
+            header: () => <div className="text-right">{t("amount")}</div>,
+            cell: ({ row }: any) => (
+                <div className="text-right font-bold text-lg">
+                    {row.original.amount?.toLocaleString("ar-EG") ?? 0}
+                </div>
+            ),
         },
         {
             accessorKey: "reason",
-            header: t("reason"),
+            header: () => <div className="text-right">{t("reason")}</div>,
+            cell: ({ row }: any) => (
+                <div className="text-right">{row.original.reason}</div>
+            ),
         },
         {
             accessorKey: "status",
-            header: t("status"),
+            header: () => <div className="text-right">{t("status")}</div>,
             cell: ({ row }: any) => (
-                <Badge variant={
-                    row.original.status === 'approved' ? 'default' :
-                        row.original.status === 'rejected' ? 'destructive' : 'secondary'
-                } className="font-normal px-2">
-                    {t(row.original.status) || row.original.status}
-                </Badge>
-            )
+                <div className="text-right">
+                    <Badge
+                        variant={
+                            row.original.status === "approved"
+                                ? "default"
+                                : row.original.status === "rejected"
+                                    ? "destructive"
+                                    : "secondary"
+                        }
+                        className="font-normal px-2"
+                    >
+                        {t(row.original.status)}
+                    </Badge>
+                </div>
+            ),
         },
     ], [t]);
+
 
     const actions = useMemo(() => [
         {
@@ -151,6 +188,15 @@ export default function MemberDetails() {
                     </p>
                 </div>
                 <div className="mr-auto rtl:ml-0 ltr:ml-auto flex gap-2">
+                    {id === currentUser?.id && (
+                        <>
+                            <Button variant="outline" onClick={() => setEditProfileOpen(true)} className="gap-2">
+                                <IconUserCircle className="h-4 w-4" />
+                                {tAuth("editProfile")}
+                            </Button>
+                            <EditProfileDialog open={editProfileOpen} onOpenChange={setEditProfileOpen} />
+                        </>
+                    )}
                     <Badge variant="outline" className="px-3 py-1 font-medium bg-background/50">
                         {t(user.role)}
                     </Badge>
@@ -172,28 +218,28 @@ export default function MemberDetails() {
                 </Card>
                 <Card className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-card to-emerald-500/5 hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t("payments")}</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t("totalAdvances")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{stats.payments.totalPayments}</div>
-                        <p className="text-xs text-muted-foreground mt-1">{t("paymentsRecorded")}</p>
+                        <div className="text-3xl font-bold">{stats.advances.totalAdvances?.toLocaleString() ?? 0}</div>
+                        <p className="text-xs text-muted-foreground mt-1">{t("totalDisbursed")}</p>
                     </CardContent>
                 </Card>
                 <Card className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-card to-purple-500/5 hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t("customers")}</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t("totalRepaid")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{stats.customers.totalCustomersCreated}</div>
-                        <p className="text-xs text-muted-foreground mt-1">{t("newCustomer")}</p>
+                        <div className="text-3xl font-bold">{stats.advances.totalRepaid?.toLocaleString() ?? 0}</div>
+                        <p className="text-xs text-muted-foreground mt-1">{t("repaid")}</p>
                     </CardContent>
                 </Card>
                 <Card className="overflow-hidden border-none shadow-sm border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 hover:shadow-md transition-shadow ring-1 ring-primary/20">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-primary uppercase tracking-wider">{t("totalAdvances")}</CardTitle>
+                        <CardTitle className="text-sm font-medium text-primary uppercase tracking-wider">{t("outstanding")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-primary">{stats.advances.totalAdvances}</div>
+                        <div className="text-3xl font-bold text-primary">{stats.advances.outstanding?.toLocaleString() ?? 0}</div>
                         <p className="text-xs text-primary/70 mt-1">{t("totalApproved")}</p>
                     </CardContent>
                 </Card>
@@ -215,7 +261,7 @@ export default function MemberDetails() {
 
                     </div>
 
-                    <div className="rounded-xl border bg-card shadow-sm overflow-hidden p-1">
+                    <div dir="rtl" className="rounded-xl border bg-card shadow-sm overflow-hidden p-1">
                         <UniTable
                             columns={columns}
                             data={advances}

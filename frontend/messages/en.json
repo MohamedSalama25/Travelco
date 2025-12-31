@@ -27,6 +27,7 @@
         "areYouSure": "Are you sure?",
         "check": "Check",
         "clearFilters": "Clear Filters",
+        "optional": "Optional",
         "noResults": "No results found"
     },
     "nav": {
@@ -91,8 +92,10 @@
         "amount": "Amount",
         "date": "Date",
         "notes": "Notes",
-        "confirmApprove": "Are you sure you want to approve this advance? The amount will be deducted from the treasury.",
+        "confirmApprove": "Are you sure you want to approve this advance?",
+        "confirmApproveDesc": "The amount will be deducted from the treasury immediately upon approval.",
         "confirmReject": "Are you sure you want to reject this advance?",
+        "confirmRejectDesc": "This request will be cancelled and no funds will be disbursed.",
         "noAdvances": "No advances recorded for this member",
         "email": "Email",
         "phone": "Phone",
@@ -107,7 +110,8 @@
         "rejected": "Rejected",
         "repaid": "Repaid",
         "repay": "Repay",
-        "confirmRepay": "Are you sure you want to repay this advance? The amount will be added to the treasury.",
+        "confirmRepay": "Are you sure you want to repay this advance?",
+        "confirmRepayDesc": "The advance amount will be added back to the treasury balance.",
         "totalRepaid": "Total Repaid",
         "outstanding": "Outstanding",
         "totalDisbursed": "Total Disbursed"
@@ -174,7 +178,16 @@
         "transactionSuccess": "Transaction successful",
         "transactionError": "Transaction failed",
         "treasuryManagement": "Treasury Management",
-        "aircomppayment": "Payment to Issuing Entity"
+        "aircomppayment": "Payment to Issuing Entity",
+        "inventory": "Inventory",
+        "revenue": "Revenue",
+        "totalProfit": "Total Profit",
+        "netProfit": "Net Profit",
+        "filterRange": "Inventory Range",
+        "selectRange": "Select Range",
+        "thisMonth": "Current Month",
+        "thisYear": "Current Year",
+        "customRange": "Custom Range"
     },
     "airComps": {
         "title": "Issuing Entities",
@@ -396,7 +409,10 @@
             "phoneMin": "Phone number must be at least 10 digits",
             "logoutConfirmTitle": "Logout",
             "logoutConfirmDesc": "Are you sure you want to logout?"
-        }
+        },
+        "editProfile": "Edit Profile",
+        "editProfileDesc": "Make changes to your profile here. Click save when you're done.",
+        "saveChanges": "Save changes"
     },
     "table": {
         "actions": "Actions",

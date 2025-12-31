@@ -12,6 +12,9 @@ router.get('/history', TreasuryController.getTreasuryHistory);
 // Get treasury stats
 router.get('/stats', TreasuryController.getTreasuryStats);
 
+// Get inventory (Jard) summary
+router.get('/inventory', TreasuryController.getInventory);
+
 // Add manual transaction
 router.post('/transactions', TreasuryController.addTransaction);
 

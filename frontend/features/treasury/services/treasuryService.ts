@@ -67,3 +67,16 @@ export async function addTransaction(data: { type: 'in' | 'out', amount: number,
         throw error;
     }
 }
+export async function getInventory(filters: { fromDate?: string; toDate?: string } = {}) {
+    try {
+        const query = new URLSearchParams();
+        if (filters.fromDate) query.append('fromDate', filters.fromDate);
+        if (filters.toDate) query.append('toDate', filters.toDate);
+
+        const response = await clientAxios.get(`${API_CONFIG.ENDPOINTS.TREASURY.INVENTORY}?${query.toString()}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch inventory summary", error);
+        throw error;
+    }
+}

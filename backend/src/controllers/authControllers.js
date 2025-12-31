@@ -42,7 +42,8 @@ const register = async (req, res) => {
         id: newUser._id,
         user_name: newUser.user_name,
         role: "accountant",
-        email: newUser.email
+        email: newUser.email,
+        phone: newUser.phone
       },
       message: "تم تسجيل المستخدم بنجاح"
     });
@@ -110,7 +111,8 @@ const login = async (req, res) => {
         id: user._id,
         user_name: user.user_name,
         role: user.role,
-        email: user.email
+        email: user.email,
+        phone: user.phone
       },
       message: "تم تسجيل الدخول بنجاح",
       token,

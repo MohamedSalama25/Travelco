@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
 import TreasuryActionDialog from "../components/TreasuryActionDialog";
+import InventoryDialog from "../components/InventoryDialog";
+import { ClipboardList } from "lucide-react";
 
 export const TreasuryTemplate = () => {
     const t = useTranslations('treasury');
@@ -20,6 +22,7 @@ export const TreasuryTemplate = () => {
         limit: 10
     });
     const [actionDialogOpen, setActionDialogOpen] = useState(false);
+    const [inventoryDialogOpen, setInventoryDialogOpen] = useState(false);
     const [actionType, setActionType] = useState<'in' | 'out'>('in');
 
     const { data: historyData, isLoading: historyLoading, isError, error } = useTreasuryHistory(filters);
@@ -55,6 +58,14 @@ export const TreasuryTemplate = () => {
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tight">{t('treasuryManagement')}</h1>
                 <div className="flex gap-2">
+                    <Button
+                        onClick={() => setInventoryDialogOpen(true)}
+                        variant="outline"
+                        className="gap-2 border-primary text-primary hover:bg-primary/5"
+                    >
+                        <ClipboardList className="h-4 w-4" />
+                        {t('inventory')}
+                    </Button>
                     <Button onClick={() => handleOpenAction('in')} className="gap-2 bg-green-600 hover:bg-green-700">
                         <Plus className="h-4 w-4" />
                         {t('deposit')}
@@ -89,6 +100,11 @@ export const TreasuryTemplate = () => {
                 type={actionType}
                 onSubmit={handleSubmitAction}
                 isSubmitting={isSubmitting}
+            />
+
+            <InventoryDialog
+                isOpen={inventoryDialogOpen}
+                onClose={() => setInventoryDialogOpen(false)}
             />
         </div>
     );

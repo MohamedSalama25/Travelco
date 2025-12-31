@@ -46,3 +46,11 @@ export async function registerUser(payload: RegisterPayload): Promise<LoginRespo
     );
     return response.data;
 }
+
+export async function updateProfile(data: any): Promise<any> {
+    const response = await clientAxios.put(
+        '/users/profile', // Using hardcoded path or add to config
+        data
+    );
+    return response.data;
+}
