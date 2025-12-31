@@ -67,6 +67,7 @@ export const AddPaymentDialog = ({
             });
             toast.success(res.message || t('paymentSuccess') || 'Payment added successfully');
             queryClient.invalidateQueries({ queryKey: ['traveler-transfers'] });
+             queryClient.invalidateQueries({ queryKey: ['travelers'] });
             reset();
             onSuccess();
             onClose();

@@ -28,7 +28,10 @@ const register = async (req, res) => {
       password: hashedPassword
     });
     const token = jwt.sign(
-      { id: newUser._id },
+      {
+        id: newUser._id,
+        role: "accountant"
+      },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -38,7 +41,7 @@ const register = async (req, res) => {
       user: {
         id: newUser._id,
         user_name: newUser.user_name,
-        role:"accountant",
+        role: "accountant",
         email: newUser.email
       },
       message: "تم تسجيل المستخدم بنجاح"
@@ -93,7 +96,10 @@ const login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user._id },
+      {
+        id: user._id,
+        role: user.role
+      },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -103,7 +109,7 @@ const login = async (req, res) => {
       user: {
         id: user._id,
         user_name: user.user_name,
-        role:user.role,
+        role: user.role,
         email: user.email
       },
       message: "تم تسجيل الدخول بنجاح",
