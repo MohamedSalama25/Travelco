@@ -18,6 +18,8 @@ import { useCurrentUser } from "../../auth/store/authStore";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { EditProfileDialog } from "../../auth/components/EditProfileDialog";
 import { IconUserCircle } from "@tabler/icons-react";
+import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
+import NotFound from "@/app/not-found";
 
 export default function MemberDetails() {
     const { id } = useParams();
@@ -31,6 +33,7 @@ export default function MemberDetails() {
     const queryClient = useQueryClient();
     const currentUser = useCurrentUser();
     const isManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+
 
     const [advanceDialogOpen, setAdvanceDialogOpen] = useState(false);
     const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -156,8 +159,8 @@ export default function MemberDetails() {
         return allActions;
     };
 
-    if (isLoading) return <div className="p-8 text-center">{tCommon("loading")}</div>;
-    if (!userDetails) return <div className="p-8 text-center text-destructive">{tCommon("loadError")}</div>;
+    if (isLoading) return <FullScreenLoader />;
+    if (!userDetails) return <NotFound />;
 
     const { user, stats, advances } = userDetails.data;
     const pagination = userDetails.pagination?.advances || { total: 0, limit: 10 };
@@ -248,7 +251,7 @@ export default function MemberDetails() {
             <Tabs defaultValue="advances" className="w-full">
 
                 <TabsContent value="advances" className="space-y-4 pt-4">
-                    <div className="flex justify-between items-center bg-card p-4 rounded-xl border shadow-sm">
+                    {(!isManager || id == currentUser?.id) && <div className="flex justify-between items-center bg-card p-4 rounded-xl border shadow-sm">
                         <Button onClick={() => setAdvanceDialogOpen(true)} className="gap-2 shadow-lg hover:shadow-primary/20 transition-all">
                             <Plus className="h-4 w-4" />
                             {t("requestAdvance")}
@@ -259,7 +262,7 @@ export default function MemberDetails() {
                             <p className="text-xs text-muted-foreground">{t("advanceHistoryDesc")}</p>
                         </div>
 
-                    </div>
+                    </div>}
 
                     <div dir="rtl" className="rounded-xl border bg-card shadow-sm overflow-hidden p-1">
                         <UniTable

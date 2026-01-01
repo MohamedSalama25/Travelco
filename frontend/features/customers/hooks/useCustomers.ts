@@ -2,10 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientAxios } from '@/lib/api/axios';
 import { API_CONFIG } from '@/lib/api/config';
 import {
-    Customer,
-    CustomerFormData,
     CustomerDetailsResponse,
-    CustomerResponse,
 } from '../types/types';
 import { getCustomers } from '../services/customerService';
 import { useCustomersStore } from '../store/customersStore';

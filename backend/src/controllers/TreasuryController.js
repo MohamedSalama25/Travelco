@@ -228,8 +228,6 @@ const getInventory = async (req, res) => {
                 }
             }
         ]);
-
-        const revenue = transferStats[0]?.totalRevenue || 0;
         const profit = (transferStats[0]?.totalRevenue || 0) - (transferStats[0]?.totalCost || 0);
 
         // 2. Calculate Expenses from Expense model
@@ -254,7 +252,6 @@ const getInventory = async (req, res) => {
         return res.status(200).json({
             success: true,
             data: {
-                totalRevenue: revenue,
                 totalExpenses: expenses,
                 totalProfit: profit,
                 netProfit: profit - expenses

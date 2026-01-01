@@ -6,7 +6,7 @@ const { errorRes } = require("../utils/handleError");
 // REGISTER
 const register = async (req, res) => {
   try {
-    const { user_name, email, password } = req.body;
+    const { user_name, phone, email, password } = req.body;
 
     if (!user_name || !email || !password) {
       return res.status(400).json({
@@ -16,14 +16,19 @@ const register = async (req, res) => {
     }
 
     const emailExists = await User.findOne({ email });
+    const phoneExists = await User.findOne({ phone });
     if (emailExists) {
       return errorRes("البريد الإلكتروني موجود بالفعل", res);
+    }
+    if (phoneExists) {
+      return errorRes("رقم الهاتف موجود بالفعل", res);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
       user_name,
+      phone,
       email,
       password: hashedPassword
     });

@@ -23,6 +23,7 @@ import { DatePicker } from "@/components/globalComponents/date-picker";
 import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
 import { toast } from "sonner";
 import { useAirCompMutations } from "../hooks/useAirComps";
+import { Loader } from "lucide-react";
 
 interface AirCompPaymentDialogProps {
     isOpen: boolean;
@@ -122,10 +123,10 @@ export default function AirCompPaymentDialog({
                             value={paymentMethod}
                             onValueChange={(value) => setValue("payment_method", value)}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger dir="rtl" className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent dir="rtl">
                                 <SelectItem value="cash">{tTravelers("cash")}</SelectItem>
                                 <SelectItem value="transfer">{tTravelers("transfer")}</SelectItem>
                                 <SelectItem value="check">{tTravelers("check") || "شيك"}</SelectItem>
@@ -146,6 +147,11 @@ export default function AirCompPaymentDialog({
                     </div>
 
                     <DialogFooter>
+
+                        <Button type="submit" disabled={isSubmitting}>
+                            {tCommon("pay")}
+                            {isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                        </Button>
                         <Button
                             type="button"
                             variant="outline"
@@ -154,9 +160,7 @@ export default function AirCompPaymentDialog({
                         >
                             {tCommon("cancel")}
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? tCommon("saving") : tCommon("save")}
-                        </Button>
+
                     </DialogFooter>
                 </form>
             </DialogContent>

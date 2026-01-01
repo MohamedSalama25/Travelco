@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { customersKeys } from '@/features/customers/hooks/useCustomers';
 
 interface CancelTicketDialogProps {
     isOpen: boolean;
@@ -57,6 +58,16 @@ export const CancelTicketDialog = ({
             const res = await cancelTraveler(travelerId, formData);
             toast.success(res.message || t('cancelSuccess'));
             queryClient.invalidateQueries({ queryKey: ['travelers'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });
+            queryClient.invalidateQueries({ queryKey: ["air-comps"] });
+            queryClient.invalidateQueries({ queryKey: ["air-comps-stats"] });
+            queryClient.invalidateQueries({ queryKey: ["air-comp-details"] });
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+            queryClient.invalidateQueries({
+                queryKey: customersKeys.detail(travelerId, 1),
+            });
             onSuccess();
             onClose();
         } catch (error: any) {

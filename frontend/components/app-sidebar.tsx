@@ -212,14 +212,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <Link href="/dashboard">
                 <div className="relative w-full h-[6vh]">
-                  <Image
-                    src="/logo (1).png"
-                    alt="Logo"
-                    fill
-                    className="object-contain"
-                  />
+                  <Image src="/logo.png" alt="Logo" fill className="object-contain" />
                 </div>
-
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

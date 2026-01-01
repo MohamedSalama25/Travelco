@@ -12,7 +12,7 @@ import { Customer } from "../types/types";
 import { useConfirm } from "@/components/providers/ConfirmDialogProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { deleteCustomer } from "../services/customerService";
-import { showSuccessToast } from "@/lib/utils/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/utils/toast";
 import { Trash2 } from "lucide-react";
 
 export default function CustomersTemplate() {
@@ -64,7 +64,7 @@ export default function CustomersTemplate() {
                 // Error handling is usually done in the toast or error boundary, 
                 // but we can also show a toast here if needed.
                 // For now, assuming Global Error Handler or service throws.
-                console.error(error);
+                showErrorToast(error.message);
             }
         }
     };

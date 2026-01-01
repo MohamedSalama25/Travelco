@@ -182,7 +182,7 @@ export default function AddTeamMemberDialog({
                         />
                         {errors.phone && (
                             <p className="text-sm text-destructive">
-                                {tErrors(errors.phone.message as any)}
+                                رقم الهاتف يجب أن يكون 11 رقم على الأقل
                             </p>
                         )}
                     </div>
@@ -196,10 +196,10 @@ export default function AddTeamMemberDialog({
                             value={roleValue}
                             onValueChange={(value) => setValue("role", value as any)}
                         >
-                            <SelectTrigger id="role">
+                            <SelectTrigger dir="rtl" id="role" className="w-full">
                                 <SelectValue placeholder={t("selectRole")} />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent dir="rtl">
                                 <SelectItem value="admin">{t("admin")}</SelectItem>
                                 <SelectItem value="manager">{t("manager")}</SelectItem>
                                 <SelectItem value="accountant">{t("accountant")}</SelectItem>
@@ -218,6 +218,12 @@ export default function AddTeamMemberDialog({
                     </div>
 
                     <DialogFooter className="gap-2">
+
+                        <Button type="submit" disabled={isSubmitting}>
+                            {tCommon("save")}
+                            {isSubmitting && <Loader className="ml-2 h-4 w-4 animate-spin" />}
+                        </Button>
+
                         <Button
                             type="button"
                             variant="outline"
@@ -226,10 +232,7 @@ export default function AddTeamMemberDialog({
                         >
                             {tCommon("cancel")}
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {tCommon("save")}
-                            {isSubmitting && <Loader className="ml-2 h-4 w-4 animate-spin" />}
-                        </Button>
+
                     </DialogFooter>
                 </form>
             </DialogContent>

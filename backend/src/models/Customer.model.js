@@ -13,7 +13,7 @@ const customerSchema = new mongoose.Schema({
         type: String,
         required: [true, "رقم الهاتف مطلوب"],
         minlength: [10, "يجب أن يتكون رقم الهاتف من 10 أرقام على الأقل"],
-        maxlength: [15, "يجب أن يكون رقم الهاتف أقل من 15 رقمًا"]
+        maxlength: [18, "يجب أن يكون رقم الهاتف أقل من 15 رقمًا"]
     },
     email: {
         type: String,

@@ -130,15 +130,15 @@ export default function TeamTable() {
             },
         },
 
-        {
-            accessorKey: "status",
-            header: tTeam("status"),
-            cell: ({ row }) => (
-                <Badge variant={row.original.status === 'active' ? 'outline' : 'secondary'}>
-                    {tTeam(row.original.status)}
-                </Badge>
-            )
-        },
+        // {
+        //     accessorKey: "status",
+        //     header: tTeam("status"),
+        //     cell: ({ row }) => (
+        //         <Badge variant={row.original.status === 'active' ? 'outline' : 'secondary'}>
+        //             {tTeam(row.original.status)}
+        //         </Badge>
+        //     )
+        // },
 
     ], [tTeam]);
 

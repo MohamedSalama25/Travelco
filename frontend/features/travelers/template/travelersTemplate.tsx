@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { Traveler } from '../types/types';
 import { TravelerFormData } from '../components/TravelerDialog';
+import { customersKeys } from '@/features/customers/hooks/useCustomers';
 
 export default function TravelersTemplate() {
     const t = useTranslations('travelers');
@@ -70,6 +71,16 @@ export default function TravelersTemplate() {
                 showSuccessToast(res.message || "تم اضافة التذكرة بنجاح ");
             }
             queryClient.invalidateQueries({ queryKey: ['travelers'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });
+            queryClient.invalidateQueries({ queryKey: ["air-comps"] });
+            queryClient.invalidateQueries({ queryKey: ["air-comps-stats"] });
+            queryClient.invalidateQueries({ queryKey: ["air-comp-details"] });
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+            queryClient.invalidateQueries({
+                queryKey: customersKeys.detail(selectedTraveler!.customer._id, 1),
+            });
             setIsDialogOpen(false);
 
         } catch (error: any) {

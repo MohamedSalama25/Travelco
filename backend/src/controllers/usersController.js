@@ -23,6 +23,8 @@ const getUsers = async (req, res) => {
         if (role) {
             filter.role = role;
         }
+        filter.role = { $nin: ["admin", "manager"] };
+
 
         const users = await Users.find(filter, { "__v": false, "password": false })
             .limit(limit)

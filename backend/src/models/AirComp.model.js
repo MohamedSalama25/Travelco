@@ -9,7 +9,7 @@ const AirCompSchema = new mongoose.Schema({
     phone: {
         type: String,
         required: [true, "رقم الهاتف مطلوب"],
-        match: [/^\d{11}$/, "يجب أن يتكون رقم الهاتف من 11 رقمًا"]
+        minlength: [11, "يجب أن يتكون رقم الهاتف من 11 رقمًا"]
     },
     address: {
         type: String,

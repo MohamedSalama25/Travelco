@@ -15,7 +15,7 @@ import * as z from "zod";
 import { useTranslations } from "next-intl";
 import { AirComp } from "../types/types";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
 
 
 const formSchema = z.object({
@@ -109,12 +109,12 @@ export function AirCompDialog({
                         )}
                     </div>
                     <DialogFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {tCommon("save")}
+                            {isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                        </Button>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             {tCommon("cancel")}
-                        </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {tCommon("save")}
                         </Button>
                     </DialogFooter>
                 </form>

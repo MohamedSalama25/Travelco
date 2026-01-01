@@ -73,13 +73,13 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
     };
 
     const statCards = [
-        {
-            title: t('revenue'),
-            value: stats.totalRevenue,
-            icon: <Briefcase className="h-5 w-5 text-blue-600" />,
-            color: "text-blue-600",
-            bgColor: "bg-blue-50 dark:bg-blue-950/30"
-        },
+        // {
+        //     title: t('revenue'),
+        //     value: stats.totalRevenue,
+        //     icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+        //     color: "text-blue-600",
+        //     bgColor: "bg-blue-50 dark:bg-blue-950/30"
+        // },
         {
             title: t('expense'),
             value: stats.totalExpenses,
@@ -105,7 +105,7 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl sm:max-w-[700px] gap-6">
+            <DialogContent className="max-w-4xl sm:max-w-[800px] gap-6">
                 <DialogHeader className="pr-8">
                     <div className="flex items-center gap-2">
                         <div className="p-2 bg-primary/10 rounded-lg shrink-0">
@@ -172,7 +172,7 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {statCards.map((stat, index) => (
                             <Card key={index} className="border-none shadow-sm bg-card hover:shadow-md transition-shadow">
                                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">

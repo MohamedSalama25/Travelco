@@ -22,6 +22,8 @@ import { addPayment } from '../services/travelerService';
 import { toast } from 'sonner';
 import { Loader } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { customersKeys } from '@/features/customers/hooks/useCustomers';
+
 
 interface AddPaymentDialogProps {
     isOpen: boolean;
@@ -67,7 +69,17 @@ export const AddPaymentDialog = ({
             });
             toast.success(res.message || t('paymentSuccess') || 'Payment added successfully');
             queryClient.invalidateQueries({ queryKey: ['traveler-transfers'] });
-             queryClient.invalidateQueries({ queryKey: ['travelers'] });
+            queryClient.invalidateQueries({ queryKey: ['travelers'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });
+            queryClient.invalidateQueries({ queryKey: ["air-comps"] });
+            queryClient.invalidateQueries({ queryKey: ["air-comps-stats"] });
+            queryClient.invalidateQueries({ queryKey: ["air-comp-details"] });
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+            queryClient.invalidateQueries({
+                queryKey: customersKeys.detail(transferId, 1),
+            });
             reset();
             onSuccess();
             onClose();

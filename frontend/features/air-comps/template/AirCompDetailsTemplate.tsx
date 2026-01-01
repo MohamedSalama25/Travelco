@@ -8,14 +8,12 @@ import {
     CardContent,
     CardHeader,
     CardTitle,
-    CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import UniTable from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import {
     ArrowLeft,
-    ArrowRight,
     Wallet,
     Calendar,
     Ticket,
@@ -119,29 +117,29 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
             title: t("totalTickets"),
             value: stats.ticketsCount || 0,
             icon: Ticket,
-            color: "text-blue-600",
-            bg: "bg-blue-100",
+            color: "text-blue-700 dark:text-blue-400",
+            bg: "bg-blue-50 dark:bg-blue-950/30 ",
         },
         {
             title: t("totalPurchases"),
             value: `${stats.totalPurchases?.toLocaleString()} ج.م`,
             icon: Calendar,
-            color: "text-orange-600",
-            bg: "bg-orange-100",
+            color: "text-orange-700 dark:text-orange-400",
+            bg: "bg-orange-50 dark:bg-orange-950/30 ",
         },
         {
             title: t("totalPaid"),
             value: `${stats.totalPaid?.toLocaleString()} ج.م`,
             icon: Wallet,
-            color: "text-green-600",
-            bg: "bg-green-100",
+            color: "text-green-700 dark:text-green-400",
+            bg: "bg-green-50 dark:bg-green-950/30 ",
         },
         {
             title: t("remainingAmount"),
             value: `${stats.remainingAmount?.toLocaleString()} ج.م`,
             icon: TrendingUp,
-            color: "text-destructive",
-            bg: "bg-red-100",
+            color: "text-red-700 dark:text-red-400",
+            bg: "bg-red-50 dark:bg-red-950/30 ",
         },
     ];
 
@@ -162,8 +160,8 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
                         <Plus className="h-4 w-4" />
                         {t("addPayment")}
                     </Button>
-                    <Button className="bg-gray-100 cursor-pointer hover:bg-gray-200" variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ArrowLeft className="h-5 w-5" />
+                    <Button variant="outline" size="icon" onClick={() => router.back()}>
+                        <ArrowLeft className="h-4 w-4" />
                     </Button>
                 </div>
 
@@ -195,7 +193,7 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
                 </TabsList>
 
                 {/* Tickets Tab */}
-                <TabsContent value="tickets" className="mt-4">
+                <TabsContent dir="rtl" value="tickets" className="mt-4">
                     <Card>
                         <CardContent className="pt-6">
                             <UniTable
@@ -214,7 +212,7 @@ export default function AirCompDetailsTemplate({ id }: { id: string }) {
                 </TabsContent>
 
                 {/* Payments Tab */}
-                <TabsContent value="payments" className="mt-4">
+                <TabsContent dir="rtl" value="payments" className="mt-4">
                     <Card>
                         <CardContent className="pt-6">
                             <UniTable
