@@ -2,10 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAirComps, getAirCompStats, createAirComp, updateAirComp, deleteAirComp, getAirCompDetails, createAirCompPayment } from "../services/airCompService";
 import { AirComp } from "../types/types";
 
-export function useAirComps(page: number = 1, limit: number = 10, search?: string) {
+export function useAirComps(page: number = 1, limit: number = 10, search?: string, hasBalance?: boolean) {
     const { data, isLoading, isError, error, isFetching } = useQuery({
-        queryKey: ["air-comps", page, limit, search],
-        queryFn: () => getAirComps(page, limit, search),
+        queryKey: ["air-comps", page, limit, search, hasBalance],
+        queryFn: () => getAirComps(page, limit, search, hasBalance),
         placeholderData: (previousData) => previousData,
     });
 
@@ -24,10 +24,10 @@ export function useAirComps(page: number = 1, limit: number = 10, search?: strin
     };
 }
 
-export function useAirCompStats() {
+export function useAirCompStats(filters?: { search?: string; hasBalance?: boolean }) {
     return useQuery({
-        queryKey: ["air-comps-stats"],
-        queryFn: () => getAirCompStats(),
+        queryKey: ["air-comps-stats", filters],
+        queryFn: () => getAirCompStats(filters),
     });
 }
 

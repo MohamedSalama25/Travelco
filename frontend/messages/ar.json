@@ -215,7 +215,8 @@
         "deleteSuccess": "تم حذف جهة الاصدار بنجاح",
         "createError": "فشل إنشاء جهة الاصدار",
         "updateError": "فشل تحديث جهة الاصدار",
-        "deleteError": "فشل حذف جهة الاصدار"
+        "deleteError": "فشل حذف جهة الاصدار",
+        "withBalance": "شركات لها رصيد"
     },
     "stats": {
         "total": "الإجمالي"

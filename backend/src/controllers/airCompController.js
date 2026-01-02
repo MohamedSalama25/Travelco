@@ -23,19 +23,83 @@ const calculateChange = (current, previous) => {
 const getAirComp = async (req, res) => {
     try {
         const { limit, skip } = getPagination(req);
-        const { search } = req.query;
+        const { search, hasBalance } = req.query;
 
-        const filter = {};
+        // Base match stage
+        const matchStage = {};
         if (search) {
-            filter.name = { $regex: search, $options: 'i' };
+            matchStage.name = { $regex: search, $options: 'i' };
         }
 
-        const airComps = await AirComp.find(filter, { "__v": false })
-            .limit(limit)
-            .skip(skip)
-            .sort({ name: 1 });
+        const pipeline = [
+            { $match: matchStage },
+            // Lookup to get total costs from transfers
+            {
+                $lookup: {
+                    from: "transfers",
+                    localField: "_id",
+                    foreignField: "air_comp",
+                    pipeline: [
+                        {
+                            $group: {
+                                _id: null,
+                                totalCost: { $sum: "$ticket_salary" }
+                            }
+                        }
+                    ],
+                    as: "costs"
+                }
+            },
+            // Lookup to get total payments
+            {
+                $lookup: {
+                    from: "aircomppayments",
+                    localField: "_id",
+                    foreignField: "air_comp",
+                    pipeline: [
+                        {
+                            $group: {
+                                _id: null,
+                                totalPaid: { $sum: "$amount" }
+                            }
+                        }
+                    ],
+                    as: "payments"
+                }
+            },
+            {
+                $project: {
+                    name: 1,
+                    phone: 1,
+                    address: 1,
+                    totalCost: { $ifNull: [{ $arrayElemAt: ["$costs.totalCost", 0] }, 0] },
+                    totalPaid: { $ifNull: [{ $arrayElemAt: ["$payments.totalPaid", 0] }, 0] }
+                }
+            },
+            {
+                $addFields: {
+                    remainingAmount: { $subtract: ["$totalCost", "$totalPaid"] }
+                }
+            }
+        ];
 
-        const total = await AirComp.countDocuments(filter);
+        // Apply hasBalance filter if requested
+        if (hasBalance === 'true') {
+            pipeline.push({ $match: { remainingAmount: { $gt: 0 } } });
+        }
+
+        // Handle total count for pagination
+        // Need to run a count on the pipeline before slicing
+        const countPipeline = [...pipeline, { $count: "total" }];
+        const countResult = await AirComp.aggregate(countPipeline);
+        const total = countResult[0]?.total || 0;
+
+        // Apply pagination and sort
+        pipeline.push({ $sort: { name: 1 } });
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: limit });
+
+        const airComps = await AirComp.aggregate(pipeline);
 
         return res.status(200).json({
             success: true,
@@ -349,7 +413,13 @@ const getAirCompStats = async (req, res) => {
  */
 const getAllAirCompWithStats = async (req, res) => {
     try {
-        const { fromDate, toDate } = req.query;
+        const { fromDate, toDate, search, hasBalance } = req.query;
+
+        // Match stage for basic fields (search)
+        const initialMatch = {};
+        if (search) {
+            initialMatch.name = { $regex: search, $options: 'i' };
+        }
 
         // Date filters for Transfers
         const transferMatchStage = { "$expr": { "$eq": ["$air_comp", "$$airCompId"] } };
@@ -367,7 +437,8 @@ const getAllAirCompWithStats = async (req, res) => {
             if (toDate) paymentMatchStage.payment_date.$lte = new Date(toDate);
         }
 
-        const stats = await AirComp.aggregate([
+        const pipeline = [
+            { $match: initialMatch },
             {
                 $lookup: {
                     from: "transfers",
@@ -430,9 +501,17 @@ const getAllAirCompWithStats = async (req, res) => {
                     totalPaid: "$totalPaidToIssuer",
                     remainingAmount: { $subtract: ["$totalCost", "$totalPaidToIssuer"] }
                 }
-            },
-            { $sort: { totalProfit: -1 } }
-        ]);
+            }
+        ];
+
+        // Apply hasBalance filter
+        if (hasBalance === 'true') {
+            pipeline.push({ $match: { remainingToIssuer: { $gt: 0 } } });
+        }
+
+        pipeline.push({ $sort: { totalProfit: -1 } });
+
+        const stats = await AirComp.aggregate(pipeline);
 
         return res.status(200).json({
             success: true,

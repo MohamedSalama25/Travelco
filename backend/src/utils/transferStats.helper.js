@@ -22,11 +22,11 @@ const buildTransferStats = async ({ filter = {}, fromDate, toDate }) => {
         prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
     }
 
-    const getStatsForRange = async (start, end) => {
-        const rangeFilter = {
-            ...filter,
-            createdAt: { $gte: start, $lte: end }
-        };
+    const getStatsForRange = async (start, end, isForcedRange = true) => {
+        const rangeFilter = { ...filter };
+        if (isForcedRange && start && end) {
+            rangeFilter.createdAt = { $gte: start, $lte: end };
+        }
 
         const stats = await Transfer.aggregate([
             { $match: rangeFilter },
@@ -64,9 +64,10 @@ const buildTransferStats = async ({ filter = {}, fromDate, toDate }) => {
         };
     };
 
+    const hasDateFilter = !!(fromDate && toDate);
     const [currentStats, prevStats] = await Promise.all([
-        getStatsForRange(currentStart, currentEnd),
-        getStatsForRange(prevStart, prevEnd)
+        getStatsForRange(currentStart, currentEnd, hasDateFilter),
+        getStatsForRange(prevStart, prevEnd, true)
     ]);
 
     return {

@@ -2,19 +2,22 @@ import { clientAxios } from "@/lib/api/axios";
 import { API_CONFIG } from "@/lib/api/config";
 import { AirComp, AirCompResponse, AirCompStatsResponse } from "../types/types";
 
-export const getAirComps = async (page = 1, limit = 10, search = "") => {
+export const getAirComps = async (page = 1, limit = 10, search = "", hasBalance?: boolean) => {
     const response = await clientAxios.get<AirCompResponse>(API_CONFIG.ENDPOINTS.AIRCOMPS.LIST, {
         params: {
             page,
             limit,
-            search
+            search,
+            hasBalance
         }
     });
     return response.data;
 };
 
-export const getAirCompStats = async () => {
-    const response = await clientAxios.get<AirCompStatsResponse>(API_CONFIG.ENDPOINTS.AIRCOMPS.STATS);
+export const getAirCompStats = async (filters?: { search?: string; hasBalance?: boolean }) => {
+    const response = await clientAxios.get<AirCompStatsResponse>(API_CONFIG.ENDPOINTS.AIRCOMPS.STATS, {
+        params: filters
+    });
     return response.data;
 };
 

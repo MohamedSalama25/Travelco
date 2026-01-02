@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { AirComp, Pagination } from "../types/types";
 import UniTable from "@/components/data-table";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Trash2 } from "lucide-react";
+import { Coins, Plus, Search, Trash2 } from "lucide-react";
 import { useConfirm } from "@/components/providers/ConfirmDialogProvider";
 import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
 import { useAirCompMutations } from "../hooks/useAirComps";
@@ -16,6 +16,8 @@ interface AirCompsTableProps {
     onPageChange: (page: number) => void;
     isLoading: boolean;
     onSearchChange?: (search: string) => void;
+    hasBalance?: boolean;
+    onHasBalanceChange?: (hasBalance: boolean | undefined) => void;
     onEdit: (airComp: AirComp) => void;
     handleCreate: () => void;
     onView: (airComp: AirComp) => void;
@@ -27,6 +29,8 @@ export function AirCompsTable({
     onPageChange,
     isLoading,
     onSearchChange,
+    hasBalance,
+    onHasBalanceChange,
     onEdit,
     handleCreate,
     onView
@@ -41,6 +45,10 @@ export function AirCompsTable({
     const handleSearch = (value: string) => {
         setSearchQuery(value);
         onSearchChange?.(value);
+    };
+
+    const toggleBalanceFilter = () => {
+        onHasBalanceChange?.(hasBalance ? undefined : true);
     };
 
     const handleDelete = async (airComp: AirComp) => {
@@ -77,6 +85,16 @@ export function AirCompsTable({
             accessorKey: "address",
             header: t("address"),
         },
+        {
+            accessorKey: "remainingAmount",
+            header: t("remainingAmount"),
+            cell: ({ row }) => {
+                const amount = row.original.remainingAmount || 0;
+                return <span className={amount > 0 ? "text-red-500 font-bold" : "text-green-500"}>
+                    {amount.toLocaleString()} ج.م
+                </span>
+            }
+        }
     ], [t]);
 
     const actions = useMemo(() => [
@@ -97,20 +115,33 @@ export function AirCompsTable({
     return (
         <div className="space-y-4">
             <div className="flex gap-3 items-center bg-card px-3 rounded-xl justify-between py-3 flex-wrap" >
-                <div className="relative w-75  max-w-[500px] ">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder={`${tTable("search")}...`}
-                        value={searchQuery}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        className="pl-9"
-                    />
-
+                <div className="flex items-center gap-3 flex-1">
+                    <div className="relative w-75  max-w-[500px] ">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder={`${tTable("search")}...`}
+                            value={searchQuery}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            className="pl-9"
+                        />
+                    </div>
                 </div>
-                <Button onClick={handleCreate} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    {t("addAirComp")}
-                </Button>
+
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant={hasBalance ? "default" : "outline"}
+                        onClick={toggleBalanceFilter}
+                        className="gap-2"
+                    >
+                        <Coins className="h-4 w-4" />
+                        {t("withBalance")}
+                    </Button>
+
+                    <Button onClick={handleCreate} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        {t("addAirComp")}
+                    </Button>
+                </div>
             </div>
 
             <UniTable<AirComp>

@@ -17,11 +17,12 @@ export default function AirCompsTemplate() {
     const router = useRouter();
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
+    const [hasBalance, setHasBalance] = useState<boolean | undefined>(undefined);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedAirComp, setSelectedAirComp] = useState<AirComp | null>(null);
 
-    const { data, pagination, isLoading, isError } = useAirComps(page, 10, search);
-    const { data: statsData } = useAirCompStats();
+    const { data, pagination, isLoading, isError } = useAirComps(page, 10, search, hasBalance);
+    const { data: statsData } = useAirCompStats({ search, hasBalance });
     const { createMutation, updateMutation } = useAirCompMutations();
 
     const handleCreate = () => {
@@ -71,6 +72,8 @@ export default function AirCompsTemplate() {
                 onPageChange={setPage}
                 isLoading={isLoading}
                 onSearchChange={setSearch}
+                hasBalance={hasBalance}
+                onHasBalanceChange={setHasBalance}
                 onEdit={handleEdit}
                 handleCreate={handleCreate}
                 onView={(airComp) => {

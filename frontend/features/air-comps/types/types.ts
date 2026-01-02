@@ -3,6 +3,9 @@ export interface AirComp {
     name: string;
     phone: string;
     address?: string;
+    totalCost?: number;
+    totalPaid?: number;
+    remainingAmount?: number;
 }
 
 export interface AirCompStats {
