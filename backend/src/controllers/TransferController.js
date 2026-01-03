@@ -499,7 +499,7 @@ const cancelTransfer = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'تم إلغاء التذكرة بنجاح',
+      message: 'تم إلغاء التذكرة وتحديث حسابات العميل وجهة الإصدار بنجاح',
       data: transfer
     });
 

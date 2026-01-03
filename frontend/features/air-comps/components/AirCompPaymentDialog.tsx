@@ -24,6 +24,7 @@ import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
 import { toast } from "sonner";
 import { useAirCompMutations } from "../hooks/useAirComps";
 import { Loader } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AirCompPaymentDialogProps {
     isOpen: boolean;
@@ -44,7 +45,7 @@ export default function AirCompPaymentDialog({
     const tTravelers = useTranslations("travelers");
     const tCommon = useTranslations("common");
     const { createPaymentMutation } = useAirCompMutations();
-
+    const queryClient = useQueryClient();
     const {
         register,
         handleSubmit,
@@ -75,6 +76,12 @@ export default function AirCompPaymentDialog({
                 },
             });
             toast.success(res.message || tCommon("saveSuccess"));
+            queryClient.invalidateQueries({ queryKey: ["air-comps"] });
+            queryClient.invalidateQueries({ queryKey: ["air-comps-stats"] });
+            queryClient.invalidateQueries({ queryKey: ["air-comp-details"] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });
             reset();
             onClose();
         } catch (error: any) {
