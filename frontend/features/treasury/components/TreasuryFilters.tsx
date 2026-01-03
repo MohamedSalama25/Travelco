@@ -54,10 +54,10 @@ export const TreasuryFilters = ({ filters, onFilterChange, onExport }: TreasuryF
                             value={filters.type || 'all'}
                             onValueChange={(value) => onFilterChange({ ...filters, type: value === 'all' ? undefined : value as any, page: 1 })}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger dir="rtl" className="w-[185px]">
                                 <SelectValue placeholder={t('allTypes')} />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent dir="rtl">
                                 <SelectItem value="all">{tCommon('all')}</SelectItem>
                                 <SelectItem value="in">{t('income')}</SelectItem>
                                 <SelectItem value="out">{t('expense')}</SelectItem>
@@ -70,10 +70,10 @@ export const TreasuryFilters = ({ filters, onFilterChange, onExport }: TreasuryF
                             value={filters.relatedModel || 'all'}
                             onValueChange={(value) => onFilterChange({ ...filters, relatedModel: value === 'all' ? undefined : value, page: 1 })}
                         >
-                            <SelectTrigger>
+                            <SelectTrigger dir="rtl" className="w-[185px]">
                                 <SelectValue placeholder={t('allSources')} />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent dir="rtl">
                                 <SelectItem value="all">{tCommon('all')}</SelectItem>
                                 <SelectItem value="Transfer">{t('transfer')}</SelectItem>
                                 <SelectItem value="Payment">{t('payment')}</SelectItem>

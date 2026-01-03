@@ -26,6 +26,8 @@
         "notes": "ملاحظات",
         "other": "أخرى",
         "areYouSure": "هل أنت متأكد؟",
+        "saveSuccess": "تم الحفظ بنجاح",
+        "saveError": "فشل الحفظ",
         "check": "تحقق",
         "clearFilters": "مسح الفلاتر",
         "optional": "اختياري",
@@ -47,7 +49,8 @@
         "airComps": "جهات الإصدار",
         "treasury": "الخزنة",
         "advances": "السلف",
-        "expenses": "المصروفات"
+        "expenses": "المصروفات",
+        "settings": "الإعدادات"
     },
     "team": {
         "title": "إدارة الفريق",
@@ -473,5 +476,26 @@
         "loadError": "فشل في تحميل البيانات",
         "from": "من",
         "to": "إلى"
+    },
+    "settings": {
+        "title": "الإعدادات",
+        "companySettings": "إعدادات الشركة",
+        "companyName": "اسم الشركة",
+        "phone": "رقم الهاتف",
+        "whatsapp": "رقم الواتساب",
+        "address": "العنوان بالتفصيل",
+        "addressPlaceholder": "مثال: شارع الجامعة، عمارة 5، الدور الثالث",
+        "addressDescription": "اكتب العنوان بالتفصيل ليسهل الوصول إليك",
+        "locationCoordinates": "إحداثيات الموقع (GPS)",
+        "openMap": "فتح الخريطة",
+        "confirmLocation": "تأكيد الموقع",
+        "selectLocation": "تحديد الموقع على الخريطة",
+        "saveSuccess": "تم حفظ الإعدادات بنجاح",
+        "saveError": "فشل حفظ الإعدادات",
+        "browserNoGeolocation": "متصفحك لا يدعم تحديد الموقع",
+        "geolocationError": "فشل في تحديد موقعك الحالي",
+        "myLocation": "موقعي الحالي",
+        "selectOnMap": "اختر الموقع من الخريطة",
+        "companyNameMinLength": "اسم الشركة يجب ان يكون 3 احرف على الاقل"
     }
 }

@@ -72,13 +72,13 @@ export function TravelersFilterPopover({
                             />
                         </div>
                         <div className="flex gap-4 items-end">
-                            <div>
+                            <div className="w-full">
                                 <Label className="text-xs text-muted-foreground px-1 mb-1" htmlFor="status">{t("status")}</Label>
                                 <Select value={filters.status} onValueChange={handleStatusChange}>
-                                    <SelectTrigger id="status">
+                                    <SelectTrigger dir="rtl" className="w-full " id="status">
                                         <SelectValue placeholder={t("status")} />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="w-full w-[250px]">
                                         <SelectItem value="all">{tTable("allStatuses")}</SelectItem>
                                         <SelectItem value="paid">{t("paid")}</SelectItem>
                                         <SelectItem value="partial">{t("partial")}</SelectItem>

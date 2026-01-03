@@ -102,16 +102,8 @@ export default function ExpensesTemplate() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-                <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    {t("addExpense")}
-                </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-3">
-                <Card>
+                {/* Stats */}
+                <Card className="w-[300px]">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
                             {t("totalExpenses")}
@@ -124,7 +116,14 @@ export default function ExpensesTemplate() {
                         </div>
                     </CardContent>
                 </Card>
+
+                <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    {t("addExpense")}
+                </Button>
             </div>
+
+
 
             {/* Filters */}
             <div className="flex gap-4 items-end flex-wrap justify-between">

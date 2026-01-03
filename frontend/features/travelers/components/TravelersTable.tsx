@@ -174,7 +174,7 @@ export function TravelersTable({
         {
             accessorKey: "createdAt",
             header: t("createdAt"),
-            cell: ({ row }) => <span className="text-muted-foreground">{row.original.createdAt.toLocaleString()}</span>
+            cell: ({ row }) => <span className="text-muted-foreground">{row.original.createdAt.toLocaleString().split("T")[0]}</span>
         },
 
     ], [t]);

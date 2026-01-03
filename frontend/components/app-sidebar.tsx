@@ -157,9 +157,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navSecondary: [
       {
         title: t("common.settings"),
-        url: "#",
+        url: "/settings",
         icon: IconSettings,
-        // roles: ["admin", "manager"], // Example restriction
+        roles: ["admin", "manager"],
       },
       {
         title: t("common.getHelp"),

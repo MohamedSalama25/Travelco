@@ -20,6 +20,8 @@
         "fromDate": "From Date",
         "toDate": "To Date",
         "relatedModel": "Related Model",
+        "saveSuccess": "Saved successfully",
+        "saveError": "Failed to save",
         "date": "Date",
         "all": "All",
         "exportExcel": "Export Excel",
@@ -47,7 +49,8 @@
         "airComps": "Issuing Entities",
         "treasury": "Treasury",
         "advances": "Advances",
-        "expenses": "Expenses"
+        "expenses": "Expenses",
+        "settings": "Settings"
     },
     "dashboard": {
         "ticketTrends": "Ticket Trends",
@@ -471,5 +474,26 @@
         "loadError": "Failed to load data",
         "from": "From",
         "to": "To"
+    },
+    "settings": {
+        "title": "Settings",
+        "companySettings": "Company Settings",
+        "companyName": "Company Name",
+        "phone": "Phone Number",
+        "whatsapp": "WhatsApp Number",
+        "address": "Detailed Address",
+        "addressPlaceholder": "e.g. University St, Bldg 5, 3rd Floor",
+        "addressDescription": "Enter the detailed address for easier reach",
+        "locationCoordinates": "Location Coordinates (GPS)",
+        "openMap": "Open Map",
+        "confirmLocation": "Confirm Location",
+        "selectLocation": "Select Location on Map",
+        "saveSuccess": "Settings saved successfully",
+        "saveError": "Failed to save settings",
+        "browserNoGeolocation": "Your browser does not support geolocation",
+        "geolocationError": "Failed to determine your current location",
+        "myLocation": "My Location",
+        "selectOnMap": "Select location from map",
+        "companyNameMinLength": "Company name must be at least 3 characters"
     }
 }

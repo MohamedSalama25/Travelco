@@ -78,9 +78,11 @@ export default function TravelersTemplate() {
             queryClient.invalidateQueries({ queryKey: ["air-comps-stats"] });
             queryClient.invalidateQueries({ queryKey: ["air-comp-details"] });
             queryClient.invalidateQueries({ queryKey: ["customers"] });
-            queryClient.invalidateQueries({
-                queryKey: customersKeys.detail(selectedTraveler!.customer._id, 1),
-            });
+            if (selectedTraveler) {
+                queryClient.invalidateQueries({
+                    queryKey: customersKeys.detail(selectedTraveler.customer._id, 1),
+                });
+            }
             setIsDialogOpen(false);
 
         } catch (error: any) {

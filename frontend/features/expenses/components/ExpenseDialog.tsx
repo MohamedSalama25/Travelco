@@ -23,7 +23,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/globalComponents/date-picker";
 import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
-import { Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Expense } from "../types/types";
 
 // Define categories (can be dynamic later)
@@ -157,15 +164,22 @@ export default function ExpenseDialog({ isOpen, onClose, onSubmit, isSubmitting,
                                 <FormItem>
                                     <FormLabel>{t("category")}</FormLabel>
                                     <FormControl>
-                                        <select
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                            {...field}
+                                        <Select
                                             disabled={isSubmitting}
+                                            onValueChange={field.onChange}
+                                            value={field.value}
                                         >
-                                            {CATEGORIES.map(cat => (
-                                                <option key={cat} value={cat}>{t(`categories.${cat.toLowerCase()}` as any) || cat}</option>
-                                            ))}
-                                        </select>
+                                            <SelectTrigger className="w-full" dir="rtl">
+                                                <SelectValue placeholder={t("category")} />
+                                            </SelectTrigger>
+                                            <SelectContent dir="rtl">
+                                                {CATEGORIES.map(cat => (
+                                                    <SelectItem key={cat} value={cat}>
+                                                        {t(`categories.${cat.toLowerCase()}` as any) || cat}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -191,13 +205,16 @@ export default function ExpenseDialog({ isOpen, onClose, onSubmit, isSubmitting,
                         />
 
                         <DialogFooter>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {tCommon("save")}
+                                {isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+
+                            </Button>
+
                             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
                                 {tCommon("cancel")}
                             </Button>
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {tCommon("save")}
-                            </Button>
+
                         </DialogFooter>
                     </form>
                 </Form>
