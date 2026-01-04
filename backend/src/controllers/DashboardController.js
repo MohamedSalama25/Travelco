@@ -28,6 +28,7 @@ const getDashboardStats = async (req, res) => {
         if (fromDate && toDate) {
             currentStart = new Date(fromDate);
             currentEnd = new Date(toDate);
+            currentEnd.setHours(23, 59, 59, 999);
             const duration = currentEnd - currentStart;
             prevEnd = new Date(currentStart);
             prevStart = new Date(prevEnd - duration);
@@ -239,7 +240,11 @@ const getStatsByAirComp = async (req, res) => {
         if (fromDate || toDate) {
             matchStage.createdAt = {};
             if (fromDate) matchStage.createdAt.$gte = new Date(fromDate);
-            if (toDate) matchStage.createdAt.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                matchStage.createdAt.$lte = endOfDay;
+            }
         }
 
         const stats = await Transfer.aggregate([
@@ -372,7 +377,11 @@ const getInventorySummary = async (req, res) => {
         if (fromDate || toDate) {
             matchStage.createdAt = {};
             if (fromDate) matchStage.createdAt.$gte = new Date(fromDate);
-            if (toDate) matchStage.createdAt.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                matchStage.createdAt.$lte = endOfDay;
+            }
         }
 
         // Get all tickets summary
@@ -396,7 +405,13 @@ const getInventorySummary = async (req, res) => {
                 $match: fromDate || toDate ? {
                     payment_date: {
                         ...(fromDate && { $gte: new Date(fromDate) }),
-                        ...(toDate && { $lte: new Date(toDate) })
+                        ...(toDate && {
+                            $lte: (() => {
+                                const d = new Date(toDate);
+                                d.setHours(23, 59, 59, 999);
+                                return d;
+                            })()
+                        })
                     }
                 } : {}
             },
@@ -473,7 +488,11 @@ const exportAirCompStatsToExcel = async (req, res) => {
         if (fromDate || toDate) {
             matchStage.createdAt = {};
             if (fromDate) matchStage.createdAt.$gte = new Date(fromDate);
-            if (toDate) matchStage.createdAt.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                matchStage.createdAt.$lte = endOfDay;
+            }
         }
 
         const stats = await Transfer.aggregate([

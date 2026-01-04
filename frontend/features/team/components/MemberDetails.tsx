@@ -114,15 +114,16 @@ export default function MemberDetails() {
             header: () => <div className="text-right">{t("status")}</div>,
             cell: ({ row }: any) => (
                 <div className="text-right">
-                    <Badge
-                        variant={
-                            row.original.status === "approved"
-                                ? "default"
-                                : row.original.status === "rejected"
-                                    ? "destructive"
-                                    : "secondary"
+                    <Badge variant={
+                        row.original.status === 'approved' ? 'default' :
+                            row.original.status === 'rejected' ? 'destructive' :
+                                row.original.status === 'repaid' ? 'outline' : 'secondary'
+                    }
+                        className={
+                            row.original.status === 'approved' ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400' :
+                                row.original.status === 'rejected' ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400' :
+                                    row.original.status === 'repaid' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-700' : ''
                         }
-                        className="font-normal px-2"
                     >
                         {t(row.original.status)}
                     </Badge>

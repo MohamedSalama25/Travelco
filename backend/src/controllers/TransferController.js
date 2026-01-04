@@ -288,6 +288,7 @@ const getTransferStats = async (req, res) => {
     if (fromDate && toDate) {
       currentStart = new Date(fromDate);
       currentEnd = new Date(toDate);
+      currentEnd.setHours(23, 59, 59, 999);
       const duration = currentEnd - currentStart;
       prevEnd = new Date(currentStart);
       prevStart = new Date(prevEnd - duration);

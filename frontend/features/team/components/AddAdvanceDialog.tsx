@@ -109,13 +109,15 @@ export default function AddAdvanceDialog({ open, onOpenChange, onSubmit }: AddAd
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-                            {tCommon("cancel")}
-                        </Button>
                         <Button type="submit" disabled={isSubmitting}>
                             {tCommon("save")}
                             {isSubmitting && <Loader className="ml-2 h-4 w-4 animate-spin" />}
                         </Button>
+
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+                            {tCommon("cancel")}
+                        </Button>
+
                     </DialogFooter>
                 </form>
             </DialogContent>

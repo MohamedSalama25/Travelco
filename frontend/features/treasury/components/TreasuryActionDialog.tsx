@@ -117,14 +117,16 @@ export default function TreasuryActionDialog({ isOpen, onClose, type, onSubmit, 
                         />
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-                                {tCommon("cancel")}
-                            </Button>
                             <Button type="submit" disabled={isSubmitting} variant={type === 'out' ? "destructive" : "default"}>
                                 {submitLabel}
                                 {isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
 
                             </Button>
+
+                            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+                                {tCommon("cancel")}
+                            </Button>
+
                         </DialogFooter>
                     </form>
                 </Form>

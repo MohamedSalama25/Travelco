@@ -18,26 +18,26 @@ export function AdvancesStats({ stats }: AdvancesStatsProps) {
         {
             title: t('totalDisbursed'),
             value: stats?.totalApproved || 0,
-            icon: <HandCoins className="h-5 w-5 text-blue-600" />,
-            bgColor: "bg-blue-50"
+            icon: <HandCoins className="h-5 w-5 text-blue-700" />,
+            bgColor: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
         },
         {
             title: t('totalRepaid'),
             value: stats?.totalRepaid || 0,
-            icon: <Undo2 className="h-5 w-5 text-green-600" />,
-            bgColor: "bg-green-50"
+            icon: <Undo2 className="h-5 w-5 text-green-700" />,
+            bgColor: "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
         },
         {
             title: t('outstanding'),
             value: stats?.outstanding || 0,
-            icon: <CreditCard className="h-5 w-5 text-red-600" />,
-            bgColor: "bg-red-50"
+            icon: <CreditCard className="h-5 w-5 text-red-700" />,
+            bgColor: "bg-red-50 dark:bg-red-950/30 dark:text-red-400"
         },
         {
             title: t('pendingAdvances'),
             value: pendingCount,
-            icon: <Clock className="h-5 w-5 text-yellow-600" />,
-            bgColor: "bg-yellow-50",
+            icon: <Clock className="h-5 w-5 text-yellow-700" />,
+            bgColor: "bg-yellow-50 dark:bg-yellow-950/30 dark:text-yellow-400",
             isCurrency: false
         }
     ];

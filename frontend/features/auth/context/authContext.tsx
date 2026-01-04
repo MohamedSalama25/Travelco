@@ -70,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const newUser = {
             id: Date.now().toString(),
             name,
+            user_name: email.split('@')[0], // Use email prefix as user_name
             email,
             password,
             role: "user" as const,

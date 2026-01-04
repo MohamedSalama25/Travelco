@@ -311,7 +311,7 @@
         "latestTickets": "آخر التذاكر"
     },
     "dashboard": {
-        "ticketTrends": "اتجاهات التذاكر",
+        "ticketTrends": "احصائيات التذاكر",
         "monthlyTickets": "إجمالي التذاكر الصادرة شهريًا",
         "latestTickets": "آخر التذاكر",
         "loadError": "خطأ في تحميل لوحة التحكم"

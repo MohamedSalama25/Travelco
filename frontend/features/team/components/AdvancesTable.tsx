@@ -126,9 +126,9 @@ export default function AdvancesTable() {
                                 status === 'repaid' ? 'outline' : 'secondary'
                     }
                         className={
-                            status === 'approved' ? 'bg-green-100 text-green-800' :
-                                status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                    status === 'repaid' ? 'bg-blue-100 text-blue-800' : ''
+                            status === 'approved' ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400' :
+                                status === 'rejected' ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400' :
+                                    status === 'repaid' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-700' : ''
                         }
                     >
                         {t(status)}

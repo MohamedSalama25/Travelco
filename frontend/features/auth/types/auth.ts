@@ -4,6 +4,7 @@ import { z } from "zod";
 export interface User {
     id: string;
     name: string;
+    user_name: string;
     email: string;
     role: "admin" | "user";
     avatar?: string;
@@ -36,6 +37,7 @@ export const mockUsers: Array<User & { password: string }> = [
     {
         id: "1",
         name: "Admin User",
+        user_name: "admin",
         email: "admin@example.com",
         password: "admin123",
         role: "admin",
@@ -43,6 +45,7 @@ export const mockUsers: Array<User & { password: string }> = [
     {
         id: "2",
         name: "Regular User",
+        user_name: "user",
         email: "user@example.com",
         password: "user123",
         role: "user",

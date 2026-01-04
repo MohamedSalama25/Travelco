@@ -51,7 +51,7 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
     const form = useForm<z.infer<typeof schema>>({
         resolver: zodResolver(schema),
         defaultValues: {
-            user_name: user?.name || "",
+            user_name: user?.user_name || "",
             email: user?.email || "",
             phone: user?.phone || "",
             password: "",
@@ -108,9 +108,9 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
             <DialogContent className="sm:max-w-[460px]">
                 <DialogHeader>
                     <DialogTitle>{t("editProfile")}</DialogTitle>
-                    <DialogDescription>
+                    {/* <DialogDescription>
                         {t("editProfileDesc")}
-                    </DialogDescription>
+                    </DialogDescription> */}
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -168,8 +168,9 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                         />
                         <DialogFooter>
                             <Button type="submit" disabled={isLoading}>
-                                {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+
                                 {t("saveChanges")}
+                                {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                             </Button>
                         </DialogFooter>
                     </form>

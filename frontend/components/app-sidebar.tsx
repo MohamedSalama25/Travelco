@@ -3,18 +3,21 @@
 import * as React from "react";
 import {
   IconCamera,
+  IconCashRegister,
   IconDashboard,
   IconDatabase,
   IconFileAi,
   IconFileDescription,
   IconFileWord,
   IconHelp,
-  IconInnerShadowTop,
   IconListDetails,
+  IconPlaneDeparture,
+  IconRegistered,
   IconReport,
   IconSearch,
   IconSettings,
   IconUsers,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
@@ -36,6 +39,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useCurrentUser } from "@/features/auth/store/authStore";
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations();
@@ -66,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {
         title: t("nav.travelers"),
         url: "/travelers",
-        icon: IconUsers,
+        icon: IconPlaneDeparture,
         roles: ["admin", "manager", "employee", "accountant"],
       },
       {
@@ -78,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {
         title: t("nav.team"),
         url: "/team",
-        icon: IconUsers,
+        icon: IconUsersGroup,
         roles: ["admin", "manager"],
       },
       {
@@ -96,7 +100,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {
         title: t("nav.treasury"),
         url: "/treasury",
-        icon: IconDatabase,
+        icon: IconCashRegister,
         roles: ["admin", "manager", "accountant"],
       },
       {
@@ -163,12 +167,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: t("common.getHelp"),
-        url: "#",
+        url: "https://wa.me/201023363248",
+        target: "_blank",
         icon: IconHelp,
       },
       {
         title: t("common.search"),
-        url: "#",
+        url: "",
         icon: IconSearch,
         onClick: () => setOpen(true),
       },

@@ -18,7 +18,7 @@ interface DatePickerProps {
     disabled?: boolean
 }
 
-export function DatePicker({ value, onChange, className, placeholder = "Pick a date", disabled }: DatePickerProps) {
+export function DatePicker({ value, onChange, className, placeholder = "اختر التاريخ", disabled }: DatePickerProps) {
     const [date, setDate] = React.useState<Date | undefined>(value)
 
     React.useEffect(() => {

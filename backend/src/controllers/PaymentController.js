@@ -17,7 +17,11 @@ const getPayments = async (req, res) => {
         if (fromDate || toDate) {
             dateFilter.payment_date = {};
             if (fromDate) dateFilter.payment_date.$gte = new Date(fromDate);
-            if (toDate) dateFilter.payment_date.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                dateFilter.payment_date.$lte = endOfDay;
+            }
         }
 
         if (payment_method) {
@@ -255,7 +259,11 @@ const exportPaymentsToExcel = async (req, res) => {
         if (fromDate || toDate) {
             filter.payment_date = {};
             if (fromDate) filter.payment_date.$gte = new Date(fromDate);
-            if (toDate) filter.payment_date.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                filter.payment_date.$lte = endOfDay;
+            }
         }
         if (payment_method) filter.payment_method = payment_method;
 

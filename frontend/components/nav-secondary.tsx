@@ -17,6 +17,7 @@ export function NavSecondary({
 }: {
   items: {
     title: string
+    target?: string
     url: string
     icon: Icon
     onClick?: () => void
@@ -38,7 +39,7 @@ export function NavSecondary({
                     <span>{item.title}</span>
                   </button>
                 ) : (
-                  <a href={item.url}>
+                  <a href={item.url} target={item?.target}>
                     <item.icon />
                     <span>{item.title}</span>
                   </a>

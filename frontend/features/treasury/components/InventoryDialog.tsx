@@ -9,6 +9,8 @@ import {
     DialogDescription
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/globalComponents/date-picker";
+import { formatDateToLocal } from "@/lib/dateUtils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
@@ -106,7 +108,7 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl sm:max-w-[800px] gap-6">
-                <DialogHeader className="pr-8">
+                {/* <DialogHeader className="pr-8">
                     <div className="flex items-center gap-2">
                         <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                             <Calculator className="h-5 w-5 text-primary" />
@@ -118,7 +120,7 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
                             </DialogDescription>
                         </div>
                     </div>
-                </DialogHeader>
+                </DialogHeader> */}
 
                 <div className="space-y-4 bg-muted/30 p-4 rounded-xl border">
                     <div className="flex flex-col gap-2">
@@ -127,7 +129,7 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
                             <SelectTrigger className="bg-background">
                                 <SelectValue placeholder={t('selectRange')} />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent dir="rtl">
                                 <SelectItem value="thisMonth">{t('thisMonth')}</SelectItem>
                                 <SelectItem value="thisYear">{t('thisYear')}</SelectItem>
                                 <SelectItem value="custom">{t('customRange')}</SelectItem>
@@ -138,27 +140,25 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
                     {filterType === "custom" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-dashed border-muted-foreground/20">
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2 text-xs font-normal">
+                                <Label className="flex items-center gap-2 text-xs font-normal px-1">
                                     <CalendarIcon className="h-3 w-3 text-muted-foreground" />
                                     {tCommon('fromDate')}
                                 </Label>
-                                <Input
-                                    type="date"
-                                    value={fromDate}
-                                    onChange={(e) => setFromDate(e.target.value)}
-                                    className="bg-background h-9"
+                                <DatePicker
+                                    value={fromDate ? new Date(fromDate) : undefined}
+                                    onChange={(date) => setFromDate(date ? formatDateToLocal(date) : "")}
+                                    className="h-9"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2 text-xs font-normal">
+                                <Label className="flex items-center gap-2 text-xs font-normal px-1">
                                     <CalendarIcon className="h-3 w-3 text-muted-foreground" />
                                     {tCommon('toDate')}
                                 </Label>
-                                <Input
-                                    type="date"
-                                    value={toDate}
-                                    onChange={(e) => setToDate(e.target.value)}
-                                    className="bg-background h-9"
+                                <DatePicker
+                                    value={toDate ? new Date(toDate) : undefined}
+                                    onChange={(date) => setToDate(date ? formatDateToLocal(date) : "")}
+                                    className="h-9"
                                 />
                             </div>
                         </div>

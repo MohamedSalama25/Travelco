@@ -146,7 +146,7 @@ const UniTable = <TData extends object>({
         let filteredActions = filterActions
           ? filterActions(row.original, actions)
           : actions;
-        
+
         // Apply individual action show functions
         filteredActions = filteredActions.filter(action => {
           // If action has a show function, call it to determine visibility
@@ -163,7 +163,7 @@ const UniTable = <TData extends object>({
         }
 
         return (
-          <div className="relative flex items-center justify-end gap-2 pr-2">
+          <div className="relative flex items-center justify-center gap-2 pr-2">
             {filteredActions?.map((action, index) => {
               const actionLabel = getResolvedLabel(action, row.original);
               const actionClass = getResolvedClass(action, row.original);
@@ -348,7 +348,7 @@ const UniTable = <TData extends object>({
                         cell.getValue() ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap ">
+                              <div className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap m-auto">
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                               </div>
                             </TooltipTrigger>

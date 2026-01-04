@@ -18,10 +18,16 @@ const register = async (req, res) => {
     const emailExists = await User.findOne({ email });
     const phoneExists = await User.findOne({ phone });
     if (emailExists) {
-      return errorRes("البريد الإلكتروني موجود بالفعل", res);
+      return res.status(400).json({
+        success: false,
+        message: "البريد الإلكتروني موجود بالفعل"
+      });
     }
     if (phoneExists) {
-      return errorRes("رقم الهاتف موجود بالفعل", res);
+      return res.status(400).json({
+        success: false,
+        message: "رقم الهاتف موجود بالفعل"
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

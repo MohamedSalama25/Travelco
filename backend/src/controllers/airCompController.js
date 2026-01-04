@@ -274,6 +274,7 @@ const getAirCompStats = async (req, res) => {
         if (fromDate && toDate) {
             currentStart = new Date(fromDate);
             currentEnd = new Date(toDate);
+            currentEnd.setHours(23, 59, 59, 999);
             const duration = currentEnd - currentStart;
             prevEnd = new Date(currentStart);
             prevStart = new Date(prevEnd - duration);
@@ -426,7 +427,11 @@ const getAllAirCompWithStats = async (req, res) => {
         if (fromDate || toDate) {
             transferMatchStage.createdAt = {};
             if (fromDate) transferMatchStage.createdAt.$gte = new Date(fromDate);
-            if (toDate) transferMatchStage.createdAt.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                transferMatchStage.createdAt.$lte = endOfDay;
+            }
         }
 
         // Date filters for Payments
@@ -434,7 +439,11 @@ const getAllAirCompWithStats = async (req, res) => {
         if (fromDate || toDate) {
             paymentMatchStage.payment_date = {};
             if (fromDate) paymentMatchStage.payment_date.$gte = new Date(fromDate);
-            if (toDate) paymentMatchStage.payment_date.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                paymentMatchStage.payment_date.$lte = endOfDay;
+            }
         }
 
         const pipeline = [
@@ -646,7 +655,11 @@ const getAirCompDetails = async (req, res) => {
         if (fromDate || toDate) {
             filter.createdAt = {};
             if (fromDate) filter.createdAt.$gte = new Date(fromDate);
-            if (toDate) filter.createdAt.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                filter.createdAt.$lte = endOfDay;
+            }
         }
 
         const transfers = await Transfer.find(filter)
@@ -661,7 +674,11 @@ const getAirCompDetails = async (req, res) => {
         if (fromDate || toDate) {
             paymentFilter.payment_date = {};
             if (fromDate) paymentFilter.payment_date.$gte = new Date(fromDate);
-            if (toDate) paymentFilter.payment_date.$lte = new Date(toDate);
+            if (toDate) {
+                const endOfDay = new Date(toDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                paymentFilter.payment_date.$lte = endOfDay;
+            }
         }
 
         const payments = await AirCompPayment.find(paymentFilter)

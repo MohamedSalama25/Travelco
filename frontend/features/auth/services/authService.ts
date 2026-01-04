@@ -25,6 +25,7 @@ export interface LoginResponse {
         id: string;
         email: string;
         name?: string;
+        user_name?: string;
         role?: string;
     };
     token: string;

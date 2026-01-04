@@ -11,11 +11,32 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthInitializer } from "@/features/auth/components/AuthInitializer";
 import { ConfirmationDialog } from "@/components/globalComponents/ConfirmationDialog";
 import { ConfirmDialogProvider } from "@/components/providers/ConfirmDialogProvider";
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+    themeColor: "#000000",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+};
 
 export const metadata: Metadata = {
-    title: "Flyzo Dashboard",
+    title: "Travelco Dashboard",
     description:
-        "A fully responsive analytics dashboard featuring dynamic charts, interactive tables, a collapsible sidebar, and a light/dark mode theme switcher.",
+        "A fully responsive analytics dashboard for Travelco management.",
+    manifest: "/manifest.json",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: "Travelco",
+    },
+    formatDetection: {
+        telephone: false,
+    },
+    icons: {
+        apple: [{ url: "/logo.png", sizes: "180x180" }],
+    },
 };
 
 export default async function RootLayout({

@@ -57,7 +57,11 @@ const buildTransferFilter = async (query) => {
     if (fromDate || toDate) {
         filter.createdAt = {};
         if (fromDate) filter.createdAt.$gte = new Date(fromDate);
-        if (toDate) filter.createdAt.$lte = new Date(toDate);
+        if (toDate) {
+            const endOfDay = new Date(toDate);
+            endOfDay.setHours(23, 59, 59, 999);
+            filter.createdAt.$lte = endOfDay;
+        }
     }
 
     return filter;

@@ -167,7 +167,6 @@ export default function ExpensesTemplate() {
                         </div>
                     </div>
                     <Button
-                        variant="outline"
                         className="gap-1 bg-primary text-primary-foreground hover:opacity-90 cursor-pointer"
                         onClick={() => setFilters({ page: 1, limit: 10, search: '', fromDate: '', toDate: '', date: '' })}
                     >
