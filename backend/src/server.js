@@ -4,7 +4,8 @@ const connectDB = require("./config/db");
 const checkIP = require("./security/ipCheck");
 const ALLOWED_IPS = [
     "192.168.1.19",
-    "192.168.1.20"
+    "192.168.1.20",
+    "192.168.1.28"
 ];
 
 if (!checkIP(ALLOWED_IPS)) {
