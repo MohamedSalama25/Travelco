@@ -5,7 +5,7 @@ const checkIP = require("./security/ipCheck");
 const ALLOWED_IPS = [
     "192.168.1.19",
     "192.168.1.20",
-    "192.168.1.28"
+    "192.168.1.51"
 ];
 
 if (!checkIP(ALLOWED_IPS)) {

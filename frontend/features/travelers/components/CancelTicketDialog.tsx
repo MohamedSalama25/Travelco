@@ -58,6 +58,7 @@ export const CancelTicketDialog = ({
             const res = await cancelTraveler(travelerId, formData);
             toast.success(res.message || t('cancelSuccess'));
             queryClient.invalidateQueries({ queryKey: ['travelers'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });

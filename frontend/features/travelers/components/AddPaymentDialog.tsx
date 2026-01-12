@@ -70,6 +70,7 @@ export const AddPaymentDialog = ({
             toast.success(res.message || t('paymentSuccess') || 'Payment added successfully');
             queryClient.invalidateQueries({ queryKey: ['traveler-transfers'] });
             queryClient.invalidateQueries({ queryKey: ['travelers'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });

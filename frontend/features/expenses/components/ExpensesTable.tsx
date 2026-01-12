@@ -53,7 +53,7 @@ export function ExpensesTable({
         {
             accessorKey: "amount",
             header: t("amount"),
-            cell: ({ row }) => <span>{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(row.original.amount)}</span>
+            cell: ({ row }) => <span className="text-red-600">{row.original.amount.toLocaleString()} ج.م</span>
         },
         {
             accessorKey: "category",

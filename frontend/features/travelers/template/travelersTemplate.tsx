@@ -71,6 +71,7 @@ export default function TravelersTemplate() {
                 showSuccessToast(res.message || "تم اضافة التذكرة بنجاح ");
             }
             queryClient.invalidateQueries({ queryKey: ['travelers'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });

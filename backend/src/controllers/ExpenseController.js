@@ -156,7 +156,7 @@ const updateExpense = async (req, res) => {
             // Adjustment: -20
             // Formula: -(New - Old) = Old - New.
 
-            await updateTreasury(difference, `Update Expense Adjustment: ${title}`, {
+            await updateTreasury(difference, `${title}`, {
                 relatedModel: 'Expense',
                 relatedId: expense._id,
                 userId: req.user?.id

@@ -99,6 +99,7 @@ export function TravelersTable({
                     queryClient.invalidateQueries({
                         queryKey: ["travelers"],
                     });
+                    queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
                     queryClient.invalidateQueries({
                         queryKey: ["travelers-stats"],
                     });
