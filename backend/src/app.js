@@ -1,51 +1,53 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 const app = express();
 
 app.use(express.json());
-app.use(cors({
+app.use(
+  cors({
     origin: "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-}));
-
+  }),
+);
 
 // Import routes
-const airCompRoutes = require('./routes/airCompRoutes');
-const usersRoutes = require('./routes/usersRoutes');
-const authRoutes = require('./routes/authRoutes');
-const transferRoutes = require('./routes/transferRoutes');
-const customerRoutes = require('./routes/customerRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
-const treasuryRoutes = require('./routes/treasuryRoutes');
-const advanceRoutes = require('./routes/advanceRoutes');
+const airCompRoutes = require("./routes/airCompRoutes");
+const usersRoutes = require("./routes/usersRoutes");
+const authRoutes = require("./routes/authRoutes");
+const transferRoutes = require("./routes/transferRoutes");
+const customerRoutes = require("./routes/customerRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const treasuryRoutes = require("./routes/treasuryRoutes");
+const advanceRoutes = require("./routes/advanceRoutes");
 
 // Import middleware
-const auth = require('./middlewares/auth');
+const auth = require("./middlewares/auth");
 
 // Public routes (no auth required)
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
 
 // Protected routes (auth required)
-app.use('/api/airComp', auth, airCompRoutes);
-app.use('/api/users', auth, usersRoutes);
-app.use('/api/transfers', auth, transferRoutes);
-app.use('/api/customers', auth, customerRoutes);
-app.use('/api/payments', auth, paymentRoutes);
-app.use('/api/dashboard', auth, dashboardRoutes);
-app.use('/api/treasury', auth, treasuryRoutes);
-app.use('/api/advances', auth, advanceRoutes);
-app.use('/api/expenses', auth, require('./routes/expenseRoutes'));
-app.use('/api/settings', auth, require('./routes/settingsRoutes'));
+app.use("/api/airComp", auth, airCompRoutes);
+app.use("/api/users", auth, usersRoutes);
+app.use("/api/transfers", auth, transferRoutes);
+app.use("/api/customers", auth, customerRoutes);
+app.use("/api/payments", auth, paymentRoutes);
+app.use("/api/dashboard", auth, dashboardRoutes);
+app.use("/api/treasury", auth, treasuryRoutes);
+app.use("/api/advances", auth, advanceRoutes);
+app.use("/api/expenses", auth, require("./routes/expenseRoutes"));
+app.use("/api/settings", auth, require("./routes/settingsRoutes"));
+app.use("/api/notifications", require("./routes/notification.routes"));
 
 // Error handler
 app.use((err, req, res, next) => {
-    res.status(err.status || 500).json({
-        success: false,
-        message: !(err.status) ? 'خطأ داخلي في الخادم' : err.message
-    });
+  res.status(err.status || 500).json({
+    success: false,
+    message: !err.status ? "خطأ داخلي في الخادم" : err.message,
+  });
 });
 
 module.exports = app;

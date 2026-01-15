@@ -16,7 +16,9 @@ export const useExpenseMutation = () => {
         mutationFn: addExpense,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['expenses'] });
-            queryClient.invalidateQueries({ queryKey: ['treasury-stats'] }); // Treasury is affected
+            queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });
         },
     });
 
@@ -25,6 +27,8 @@ export const useExpenseMutation = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['expenses'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });
         },
     });
 
@@ -33,6 +37,8 @@ export const useExpenseMutation = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['expenses'] });
             queryClient.invalidateQueries({ queryKey: ['treasury-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-history'] });
+            queryClient.invalidateQueries({ queryKey: ['treasury-inventory'] });
         },
     });
 

@@ -6,6 +6,7 @@ import { ThemeSelector } from "./theme-selector";
 import { ModeSwitcher } from "./mode-switcher";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
+import { NotificationCenter } from "./NotificationCenter";
 
 export function SiteHeader() {
   const t = useTranslations("nav");
@@ -37,6 +38,7 @@ export function SiteHeader() {
           <h1 className="text-base font-medium capitalize">{t(pageKey as any) || pageKey}</h1>
         </div>
         <div className="flex items-center gap-2">
+          <NotificationCenter />
           <ThemeSelector />
           <ModeSwitcher />
         </div>

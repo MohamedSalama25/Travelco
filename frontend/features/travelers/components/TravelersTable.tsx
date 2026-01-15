@@ -5,13 +5,14 @@ import { useTranslations } from "next-intl";
 import { Traveler, Pagination } from "../types/types";
 import UniTable from "@/components/data-table";
 import { Input } from "@/components/ui/input";
-import { Trash2, Search, Filter, Archive, FileDown, Loader } from "lucide-react";
+import { Trash2, Search, Filter, Archive, FileDown, Loader, MessageCircle, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { deleteTraveler, exportTravelersToExcel } from "../services/travelerService";
 import { useConfirm } from "@/components/providers/ConfirmDialogProvider";
 import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { TravelersFilterPopover } from "./TravelersFilterPopover";
 
 
@@ -124,6 +125,19 @@ export function TravelersTable({
         }
     };
 
+    const handleWhatsAppAlert = (traveler: Traveler) => {
+        if (!traveler.customer?.phone) {
+            showErrorToast("رقم الهاتف غير متاح");
+            return;
+        }
+        
+        const phone = traveler.customer.phone.replace(/\D/g, "");
+        const dateStr = traveler.take_off_date ? format(new Date(traveler.take_off_date), "dd/MM/yyyy HH:mm") : "";
+        const message = `مرحباً ${traveler.customer.name}، نود تذكيركم بموعد رحلتكم رقم الحجز ${traveler.booking_number} بتاريخ ${dateStr}. نتمنى لكم رحلة سعيدة.`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
+    };
+
     const columns: ColumnDef<Traveler>[] = useMemo(() => [
         {
             accessorKey: "booking_number",
@@ -142,14 +156,23 @@ export function TravelersTable({
         },
 
         {
+            accessorKey: "take_off_date",
+            header: t("takeOffDate"),
+            cell: ({ row }) => {
+                const date = row.original.take_off_date ? new Date(row.original.take_off_date) : null;
+                return (
+                    <div className="flex flex-col">
+                        <span>{date ? format(date, "dd/MM/yyyy") : "-"}</span>
+                        {date && <span className="text-xs text-muted-foreground">{format(date, "HH:mm")}</span>}
+                    </div>
+                );
+            }
+        },
+
+        {
             accessorKey: "ticket_price",
             header: t("ticketPrice"),
-            cell: ({ row }) => <span className="text-green-600">{row.original.ticket_price.toLocaleString()} ج.م</span>
-        },
-        {
-            accessorKey: "total_paid",
-            header: t("totalPaid"),
-            cell: ({ row }) => <span className="text-green-600">{row.original.total_paid.toLocaleString() || 0} ج.م</span>
+            cell: ({ row }) => <span className="text-green-600 font-bold">{row.original.ticket_price.toLocaleString("en-US")} ج.م</span>
         },
 
         {
@@ -171,19 +194,25 @@ export function TravelersTable({
                 </Badge>
             )
         },
-
-        {
-            accessorKey: "createdAt",
-            header: t("createdAt"),
-            cell: ({ row }) => <span className="text-muted-foreground">{row.original.createdAt.toLocaleString().split("T")[0]}</span>
-        },
-
     ], [t]);
 
     const actions = useMemo(() => [
         {
             label: tTable("details"),
             onClick: handleView,
+        },
+        {
+            label: "تنبيه WhatsApp",
+            icon: MessageCircle,
+            onClick: handleWhatsAppAlert,
+            show: (traveler: Traveler) => {
+                if (!traveler.take_off_date) return false;
+                const takeoff = new Date(traveler.take_off_date).getTime();
+                const now = new Date().getTime();
+                const diff = takeoff - now;
+                const twentyFourHours = 24 * 60 * 60 * 1000;
+                return diff > 0 && diff <= twentyFourHours;
+            }
         },
         {
             label: tTable("edit"),

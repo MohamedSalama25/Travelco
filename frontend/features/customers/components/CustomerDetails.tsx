@@ -7,9 +7,11 @@ import { useParams } from "next/navigation";
 import { useRouter, Link } from "@/routing";
 import { useTranslations, useLocale } from "next-intl";
 import { useCustomer } from "../hooks/useCustomers";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { showSuccessToast, showErrorToast } from "@/lib/utils/toast";
+import { Button } from "@/components/ui/button";
+import { FullScreenLoader } from "@/components/globalComponents/FullScreenLoader";
 
 export const CustomerDetails = () => {
     const params = useParams();
@@ -76,14 +78,38 @@ export const CustomerDetails = () => {
         router.push(`/travelers/${row._id}`);
     };
 
+    const handleWhatsAppAlert = (transfer: any) => {
+        const customer = data?.data?.customer;
+        if (!customer?.phone) {
+            showErrorToast("رقم الهاتف غير متاح");
+            return;
+        }
+        
+        const phone = customer.phone.replace(/\D/g, "");
+        const dateStr = transfer.take_off_date ? format(new Date(transfer.take_off_date), "dd/MM/yyyy HH:mm") : "";
+        const message = `مرحباً ${customer.name}، نود تذكيركم بموعد رحلتكم رقم الحجز ${transfer.booking_number} بتاريخ ${dateStr}. نتمنى لكم رحلة سعيدة.`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
+    };
+
+    const actions = useMemo(() => [
+        {
+            label: "تنبيه WhatsApp",
+            icon: MessageCircle,
+            onClick: handleWhatsAppAlert,
+            show: (transfer: any) => {
+                if (!transfer.take_off_date) return false;
+                const takeoff = new Date(transfer.take_off_date).getTime();
+                const now = new Date().getTime();
+                const diff = takeoff - now;
+                const twentyFourHours = 24 * 60 * 60 * 1000;
+                return diff > 0 && diff <= twentyFourHours;
+            }
+        }
+    ], [data?.data?.customer]);
+
     if (isLoading) {
-        return (
-            <div className="space-y-6">
-                <div className="text-center py-12">
-                    <p className="text-muted-foreground">{t("loading")}</p>
-                </div>
-            </div>
-        );
+        return <FullScreenLoader />;
     }
 
     if (error || !data) {
@@ -179,6 +205,7 @@ export const CustomerDetails = () => {
                     tableName={t("transfers")}
                     onRowClick={handleRowClick}
                     isLoading={isLoading}
+                    actions={actions}
                 />
             </div>
         </div>

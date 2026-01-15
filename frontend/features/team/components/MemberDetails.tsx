@@ -84,36 +84,36 @@ export default function MemberDetails() {
     const columns = useMemo(() => [
         {
             accessorKey: "date",
-            header: () => <div className="text-right">{t("date")}</div>,
+            header: t("date"),
             cell: ({ row }: any) => (
-                <div className="text-right">
+                <div>
                     {row.original.date
-                        ? new Date(row.original.date).toLocaleDateString("ar-EG")
+                        ? new Date(row.original.date).toLocaleDateString("en-GB")
                         : "-"}
                 </div>
             ),
         },
         {
             accessorKey: "amount",
-            header: () => <div className="text-right">{t("amount")}</div>,
+            header: t("amount"),
             cell: ({ row }: any) => (
-                <div className="text-right font-bold text-lg">
-                    {row.original.amount?.toLocaleString("ar-EG") ?? 0}
+                <div className="font-bold">
+                    {row.original.amount?.toLocaleString("en-US") ?? 0}
                 </div>
             ),
         },
         {
             accessorKey: "reason",
-            header: () => <div className="text-right">{t("reason")}</div>,
+            header: () => <div className="text-center">{t("reason")}</div>,
             cell: ({ row }: any) => (
-                <div className="text-right">{row.original.reason}</div>
+                <div className="text-center">{row.original.reason}</div>
             ),
         },
         {
             accessorKey: "status",
-            header: () => <div className="text-right">{t("status")}</div>,
+            header: () => <div className="text-center">{t("status")}</div>,
             cell: ({ row }: any) => (
-                <div className="text-right">
+                <div className="text-center">
                     <Badge variant={
                         row.original.status === 'approved' ? 'default' :
                             row.original.status === 'rejected' ? 'destructive' :
@@ -182,7 +182,7 @@ export default function MemberDetails() {
             <div className="flex items-center gap-4 px-2">
 
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                         {user.user_name}
                     </h1>
                     <p className="text-muted-foreground flex items-center gap-2">
@@ -211,7 +211,7 @@ export default function MemberDetails() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-card to-blue-500/5 hover:shadow-md transition-shadow">
+                <Card className="overflow-hidden border-none shadow-sm bg-linear-to-br from-card to-blue-500/5 hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t("transfers")}</CardTitle>
                     </CardHeader>
@@ -220,30 +220,30 @@ export default function MemberDetails() {
                         <p className="text-xs text-muted-foreground mt-1">{t("ticketsIssued")}</p>
                     </CardContent>
                 </Card>
-                <Card className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-card to-emerald-500/5 hover:shadow-md transition-shadow">
+                <Card className="overflow-hidden border-none shadow-sm bg-linear-to-br from-card to-emerald-500/5 hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t("totalAdvances")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{stats.advances.totalAdvances?.toLocaleString() ?? 0}</div>
+                        <div className="text-3xl font-bold">{stats.advances.totalAdvances?.toLocaleString("en-US") ?? 0}</div>
                         <p className="text-xs text-muted-foreground mt-1">{t("totalDisbursed")}</p>
                     </CardContent>
                 </Card>
-                <Card className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-card to-purple-500/5 hover:shadow-md transition-shadow">
+                <Card className="overflow-hidden border-none shadow-sm bg-linear-to-br from-card to-purple-500/5 hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t("totalRepaid")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{stats.advances.totalRepaid?.toLocaleString() ?? 0}</div>
+                        <div className="text-3xl font-bold">{stats.advances.totalRepaid?.toLocaleString("en-US") ?? 0}</div>
                         <p className="text-xs text-muted-foreground mt-1">{t("repaid")}</p>
                     </CardContent>
                 </Card>
-                <Card className="overflow-hidden border-none shadow-sm border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 hover:shadow-md transition-shadow ring-1 ring-primary/20">
+                <Card className="overflow-hidden border-none shadow-sm border-primary/20 bg-linear-to-br from-primary/10 to-primary/5 hover:shadow-md transition-shadow ring-1 ring-primary/20">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-primary uppercase tracking-wider">{t("outstanding")}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-primary">{stats.advances.outstanding?.toLocaleString() ?? 0}</div>
+                        <div className="text-3xl font-bold text-primary">{stats.advances.outstanding?.toLocaleString("en-US") ?? 0}</div>
                         <p className="text-xs text-primary/70 mt-1">{t("totalApproved")}</p>
                     </CardContent>
                 </Card>

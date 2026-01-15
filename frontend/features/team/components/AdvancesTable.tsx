@@ -103,7 +103,7 @@ export default function AdvancesTable() {
         {
             accessorKey: "amount",
             header: t("amount"),
-            cell: ({ row }) => <span className="font-bold">{row.original.amount}</span>,
+            cell: ({ row }) => <span className="font-bold">{row.original.amount.toLocaleString("en-US")}</span>,
         },
         {
             accessorKey: "reason",
@@ -112,7 +112,7 @@ export default function AdvancesTable() {
         {
             accessorKey: "date",
             header: t("date"),
-            cell: ({ row }) => new Date(row.original.date).toLocaleDateString(),
+            cell: ({ row }) => new Date(row.original.date).toLocaleDateString("en-GB"),
         },
         {
             accessorKey: "status",

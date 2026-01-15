@@ -18,8 +18,8 @@ import { Traveler } from "../types/types";
 import { useEffect, useState } from "react";
 import { Loader, Loader2 } from "lucide-react";
 import { AutocompleteSelect } from "@/components/globalComponents/AutoCompleteSelect";
-import { DatePicker } from "@/components/globalComponents/date-picker";
-import { formatDateToLocal, getTodayLocal } from "@/lib/dateUtils";
+import { DateTimePicker } from "@/components/globalComponents/date-time-picker";
+import { getTodayLocal } from "@/lib/dateUtils";
 
 // Schema matching the requested payload
 const formSchema = z.object({
@@ -28,7 +28,7 @@ const formSchema = z.object({
     air_comp: z.string().min(1, "Air Company is required"),
     airPort: z.string().min(1, "Airport is required"),
     country: z.string().min(1, "Country is required"),
-    take_off_date: z.string().min(1, "Take off date is required"),
+    take_off_date: z.union([z.string(), z.date()]).refine(val => !!val, "Take off date is required"),
     ticket_salary: z.coerce.number().min(0, "Must be positive"),
     ticket_price: z.coerce.number().min(0, "Must be positive"),
     transfer_pay: z.coerce.number().min(0, "Must be positive"),
@@ -70,7 +70,7 @@ export function TravelerDialog({
             air_comp: "",
             airPort: "",
             country: "",
-            take_off_date: "",
+            take_off_date: new Date(),
             ticket_salary: 0,
             ticket_price: 0,
             transfer_pay: 0,
@@ -90,7 +90,7 @@ export function TravelerDialog({
                 air_comp: traveler.air_comp?._id || "",
                 airPort: traveler.airPort || "",
                 country: traveler.country || "",
-                take_off_date: traveler.take_off_date ? traveler.take_off_date.split('T')[0] : "",
+                take_off_date: traveler.take_off_date ? new Date(traveler.take_off_date) : new Date(),
                 ticket_salary: traveler.ticket_salary || 0,
                 ticket_price: traveler.ticket_price || 0,
                 transfer_pay: traveler.transfer_pay || 0,
@@ -102,7 +102,7 @@ export function TravelerDialog({
                 air_comp: "",
                 airPort: "",
                 country: "",
-                take_off_date: getTodayLocal(),
+                take_off_date: new Date(),
                 ticket_salary: 0,
                 ticket_price: 0,
                 transfer_pay: 0,
@@ -190,14 +190,13 @@ export function TravelerDialog({
 
                     <div className="space-y-2">
                         <Label htmlFor="take_off_date">{t("takeOffDate")}</Label>
-                        {/* <Input className="bg-red-500 " type="date" id="take_off_date" {...register("take_off_date")} /> */}
                         <Controller
                             control={control}
                             name="take_off_date"
                             render={({ field }) => (
-                                <DatePicker
+                                <DateTimePicker
                                     value={field.value ? new Date(field.value) : undefined}
-                                    onChange={(date) => field.onChange(date ? formatDateToLocal(date) : "")}
+                                    onChange={(date) => field.onChange(date)}
                                 />
                             )}
                         />

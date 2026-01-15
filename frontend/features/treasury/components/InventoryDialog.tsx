@@ -122,7 +122,7 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
                     </div>
                 </DialogHeader> */}
 
-                <div className="space-y-4 bg-muted/30 p-4 rounded-xl border">
+                <div className="space-y-4 bg-muted/30 p-4 rounded-xl border mt-4">
                     <div className="flex flex-col gap-2">
                         <Label>{t('filterRange')}</Label>
                         <Select value={filterType} onValueChange={handleFilterTypeChange}>
