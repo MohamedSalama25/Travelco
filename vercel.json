@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd backend && npm install",
+  "buildCommand": "echo 'no build'",
+  "startCommand": "node backend/src/server.js"
+}
