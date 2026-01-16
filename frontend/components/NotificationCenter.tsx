@@ -1,11 +1,8 @@
-"use client";
-
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Bell, Check, ExternalLink, MoreVertical, Trash2 } from "lucide-react";
+import { Bell, Check, ExternalLink, MoreVertical, Trash2, MessageCircle } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -13,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import { clientAxios } from "@/lib/api/axios";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useRouter } from "@/routing";
 import { toast } from "sonner";
-import { showSuccessToast } from "@/lib/utils/toast";
+import { useSocket } from "@/hooks/useSocket";
 
 interface Notification {
     _id: string;
@@ -25,6 +22,8 @@ interface Notification {
     message: string;
     isRead: boolean;
     link: string;
+    type: string;
+    relatedId?: any;
     createdAt: string;
 }
 
@@ -37,6 +36,7 @@ export function NotificationCenter() {
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const latestIdRef = useRef<string | null>(null);
+    const socket = useSocket();
 
     const fetchNotifications = useCallback(async (pageNum = 1, silent = false) => {
         try {
@@ -47,32 +47,16 @@ export function NotificationCenter() {
                 const newNotifications = response.data.data;
                 
                 if (pageNum === 1) {
-                    // Check for new notifications to show toasts
                     if (newNotifications.length > 0) {
-                        const currentLatestId = newNotifications[0]._id;
-                        
-                        // Show toasts if we have a previous latestId and the new one is newer
-                        if (latestIdRef.current && currentLatestId > latestIdRef.current) {
-                            const trulyNew = newNotifications.filter((n: Notification) => n._id > latestIdRef.current!);
-                            
-                            trulyNew.forEach((n: Notification) => {
-                                toast(n.title, {
-                                    description: n.message,
-                                    position: "top-center",
-                                    action: {
-                                        label: t("viewMore"),
-                                        onClick: () => handleNotificationClick(n)
-                                    },
-                                });
-                            });
-                        }
-                        
-                        // Update the latest seen ID
-                        latestIdRef.current = currentLatestId;
+                        latestIdRef.current = newNotifications[0]._id;
                     }
                     setNotifications(newNotifications);
                 } else {
-                    setNotifications(prev => [...prev, ...newNotifications]);
+                    setNotifications(prev => {
+                        const existingIds = new Set(prev.map(n => n._id));
+                        const uniqueNew = newNotifications.filter((n: Notification) => !existingIds.has(n._id));
+                        return [...prev, ...uniqueNew];
+                    });
                 }
                 setUnreadCount(response.data.unreadCount);
                 setHasMore(response.data.pagination.page < response.data.pagination.pages);
@@ -86,10 +70,44 @@ export function NotificationCenter() {
 
     useEffect(() => {
         fetchNotifications(1);
-        // Polling every 1 minute to match backend cron
-        const interval = setInterval(() => fetchNotifications(1, true), 60 * 1000);
-        return () => clearInterval(interval);
     }, [fetchNotifications]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        console.log("Attaching notification listener...");
+        const handleNewNotification = (notification: Notification) => {
+            console.log("New notification received via socket:", notification);
+            setNotifications(prev => {
+                if (prev.some(n => n._id === notification._id)) return prev;
+                return [notification, ...prev];
+            });
+            setUnreadCount(prev => prev + 1);
+            latestIdRef.current = notification._id;
+
+            toast(
+                <div 
+                    onClick={() => handleNotificationClick(notification)} 
+                    className="cursor-pointer w-full "
+                >
+                    <div className="font-semibold">{notification.title}</div>
+                    <div className="text-xs text-muted-foreground">{notification.message}</div>
+                </div>,
+                {
+                    position: "top-center",
+                    action: {
+                        label: t("viewMore"),
+                        onClick: () => handleNotificationClick(notification)
+                    },
+                }
+            );
+        };
+
+        socket.on("newNotification", handleNewNotification);
+        return () => {
+            socket.off("newNotification", handleNewNotification);
+        };
+    }, [socket, t]);
 
     const markAsRead = async (id: string) => {
         try {
@@ -120,14 +138,35 @@ export function NotificationCenter() {
         }
     };
 
-    const loadMore = () => {
+    const handleWhatsAppAlert = (notification: Notification) => {
+        if (!notification.isRead) {
+            markAsRead(notification._id);
+        }
+
+        const transfer = notification.relatedId;
+        const customer = transfer?.customer;
+
+        if (!customer?.phone) {
+            toast.error(t("noPhoneAvailable") || "رقم الهاتف غير متاح");
+            return;
+        }
+        
+        const phone = customer.phone.replace(/\D/g, "");
+        const dateStr = transfer.take_off_date ? format(new Date(transfer.take_off_date), "dd/MM/yyyy HH:mm") : "";
+        const message = `مرحباً ${customer.name}، نود تذكيركم بموعد رحلتكم رقم الحجز ${transfer.booking_number} بتاريخ ${dateStr}. نتمنى لكم رحلة سعيدة.`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
+    };
+
+    const loadMore = (e: React.MouseEvent) => {
+        e.stopPropagation();
         const nextPage = page + 1;
         setPage(nextPage);
         fetchNotifications(nextPage);
     };
 
     return (
-        <DropdownMenu>
+        <DropdownMenu dir="rtl" >
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
@@ -175,7 +214,7 @@ export function NotificationCenter() {
                                     className={`p-4 border-b last:border-0 cursor-pointer transition-all hover:bg-accent/50 relative overflow-hidden group ${!n.isRead ? 'bg-primary/5 border-r-4 border-r-primary' : ''}`}
                                     onClick={() => handleNotificationClick(n)}
                                 >
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-1 text-start">
                                         <div className="flex justify-between items-start gap-2">
                                             <div className="flex flex-col gap-0.5 flex-1">
                                                 <span className={`text-sm font-semibold leading-tight ${!n.isRead ? 'text-primary' : ''}`}>
@@ -183,21 +222,18 @@ export function NotificationCenter() {
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0">
-                                                {!n.isRead && (
+                                                {n.type === "ticket_reminder" && (
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:bg-primary/10"
+                                                        className="h-7 w-7 text-green-600 hover:bg-green-50 hover:text-green-700"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            markAsRead(n._id);
+                                                            handleWhatsAppAlert(n);
                                                         }}
                                                     >
-                                                        <Check className="h-4 w-4" />
+                                                        <MessageCircle className="h-4 w-4" />
                                                     </Button>
-                                                )}
-                                                {!n.isRead && (
-                                                    <div className="h-2 w-2 rounded-full bg-primary mt-1 shrink-0" />
                                                 )}
                                             </div>
                                         </div>
@@ -219,10 +255,7 @@ export function NotificationCenter() {
                                 <Button
                                     variant="ghost"
                                     className="w-full text-xs text-muted-foreground hover:bg-accent py-4 rounded-none h-auto border-t"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        loadMore();
-                                    }}
+                                    onClick={loadMore}
                                     disabled={isLoading}
                                 >
                                     {isLoading ? t("loading") : t("viewMore")}

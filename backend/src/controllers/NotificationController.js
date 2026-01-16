@@ -11,6 +11,10 @@ const getNotifications = async (req, res) => {
 
     const notifications = await Notification.find({ user: req.user.id })
       .sort({ createdAt: -1 })
+      .populate({
+        path: "relatedId",
+        populate: { path: "customer" },
+      })
       .skip(skip)
       .limit(limit);
 

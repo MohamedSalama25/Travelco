@@ -7,7 +7,7 @@ const Notification = require("../models/Notification.model");
  */
 const startTicketReminders = () => {
   // Run every 5 minutes
-  cron.schedule("*/5 * * * *", async () => {
+  cron.schedule("*/3 * * * * ", async () => {
     try {
       console.log("Running ticket departure reminders check...");
 
@@ -31,12 +31,8 @@ const startTicketReminders = () => {
         });
 
         if (!existingNotification) {
-          // Create notification for the user who created it or all admins if needed
-          // For now, let's create it for the user who created the transfer
-          // Optimization: We could broadcast this to a specific group
-
           if (transfer.createdBy) {
-            await Notification.create({
+            const notification = await Notification.create({
               user: transfer.createdBy,
               title: "تنبيه موعد إقلاع تذكرة",
               message: `التذكرة رقم ${transfer.booking_number} للعميل ${transfer.customer?.name} موعد إقلاعها خلال 24 ساعة.`,
@@ -45,6 +41,22 @@ const startTicketReminders = () => {
               relatedId: transfer._id,
               relatedModel: "Transfer",
             });
+
+            // Trigger real-time notification
+            // Populate related data before emitting
+            const populatedNotification = await Notification.findById(
+              notification._id,
+            ).populate({
+              path: "relatedId",
+              populate: { path: "customer" },
+            });
+
+            const { emitToUser } = require("../utils/socket");
+            emitToUser(
+              transfer.createdBy,
+              "newNotification",
+              populatedNotification,
+            );
           }
         }
       }
