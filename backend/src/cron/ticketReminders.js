@@ -7,7 +7,7 @@ const Notification = require("../models/Notification.model");
  */
 const startTicketReminders = () => {
   // Run every 5 minutes
-  cron.schedule("*/3 * * * * ", async () => {
+  cron.schedule("*/1 * * * * ", async () => {
     try {
       console.log("Running ticket departure reminders check...");
 
