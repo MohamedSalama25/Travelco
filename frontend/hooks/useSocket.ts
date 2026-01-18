@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import Cookies from "js-cookie";
 
-const SOCKET_URL = "http://localhost:3200";
+const SOCKET_URL = "https://api.isag-it.com";
 
 let globalSocket: Socket | null = null;
 
