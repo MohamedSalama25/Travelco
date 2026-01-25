@@ -15,7 +15,7 @@ import { AddPaymentDialog } from './AddPaymentDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { refundTraveler } from '../services/travelerService';
 import { toast } from 'sonner';
-import { formatDate } from '@/lib/utils/handleDate';
+import { formatDate, formatDateTime } from '@/lib/utils/handleDate';
 
 export const TravelersDetails = () => {
     const { id } = useParams();
@@ -188,7 +188,7 @@ export const TravelersDetails = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">{t('takeOffDate')}</p>
-                                <p>{formatDate(traveler.take_off_date)}</p>
+                                <p>{formatDateTime(traveler.take_off_date)}</p>
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">{t('airport')}</p>
