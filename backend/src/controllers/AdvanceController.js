@@ -1,11 +1,14 @@
+const mongoose = require("mongoose");
 const Advance = require("../models/Advance.model");
 const Users = require("../models/Users.model");
 const { updateTreasury } = require("../utils/treasury.helper");
 const getPagination = require("../utils/pagination");
+const { getCompanyFilter } = require("../utils/companyFilter");
 
 const addAdvance = async (req, res) => {
   try {
     const { user, amount, reason, notes, date } = req.body;
+    const companyId = req.user.companyId;
 
     if (!user || !amount || !reason) {
       return res.status(400).json({
@@ -14,7 +17,17 @@ const addAdvance = async (req, res) => {
       });
     }
 
+    // Verify user belongs to same company
+    const targetUser = await Users.findOne({ _id: user, companyId });
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        message: "الموظف غير موجود",
+      });
+    }
+
     const newAdvance = await Advance.create({
+      companyId,
       user,
       amount,
       reason,
@@ -40,8 +53,9 @@ const getAdvances = async (req, res) => {
   try {
     const { limit, skip } = getPagination(req);
     const { user, status, fromDate, toDate } = req.query;
+    const companyId = req.user.companyId;
 
-    const filter = {};
+    const filter = getCompanyFilter(companyId);
     if (user) filter.user = user;
     if (status) filter.status = status;
     if (fromDate || toDate) {
@@ -85,14 +99,7 @@ const updateAdvanceStatus = async (req, res) => {
   try {
     const { status, notes } = req.body;
     const advanceId = req.params.id;
-
-    // Check permissions
-    // if (!['admin', 'manager'].includes(req.user.role)) {
-    //     return res.status(403).json({
-    //         success: false,
-    //         message: "غير مسموح لك بالقيام بهذا الإجراء"
-    //     });
-    // }
+    const companyId = req.user.companyId;
 
     if (!["approved", "rejected"].includes(status)) {
       return res.status(400).json({
@@ -101,7 +108,7 @@ const updateAdvanceStatus = async (req, res) => {
       });
     }
 
-    const advance = await Advance.findById(advanceId).populate(
+    const advance = await Advance.findOne({ _id: advanceId, companyId }).populate(
       "user",
       "user_name",
     );
@@ -132,6 +139,7 @@ const updateAdvanceStatus = async (req, res) => {
         -advance.amount,
         `سلفة للموظف: ${advance.user.user_name} - ${advance.reason}`,
         {
+          companyId,
           relatedModel: "Advance",
           relatedId: advance._id,
           userId: req.user.id,
@@ -154,15 +162,17 @@ const updateAdvanceStatus = async (req, res) => {
 
 const deleteAdvance = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
+    
     // Check permissions
-    if (!["admin", "manager"].includes(req.user.role)) {
+    if (req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
         message: "غير مسموح لك بحذف السلف",
       });
     }
 
-    const advance = await Advance.findById(req.params.id);
+    const advance = await Advance.findOne({ _id: req.params.id, companyId });
     if (!advance) {
       return res.status(404).json({
         success: false,
@@ -193,7 +203,11 @@ const deleteAdvance = async (req, res) => {
 
 const getAdvanceStats = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
+    const companyObjectId = new mongoose.Types.ObjectId(companyId);
+    
     const stats = await Advance.aggregate([
+      { $match: { companyId: companyObjectId } },
       {
         $facet: {
           byStatus: [
@@ -242,8 +256,10 @@ const getAdvanceStats = async (req, res) => {
 
 const repayAdvance = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
+    
     // Check permissions
-    if (!["admin", "manager"].includes(req.user.role)) {
+    if (req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
         message: "غير مسموح لك بالقيام بهذا الإجراء",
@@ -251,7 +267,7 @@ const repayAdvance = async (req, res) => {
     }
 
     const advanceId = req.params.id;
-    const advance = await Advance.findById(advanceId).populate(
+    const advance = await Advance.findOne({ _id: advanceId, companyId }).populate(
       "user",
       "user_name",
     );
@@ -278,6 +294,7 @@ const repayAdvance = async (req, res) => {
       advance.amount,
       `استرداد سلفة من الموظف: ${advance.user.user_name}`,
       {
+        companyId,
         relatedModel: "Advance",
         relatedId: advance._id,
         userId: req.user.id,

@@ -7,6 +7,11 @@ const transferSchema = mongoose.Schema({
         required: [true, "رقم الحجز مطلوب"],
         trim: true
     },
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     customer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer',

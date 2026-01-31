@@ -1,8 +1,10 @@
+const mongoose = require("mongoose");
 const Payment = require("../models/Payment.model");
 const Transfer = require("../models/Transfer.model");
 const getPagination = require("../utils/pagination");
 const { generatePaymentsExcel } = require("../utils/excelExport");
 const { updateTreasury } = require("../utils/treasury.helper");
+const { getCompanyFilter } = require("../utils/companyFilter");
 
 /**
  * Get all payments with filtering and pagination
@@ -11,24 +13,25 @@ const getPayments = async (req, res) => {
     try {
         const { limit, skip } = getPagination(req);
         const { fromDate, toDate, payment_method } = req.query;
+        const companyId = req.user.companyId;
 
-        const dateFilter = {};
+        const filter = getCompanyFilter(companyId);
 
         if (fromDate || toDate) {
-            dateFilter.payment_date = {};
-            if (fromDate) dateFilter.payment_date.$gte = new Date(fromDate);
+            filter.payment_date = {};
+            if (fromDate) filter.payment_date.$gte = new Date(fromDate);
             if (toDate) {
                 const endOfDay = new Date(toDate);
                 endOfDay.setHours(23, 59, 59, 999);
-                dateFilter.payment_date.$lte = endOfDay;
+                filter.payment_date.$lte = endOfDay;
             }
         }
 
         if (payment_method) {
-            dateFilter.payment_method = payment_method;
+            filter.payment_method = payment_method;
         }
 
-        const payments = await Payment.find(dateFilter, { "__v": false })
+        const payments = await Payment.find(filter, { "__v": false })
             .populate({
                 path: 'transfer',
                 select: 'booking_number ticket_price status',
@@ -42,11 +45,12 @@ const getPayments = async (req, res) => {
             .skip(skip)
             .sort({ payment_date: -1 });
 
-        const total = await Payment.countDocuments(dateFilter);
+        const total = await Payment.countDocuments(filter);
 
         // Calculate total amount
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
         const totalAmount = await Payment.aggregate([
-            { $match: dateFilter },
+            { $match: { ...filter, companyId: companyObjectId } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
 
@@ -75,8 +79,9 @@ const getPayments = async (req, res) => {
 const getPaymentsByTransfer = async (req, res) => {
     try {
         const transferId = req.params.transferId;
+        const companyId = req.user.companyId;
 
-        const transfer = await Transfer.findById(transferId);
+        const transfer = await Transfer.findOne({ _id: transferId, companyId });
         if (!transfer) {
             return res.status(404).json({
                 success: false,
@@ -84,7 +89,7 @@ const getPaymentsByTransfer = async (req, res) => {
             });
         }
 
-        const payments = await Payment.find({ transfer: transferId })
+        const payments = await Payment.find({ transfer: transferId, companyId })
             .populate('createdBy', 'user_name email')
             .sort({ payment_date: -1 });
 
@@ -123,6 +128,7 @@ const addPayment = async (req, res) => {
             receipt_number,
             notes
         } = req.body;
+        const companyId = req.user.companyId;
 
         if (!transferId || !amount) {
             return res.status(400).json({
@@ -138,7 +144,7 @@ const addPayment = async (req, res) => {
             });
         }
 
-        const transfer = await Transfer.findById(transferId);
+        const transfer = await Transfer.findOne({ _id: transferId, companyId });
         if (!transfer) {
             return res.status(404).json({
                 success: false,
@@ -154,8 +160,9 @@ const addPayment = async (req, res) => {
             });
         }
 
-        // Create payment
+        // Create payment with companyId
         const newPayment = new Payment({
+            companyId,
             transfer: transferId,
             amount,
             payment_date: payment_date || new Date(),
@@ -169,10 +176,11 @@ const addPayment = async (req, res) => {
 
         // Update transfer payment status
         transfer.total_paid = (transfer.total_paid || 0) + amount;
-        await transfer.save(); // This will trigger pre-save hook to update remaining_amount and status
+        await transfer.save();
 
         // Update Treasury
         await updateTreasury(amount, `دفعة للحجز رقم ${transfer.booking_number}`, {
+            companyId,
             relatedModel: 'Transfer',
             relatedId: transfer._id,
             userId: req.user?.id || null
@@ -203,7 +211,8 @@ const addPayment = async (req, res) => {
  */
 const deletePayment = async (req, res) => {
     try {
-        const payment = await Payment.findById(req.params.id);
+        const companyId = req.user.companyId;
+        const payment = await Payment.findOne({ _id: req.params.id, companyId });
 
         if (!payment) {
             return res.status(404).json({
@@ -212,7 +221,7 @@ const deletePayment = async (req, res) => {
             });
         }
 
-        const transfer = await Transfer.findById(payment.transfer);
+        const transfer = await Transfer.findOne({ _id: payment.transfer, companyId });
 
         if (transfer) {
             // Revert payment from transfer
@@ -221,6 +230,7 @@ const deletePayment = async (req, res) => {
 
             // Update Treasury (subtract amount)
             await updateTreasury(-payment.amount, `حذف دفعة للحجز رقم ${transfer.booking_number}`, {
+                companyId,
                 relatedModel: 'Transfer',
                 relatedId: transfer._id,
                 userId: req.user?.id || null
@@ -254,8 +264,9 @@ const deletePayment = async (req, res) => {
 const exportPaymentsToExcel = async (req, res) => {
     try {
         const { fromDate, toDate, payment_method } = req.query;
+        const companyId = req.user.companyId;
 
-        const filter = {};
+        const filter = getCompanyFilter(companyId);
         if (fromDate || toDate) {
             filter.payment_date = {};
             if (fromDate) filter.payment_date.$gte = new Date(fromDate);

@@ -45,18 +45,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations();
   const [open, setOpen] = React.useState(false);
   const user = useCurrentUser();
-  const userRole = user?.role || "employee"; // Default to employee if no role
+  const userRole = user?.role || "accountant"; // Default to accountant if no role
 
   // Define permissions for each role
-  // admin/manager: access all
-  // accountant: access treasury, expenses, air-comps, (maybe dashboard, customers, travelers?)
-  // employee: limited access
+  // admin: access all
+  // accountant: limited access
 
   // Helper to check permission
   const hasPermission = (allowedRoles?: string[]) => {
     if (!allowedRoles) return true; // Public or available to all auth users
-    if (userRole === "admin" || userRole === "manager") return true;
-    return allowedRoles.includes(userRole);
+    if (userRole === "admin") return true;
+    return (allowedRoles as string[]).includes(userRole);
   };
 
   const data = {
@@ -65,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: t("nav.dashboard"),
         url: "/dashboard",
         icon: IconDashboard,
-        roles: ["admin", "manager", "accountant", "employee"],
+        roles: ["admin", "accountant"],
       },
       {
         title: t("nav.travelers"),

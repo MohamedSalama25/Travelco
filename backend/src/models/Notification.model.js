@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const notificationSchema = new mongoose.Schema(
   {
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: [true, "الشركة مطلوبة"],
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

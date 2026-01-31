@@ -25,9 +25,15 @@ const userSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ['accountant', 'admin', 'manager'],
+    enum: ['accountant', 'admin'],
     default: 'accountant'
 
+  },
+
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: [true, "الشركة مطلوبة"]
   },
 
   password: {

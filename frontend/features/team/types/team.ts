@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export type TeamRole = "admin" | "manager" | "accountant";
+export type TeamRole = "admin" | "accountant";
 
 export interface TeamMember {
     _id: string;
@@ -80,7 +80,7 @@ export const teamMemberSchema = z.object({
     phone: z.string()
         .min(10, { message: "phoneInvalid" })
         .max(20, { message: "phoneInvalid" }),
-    role: z.enum(["admin", "manager", "accountant"]),
+    role: z.enum(["admin", "accountant"]),
     department: z.string().optional(),
     password: z.string().min(6).optional(),
 });

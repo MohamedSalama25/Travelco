@@ -1,6 +1,8 @@
+const mongoose = require("mongoose");
 const Expense = require("../models/Expense.model");
 const { updateTreasury } = require("../utils/treasury.helper");
 const getPagination = require("../utils/pagination");
+const { getCompanyFilter } = require("../utils/companyFilter");
 
 /**
  * Get all expenses with filtering and pagination
@@ -9,7 +11,9 @@ const getExpenses = async (req, res) => {
   try {
     const { limit, skip } = getPagination(req);
     const { fromDate, toDate, search, date } = req.query;
-    const filter = {};
+    const companyId = req.user.companyId;
+    
+    const filter = getCompanyFilter(companyId);
 
     if (search) {
       filter.$or = [
@@ -43,7 +47,7 @@ const getExpenses = async (req, res) => {
 
     // Calculate total stats for the requested period/filter
     const stats = await Expense.aggregate([
-      { $match: filter },
+      { $match: { ...filter, companyId: new mongoose.Types.ObjectId(companyId) } },
       { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
 
@@ -74,6 +78,7 @@ const getExpenses = async (req, res) => {
 const addExpense = async (req, res) => {
   try {
     const { title, amount, date, description, category } = req.body;
+    const companyId = req.user.companyId;
 
     if (!title || !amount) {
       return res.status(400).json({
@@ -83,6 +88,7 @@ const addExpense = async (req, res) => {
     }
 
     const expense = new Expense({
+      companyId,
       title,
       amount,
       date: date || new Date(),
@@ -95,6 +101,7 @@ const addExpense = async (req, res) => {
 
     // Deduct from Treasury
     await updateTreasury(-Math.abs(amount), `مصروف: ${title}`, {
+      companyId,
       relatedModel: "Expense",
       relatedId: expense._id,
       userId: req.user?.id,
@@ -115,20 +122,18 @@ const addExpense = async (req, res) => {
 
 /**
  * Update expense
- * Note: Handling amount change requires complex Treasury adjustment (difference).
- * For simplicity in this iteration, we will implement basic update but warn/restrict amount updates or handle diff.
- * Let's handle amount diff.
  */
 const updateExpense = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, amount, date, description, category } = req.body;
+    const companyId = req.user.companyId;
 
-    const expense = await Expense.findById(id);
+    const expense = await Expense.findOne({ _id: id, companyId });
     if (!expense) {
       return res.status(404).json({
         success: false,
-        message: "Expense not found",
+        message: "المصروف غير موجود",
       });
     }
 
@@ -145,18 +150,9 @@ const updateExpense = async (req, res) => {
 
     // If amount changed, adjust treasury
     if (oldAmount !== newAmount) {
-      const difference = oldAmount - newAmount; // If (100 -> 120), diff is -20. We need to deduct 20 more.
-      // updateTreasury adds the amount.
-      // Expense reduces treasury.
-      // If expense increases (100 -> 120), we need to reduce treasury by 20 more (-20).
-      // If expense decreases (100 -> 80), we need to refund treasury by 20 (+20).
-      // Logic:
-      // Previous deduction: -100
-      // New deduction: -120
-      // Adjustment: -20
-      // Formula: -(New - Old) = Old - New.
-
-      await updateTreasury(difference, `${title}`, {
+      const difference = oldAmount - newAmount;
+      await updateTreasury(difference, `تعديل مصروف: ${title || expense.title}`, {
+        companyId,
         relatedModel: "Expense",
         relatedId: expense._id,
         userId: req.user?.id,
@@ -182,7 +178,9 @@ const updateExpense = async (req, res) => {
 const deleteExpense = async (req, res) => {
   try {
     const { id } = req.params;
-    const expense = await Expense.findById(id);
+    const companyId = req.user.companyId;
+    
+    const expense = await Expense.findOne({ _id: id, companyId });
 
     if (!expense) {
       return res.status(404).json({
@@ -194,15 +192,16 @@ const deleteExpense = async (req, res) => {
     // Refund treasury before deleting
     await updateTreasury(
       expense.amount,
-      `تعديل مبلغ المصروف: ${expense.title}`,
+      `حذف مصروف: ${expense.title}`,
       {
+        companyId,
         relatedModel: "Expense",
         relatedId: expense._id,
         userId: req.user?.id,
       },
     );
 
-    await Expense.findByIdAndDelete(id);
+    await expense.deleteOne();
 
     return res.status(200).json({
       success: true,

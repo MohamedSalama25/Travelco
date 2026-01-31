@@ -1,7 +1,9 @@
+const mongoose = require("mongoose");
 const Customer = require("../models/Customer.model");
 const Transfer = require("../models/Transfer.model");
 const getPagination = require("../utils/pagination");
 const { generateCustomersExcel } = require("../utils/excelExport");
+const { getCompanyFilter, addCompanyFilter } = require("../utils/companyFilter");
 
 /**
  * Helper to calculate percentage change
@@ -20,9 +22,10 @@ const getCustomers = async (req, res) => {
   try {
     const { limit, skip } = getPagination(req);
     const { name, phone, nationality } = req.query;
+    const companyId = req.user.companyId;
 
-    // Build filter object
-    const filter = {};
+    // Build filter object with company
+    const filter = getCompanyFilter(companyId);
 
     if (name) {
       filter.name = { $regex: name, $options: "i" };
@@ -66,6 +69,9 @@ const getCustomers = async (req, res) => {
  */
 const getCustomerStats = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
+    const companyObjectId = new mongoose.Types.ObjectId(companyId);
+    
     const now = new Date();
     const currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const currentEnd = new Date(
@@ -83,10 +89,12 @@ const getCustomerStats = async (req, res) => {
     // Helper to get stats for a specific range
     const getStatsForRange = async (start, end) => {
       const newCustomers = await Customer.countDocuments({
+        companyId,
         createdAt: { $gte: start, $lte: end },
       });
 
       const transfers = await Transfer.aggregate([
+        { $match: { companyId: companyObjectId } },
         {
           $lookup: {
             from: "customers",
@@ -121,7 +129,7 @@ const getCustomerStats = async (req, res) => {
       getStatsForRange(prevStart, prevEnd),
     ]);
 
-    const totalCustomers = await Customer.countDocuments();
+    const totalCustomers = await Customer.countDocuments({ companyId });
 
     return res.status(200).json({
       success: true,
@@ -190,7 +198,8 @@ const getCustomerStats = async (req, res) => {
  */
 const getCustomerById = async (req, res) => {
   try {
-    const customer = await Customer.findById(req.params.id);
+    const companyId = req.user.companyId;
+    const customer = await Customer.findOne({ _id: req.params.id, companyId });
 
     if (!customer) {
       return res.status(404).json({
@@ -218,8 +227,9 @@ const getCustomerTransfers = async (req, res) => {
   try {
     const { limit, skip } = getPagination(req);
     const customerId = req.params.id;
+    const companyId = req.user.companyId;
 
-    const customer = await Customer.findById(customerId);
+    const customer = await Customer.findOne({ _id: customerId, companyId });
     if (!customer) {
       return res.status(404).json({
         success: false,
@@ -227,17 +237,18 @@ const getCustomerTransfers = async (req, res) => {
       });
     }
 
-    const transfers = await Transfer.find({ customer: customerId })
+    const transferFilter = { customer: customerId, companyId };
+    const transfers = await Transfer.find(transferFilter)
       .populate("air_comp", "name phone")
       .limit(limit)
       .skip(skip)
       .sort({ createdAt: -1 });
 
-    const total = await Transfer.countDocuments({ customer: customerId });
+    const total = await Transfer.countDocuments(transferFilter);
 
     // Calculate customer stats
     const stats = await Transfer.aggregate([
-      { $match: { customer: customer._id } },
+      { $match: { customer: customer._id, companyId: new mongoose.Types.ObjectId(companyId) } },
       {
         $group: {
           _id: null,
@@ -291,6 +302,7 @@ const addCustomer = async (req, res) => {
       address,
       notes,
     } = req.body;
+    const companyId = req.user.companyId;
 
     if (!name || !phone) {
       return res.status(400).json({
@@ -310,6 +322,7 @@ const addCustomer = async (req, res) => {
       notes: notes || "",
       createdBy: req.user?.id || null,
       updatedBy: req.user?.id || null,
+      companyId: companyId,
     });
 
     await newCustomer.save();
@@ -332,12 +345,13 @@ const addCustomer = async (req, res) => {
  */
 const updateCustomer = async (req, res) => {
   try {
-    const customer = await Customer.findById(req.params.id);
+    const companyId = req.user.companyId;
+    const customer = await Customer.findOne({ _id: req.params.id, companyId });
 
     if (!customer) {
       return res.status(404).json({
         success: false,
-        message: "Customer not found",
+        message: "العميل غير موجود",
       });
     }
 
@@ -384,18 +398,20 @@ const updateCustomer = async (req, res) => {
  */
 const deleteCustomer = async (req, res) => {
   try {
-    const customer = await Customer.findById(req.params.id);
+    const companyId = req.user.companyId;
+    const customer = await Customer.findOne({ _id: req.params.id, companyId });
 
     if (!customer) {
       return res.status(404).json({
         success: false,
-        message: "Customer not found",
+        message: "العميل غير موجود",
       });
     }
 
     // Check if customer has transfers
     const transferCount = await Transfer.countDocuments({
       customer: customer._id,
+      companyId,
     });
     if (transferCount > 0) {
       return res.status(400).json({
@@ -424,8 +440,9 @@ const deleteCustomer = async (req, res) => {
 const exportCustomersToExcel = async (req, res) => {
   try {
     const { name, phone, nationality } = req.query;
+    const companyId = req.user.companyId;
 
-    const filter = {};
+    const filter = getCompanyFilter(companyId);
     if (name) filter.name = { $regex: name, $options: "i" };
     if (phone) filter.phone = { $regex: phone, $options: "i" };
     if (nationality)

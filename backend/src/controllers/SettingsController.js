@@ -2,16 +2,19 @@ const Settings = require('../models/Settings.model');
 
 /**
  * Get company settings
- * Returns the only settings document or creates a default one if none exists
+ * Returns the settings for the current company or creates default if none exists
  */
 exports.getSettings = async (req, res, next) => {
     try {
-        let settings = await Settings.findOne();
+        const companyId = req.user.companyId;
+        
+        let settings = await Settings.findOne({ companyId });
 
         if (!settings) {
-            // Create default settings if none exist
+            // Create default settings for this company
             settings = await Settings.create({
-                companyName: "شركة ترافيلكو",
+                companyId,
+                companyName: "شركتي",
                 address: "",
                 phone: "",
                 whatsapp: "",
@@ -33,12 +36,14 @@ exports.getSettings = async (req, res, next) => {
  */
 exports.updateSettings = async (req, res, next) => {
     try {
+        const companyId = req.user.companyId;
         const { companyName, address, phone, whatsapp, coordinates } = req.body;
 
-        let settings = await Settings.findOne();
+        let settings = await Settings.findOne({ companyId });
 
         if (!settings) {
             settings = await Settings.create({
+                companyId,
                 companyName,
                 address,
                 phone,

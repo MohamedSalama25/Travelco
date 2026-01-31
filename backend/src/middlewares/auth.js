@@ -11,7 +11,13 @@ const auth = (req, res, next) => {
     // Verify throws error if invalid
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded;
+    // Set user info including companyId
+    req.user = {
+      id: decoded.id,
+      role: decoded.role,
+      companyId: decoded.companyId
+    };
+    
     next();
 
   } catch (error) {

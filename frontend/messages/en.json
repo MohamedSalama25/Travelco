@@ -10,6 +10,7 @@
     "delete": "Delete",
     "back": "Back",
     "actions": "Actions",
+    "addNew": "Add",
     "loading": "Loading...",
     "loadError": "Failed to load data",
     "showing": "Showing",
@@ -69,7 +70,6 @@
     "member": "Member",
     "role": "Role",
     "admin": "Admin",
-    "manager": "Manager",
     "accountant": "Accountant",
     "department": "Department",
     "addMember": "Add Member",
@@ -235,6 +235,7 @@
     "total": "Total"
   },
   "travelers": {
+    "addQuick": "Add",
     "check": "Check",
     "totalTravelers": "Total Travelers",
     "activeTrips": "Active Trips",
@@ -391,6 +392,8 @@
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",
+    "company": "Company",
+    "companyName": "Company Name",
     "name": "Name",
     "phone": "Phone Number",
     "forgotPassword": "Forgot Password?",

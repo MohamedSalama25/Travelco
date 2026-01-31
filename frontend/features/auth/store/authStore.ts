@@ -12,6 +12,8 @@ export interface User {
     user_name?: string;
     role?: string;
     phone?: string;
+    companyId?: string;
+    companyName?: string;
 }
 
 /**
@@ -21,6 +23,8 @@ interface AuthState {
     user: User | null;
     token: string | null;
     isAuthenticated: boolean;
+    companyId: string | null;
+    companyName: string | null;
 
     // Actions
     setUser: (user: User) => void;
@@ -43,6 +47,8 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             token: null,
             isAuthenticated: false,
+            companyId: null,
+            companyName: null,
 
             /**
              * Initialize auth - now handled by Zustand persist middleware
@@ -57,7 +63,12 @@ export const useAuthStore = create<AuthState>()(
              * Set user data
              */
             setUser: (user: User) => {
-                set({ user, isAuthenticated: !!user });
+                set({
+                    user,
+                    isAuthenticated: !!user,
+                    companyId: user?.companyId || null,
+                    companyName: user?.companyName || null
+                });
             },
 
             /**
@@ -66,12 +77,11 @@ export const useAuthStore = create<AuthState>()(
              * - Save directly in cookies via js-cookie
              */
             setToken: async (token: string) => {
-                // خزن في الـ state
+                // Store in state
                 set({ token, isAuthenticated: true });
 
-                // خزن في الكوكيز مباشرة
+                // Store in cookies directly
                 Cookies.set(AUTH_COOKIE_KEY, token, {
-                    // عدّل الـ expires على مزاجك (بالأيام)
                     expires: 7,
                 });
             },
@@ -82,9 +92,15 @@ export const useAuthStore = create<AuthState>()(
              * - Save directly in cookies via js-cookie
              */
             login: async (user: User, token: string) => {
-                set({ user, token, isAuthenticated: true });
+                set({
+                    user,
+                    token,
+                    isAuthenticated: true,
+                    companyId: user?.companyId || null,
+                    companyName: user?.companyName || null
+                });
 
-                // خزن التوكين في الكوكيز مباشرة
+                // Store token in cookies directly
                 Cookies.set(AUTH_COOKIE_KEY, token, {
                     expires: 7,
                 });
@@ -96,23 +112,35 @@ export const useAuthStore = create<AuthState>()(
              * - Remove token cookie
              */
             logout: async () => {
-                // امسح الكوكيز
+                // Remove cookies
                 Cookies.remove(AUTH_COOKIE_KEY);
 
-                // نظّف الـ state
-                set({ user: null, token: null, isAuthenticated: false });
+                // Clear state
+                set({
+                    user: null,
+                    token: null,
+                    isAuthenticated: false,
+                    companyId: null,
+                    companyName: null
+                });
             },
 
             /**
              * Clear user data
-             * - Same as logout (لو حابب تفصلهم تقدر لاحقًا)
+             * - Same as logout
              */
             clearUser: async () => {
-                // امسح الكوكيز
+                // Remove cookies
                 Cookies.remove(AUTH_COOKIE_KEY);
 
-                // نظّف الـ state
-                set({ user: null, token: null, isAuthenticated: false });
+                // Clear state
+                set({
+                    user: null,
+                    token: null,
+                    isAuthenticated: false,
+                    companyId: null,
+                    companyName: null
+                });
             },
         }),
         {
@@ -122,6 +150,8 @@ export const useAuthStore = create<AuthState>()(
                 user: state.user,
                 token: state.token,
                 isAuthenticated: state.isAuthenticated,
+                companyId: state.companyId,
+                companyName: state.companyName,
             }),
         }
     )
@@ -149,4 +179,13 @@ export const useIsAuthenticated = () => {
 export const useAuthToken = () => {
     const token = useAuthStore((state) => state.token);
     return token;
+};
+
+/**
+ * Hook to get current company info
+ */
+export const useCurrentCompany = () => {
+    const companyId = useAuthStore((state) => state.companyId);
+    const companyName = useAuthStore((state) => state.companyName);
+    return { companyId, companyName };
 };

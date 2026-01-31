@@ -6,8 +6,20 @@ export interface User {
     name: string;
     user_name: string;
     email: string;
-    role: "admin" | "user";
+    phone?: string;
+    role: "admin" | "accountant";
     avatar?: string;
+    companyId?: string;
+    companyName?: string;
+}
+
+// Company interface
+export interface Company {
+    _id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    status: "active" | "inactive";
 }
 
 // Login schema
@@ -25,6 +37,7 @@ export const registerSchema = z.object({
     phone: z.string().min(10, { message: "phoneMin" }),
     password: z.string().min(6, { message: "passwordMin" }),
     confirmPassword: z.string(),
+    company_name: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "passwordMismatch",
     path: ["confirmPassword"],
@@ -48,6 +61,6 @@ export const mockUsers: Array<User & { password: string }> = [
         user_name: "user",
         email: "user@example.com",
         password: "user123",
-        role: "user",
+        role: "accountant",
     },
 ];

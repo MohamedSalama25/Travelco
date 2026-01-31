@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const AirCompSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     name: {
         type: String,
         required: [true, "الاسم مطلوب"],

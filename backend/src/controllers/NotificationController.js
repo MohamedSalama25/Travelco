@@ -1,4 +1,5 @@
 const Notification = require("../models/Notification.model");
+const { getCompanyFilter } = require("../utils/companyFilter");
 
 /**
  * Get notifications for the logged-in user
@@ -8,8 +9,12 @@ const getNotifications = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const companyId = req.user.companyId;
 
-    const notifications = await Notification.find({ user: req.user.id })
+    // Filter by user and company
+    const filter = { user: req.user.id, companyId };
+
+    const notifications = await Notification.find(filter)
       .sort({ createdAt: -1 })
       .populate({
         path: "relatedId",
@@ -18,9 +23,9 @@ const getNotifications = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    const total = await Notification.countDocuments({ user: req.user.id });
+    const total = await Notification.countDocuments(filter);
     const unreadCount = await Notification.countDocuments({
-      user: req.user.id,
+      ...filter,
       isRead: false,
     });
 
@@ -48,8 +53,10 @@ const getNotifications = async (req, res) => {
  */
 const markRead = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
+    
     const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
+      { _id: req.params.id, user: req.user.id, companyId },
       { isRead: true },
       { new: true },
     );
@@ -57,7 +64,7 @@ const markRead = async (req, res) => {
     if (!notification) {
       return res.status(404).json({
         success: false,
-        message: "Notification not found",
+        message: "الإشعار غير موجود",
       });
     }
 
@@ -78,14 +85,16 @@ const markRead = async (req, res) => {
  */
 const markAllRead = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
+    
     await Notification.updateMany(
-      { user: req.user.id, isRead: false },
+      { user: req.user.id, companyId, isRead: false },
       { isRead: true },
     );
 
     return res.status(200).json({
       success: true,
-      message: "All notifications marked as read",
+      message: "تم تحديد جميع الإشعارات كمقروءة",
     });
   } catch (error) {
     return res.status(500).json({

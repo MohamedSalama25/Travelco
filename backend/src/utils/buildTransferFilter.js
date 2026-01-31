@@ -1,6 +1,11 @@
 const Customer = require("../models/Customer.model");
 
-const buildTransferFilter = async (query) => {
+/**
+ * Build filter for Transfer queries with companyId support
+ * @param {Object} query - Query parameters from request
+ * @param {String} companyId - Company ID from req.user.companyId
+ */
+const buildTransferFilter = async (query, companyId) => {
     const {
         name,
         booking_number,
@@ -11,11 +16,20 @@ const buildTransferFilter = async (query) => {
         toDate
     } = query;
 
-    const filter = {};
+    // Start with companyId filter - MANDATORY
+    if (!companyId) {
+        throw new Error("Company authentication required");
+    }
+    const filter = { companyId: companyId };
 
     if (name) {
+        // Also filter customers by company
+        const customerFilter = { name: { $regex: name, $options: "i" } };
+        if (companyId) {
+            customerFilter.companyId = companyId;
+        }
         const customers = await Customer
-            .find({ name: { $regex: name, $options: "i" } })
+            .find(customerFilter)
             .select("_id");
 
         filter.customer = { $in: customers.map(c => c._id) };

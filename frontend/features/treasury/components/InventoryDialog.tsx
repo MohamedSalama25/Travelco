@@ -108,7 +108,7 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl sm:max-w-[800px] gap-6">
-                {/* <DialogHeader className="pr-8">
+                <DialogHeader className="pr-8">
                     <div className="flex items-center gap-2">
                         <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                             <Calculator className="h-5 w-5 text-primary" />
@@ -120,7 +120,7 @@ const InventoryDialog = ({ isOpen, onClose }: InventoryDialogProps) => {
                             </DialogDescription>
                         </div>
                     </div>
-                </DialogHeader> */}
+                </DialogHeader>
 
                 <div className="space-y-4 bg-muted/30 p-4 rounded-xl border mt-4">
                     <div className="flex flex-col gap-2">

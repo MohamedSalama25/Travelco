@@ -6,6 +6,7 @@ const AppError = require("../utils/appError");
 const getPagination = require("../utils/pagination");
 const mongoose = require("mongoose");
 const { updateTreasury } = require("../utils/treasury.helper");
+const { getCompanyFilter } = require("../utils/companyFilter");
 
 /**
  * Helper to calculate percentage change
@@ -24,9 +25,11 @@ const getAirComp = async (req, res) => {
     try {
         const { limit, skip } = getPagination(req);
         const { search, hasBalance } = req.query;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
-        // Base match stage
-        const matchStage = {};
+        // Base match stage with company filter
+        const matchStage = { companyId: companyObjectId };
         if (search) {
             matchStage.name = { $regex: search, $options: 'i' };
         }
@@ -37,15 +40,10 @@ const getAirComp = async (req, res) => {
             {
                 $lookup: {
                     from: "transfers",
-                    localField: "_id",
-                    foreignField: "air_comp",
+                    let: { airCompId: "$_id" },
                     pipeline: [
-                        {
-                            $group: {
-                                _id: null,
-                                totalCost: { $sum: "$ticket_salary" }
-                            }
-                        }
+                        { $match: { $expr: { $and: [{ $eq: ["$air_comp", "$$airCompId"] }, { $eq: ["$companyId", companyObjectId] }] } } },
+                        { $group: { _id: null, totalCost: { $sum: "$ticket_salary" } } }
                     ],
                     as: "costs"
                 }
@@ -54,15 +52,10 @@ const getAirComp = async (req, res) => {
             {
                 $lookup: {
                     from: "aircomppayments",
-                    localField: "_id",
-                    foreignField: "air_comp",
+                    let: { airCompId: "$_id" },
                     pipeline: [
-                        {
-                            $group: {
-                                _id: null,
-                                totalPaid: { $sum: "$amount" }
-                            }
-                        }
+                        { $match: { $expr: { $and: [{ $eq: ["$air_comp", "$$airCompId"] }, { $eq: ["$companyId", companyObjectId] }] } } },
+                        { $group: { _id: null, totalPaid: { $sum: "$amount" } } }
                     ],
                     as: "payments"
                 }
@@ -89,7 +82,6 @@ const getAirComp = async (req, res) => {
         }
 
         // Handle total count for pagination
-        // Need to run a count on the pipeline before slicing
         const countPipeline = [...pipeline, { $count: "total" }];
         const countResult = await AirComp.aggregate(countPipeline);
         const total = countResult[0]?.total || 0;
@@ -124,7 +116,8 @@ const getAirComp = async (req, res) => {
  */
 const getAirCompById = asyncWrapper(
     async (req, res, next) => {
-        const airComp = await AirComp.findById(req.params.id);
+        const companyId = req.user.companyId;
+        const airComp = await AirComp.findOne({ _id: req.params.id, companyId });
         if (!airComp) {
             const error = new AppError("جهة الإصدار غير موجودة", 404);
             return next(error);
@@ -141,6 +134,7 @@ const getAirCompById = asyncWrapper(
  */
 const addAirComp = async (req, res) => {
     const { name, phone, address } = req.body;
+    const companyId = req.user.companyId;
 
     if (!name || !phone) {
         return res.status(400).json({
@@ -151,6 +145,7 @@ const addAirComp = async (req, res) => {
 
     try {
         const newAirComp = new AirComp({
+            companyId,
             name: name,
             phone: phone,
             address: address || ''
@@ -176,7 +171,8 @@ const addAirComp = async (req, res) => {
  */
 const updateAirComp = async (req, res) => {
     try {
-        const airComp = await AirComp.findById(req.params.id);
+        const companyId = req.user.companyId;
+        const airComp = await AirComp.findOne({ _id: req.params.id, companyId });
 
         if (!airComp) {
             return res.status(404).json({
@@ -212,7 +208,8 @@ const updateAirComp = async (req, res) => {
  */
 const deleteAirComp = async (req, res) => {
     try {
-        const airComp = await AirComp.findById(req.params.id);
+        const companyId = req.user.companyId;
+        const airComp = await AirComp.findOne({ _id: req.params.id, companyId });
 
         if (!airComp) {
             return res.status(404).json({
@@ -222,7 +219,7 @@ const deleteAirComp = async (req, res) => {
         }
 
         // Check if air company has transfers
-        const transferCount = await Transfer.countDocuments({ air_comp: airComp._id });
+        const transferCount = await Transfer.countDocuments({ air_comp: airComp._id, companyId });
         if (transferCount > 0) {
             return res.status(400).json({
                 success: false,
@@ -251,6 +248,8 @@ const getAirCompStats = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
         const airCompId = req.params.id;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(airCompId)) {
@@ -260,7 +259,7 @@ const getAirCompStats = async (req, res) => {
             });
         }
 
-        const airComp = await AirComp.findById(airCompId);
+        const airComp = await AirComp.findOne({ _id: airCompId, companyId });
         if (!airComp) {
             return res.status(404).json({
                 success: false,
@@ -291,6 +290,7 @@ const getAirCompStats = async (req, res) => {
         // Helper to get stats for a specific range
         const getStatsForRange = async (start, end) => {
             const matchStage = {
+                companyId: companyObjectId,
                 air_comp: new mongoose.Types.ObjectId(airCompId),
                 createdAt: { $gte: start, $lte: end }
             };
@@ -310,6 +310,7 @@ const getAirCompStats = async (req, res) => {
             ]);
 
             const paymentMatchStage = {
+                companyId: companyObjectId,
                 air_comp: new mongoose.Types.ObjectId(airCompId),
                 payment_date: { $gte: start, $lte: end }
             };
@@ -415,15 +416,24 @@ const getAirCompStats = async (req, res) => {
 const getAllAirCompWithStats = async (req, res) => {
     try {
         const { fromDate, toDate, search, hasBalance } = req.query;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
-        // Match stage for basic fields (search)
-        const initialMatch = {};
+        // Match stage for basic fields (search + company)
+        const initialMatch = { companyId: companyObjectId };
         if (search) {
             initialMatch.name = { $regex: search, $options: 'i' };
         }
 
         // Date filters for Transfers
-        const transferMatchStage = { "$expr": { "$eq": ["$air_comp", "$$airCompId"] } };
+        const transferMatchStage = { 
+            "$expr": { 
+                "$and": [
+                    { "$eq": ["$air_comp", "$$airCompId"] },
+                    { "$eq": ["$companyId", companyObjectId] }
+                ]
+            }
+        };
         if (fromDate || toDate) {
             transferMatchStage.createdAt = {};
             if (fromDate) transferMatchStage.createdAt.$gte = new Date(fromDate);
@@ -435,7 +445,14 @@ const getAllAirCompWithStats = async (req, res) => {
         }
 
         // Date filters for Payments
-        const paymentMatchStage = { "$expr": { "$eq": ["$air_comp", "$$airCompId"] } };
+        const paymentMatchStage = { 
+            "$expr": { 
+                "$and": [
+                    { "$eq": ["$air_comp", "$$airCompId"] },
+                    { "$eq": ["$companyId", companyObjectId] }
+                ]
+            }
+        };
         if (fromDate || toDate) {
             paymentMatchStage.payment_date = {};
             if (fromDate) paymentMatchStage.payment_date.$gte = new Date(fromDate);
@@ -506,7 +523,6 @@ const getAllAirCompWithStats = async (req, res) => {
                 $addFields: {
                     totalProfit: { $subtract: ["$totalSales", "$totalCost"] },
                     remainingToIssuer: { $subtract: ["$totalCost", "$totalPaidToIssuer"] },
-                    // Map logical fields to legacy fields if needed, or just standard ones
                     totalPaid: "$totalPaidToIssuer",
                     remainingAmount: { $subtract: ["$totalCost", "$totalPaidToIssuer"] }
                 }
@@ -541,6 +557,8 @@ const addAirCompPayment = async (req, res) => {
     try {
         const { id: airCompId } = req.params;
         const { amount, payment_date, payment_method, notes, receipt_number } = req.body;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
         if (!amount || amount <= 0) {
             return res.status(400).json({
@@ -549,7 +567,7 @@ const addAirCompPayment = async (req, res) => {
             });
         }
 
-        const airComp = await AirComp.findById(airCompId);
+        const airComp = await AirComp.findOne({ _id: airCompId, companyId });
         if (!airComp) {
             return res.status(404).json({
                 success: false,
@@ -561,6 +579,7 @@ const addAirCompPayment = async (req, res) => {
         const transferStats = await Transfer.aggregate([
             {
                 $match: {
+                    companyId: companyObjectId,
                     air_comp: new mongoose.Types.ObjectId(airCompId)
                 }
             },
@@ -575,6 +594,7 @@ const addAirCompPayment = async (req, res) => {
         const paymentStats = await AirCompPayment.aggregate([
             {
                 $match: {
+                    companyId: companyObjectId,
                     air_comp: new mongoose.Types.ObjectId(airCompId)
                 }
             },
@@ -598,6 +618,7 @@ const addAirCompPayment = async (req, res) => {
         }
 
         const payment = new AirCompPayment({
+            companyId,
             air_comp: airCompId,
             amount,
             payment_date: payment_date || new Date(),
@@ -611,6 +632,7 @@ const addAirCompPayment = async (req, res) => {
 
         // Deduct from Treasury
         await updateTreasury(-amount, `دفع مبلغ لجهة الإصدار: ${airComp.name}`, {
+            companyId,
             relatedModel: 'AirCompPayment',
             relatedId: payment._id,
             userId: req.user?.id
@@ -642,8 +664,10 @@ const getAirCompDetails = async (req, res) => {
 
         const { id: airCompId } = req.params;
         const { fromDate, toDate } = req.query;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
-        const airComp = await AirComp.findById(airCompId);
+        const airComp = await AirComp.findOne({ _id: airCompId, companyId });
         if (!airComp) {
             return res.status(404).json({
                 success: false,
@@ -651,7 +675,7 @@ const getAirCompDetails = async (req, res) => {
             });
         }
 
-        const filter = { air_comp: airCompId };
+        const filter = { air_comp: airCompId, companyId };
         if (fromDate || toDate) {
             filter.createdAt = {};
             if (fromDate) filter.createdAt.$gte = new Date(fromDate);
@@ -670,7 +694,7 @@ const getAirCompDetails = async (req, res) => {
 
         const totalTransfers = await Transfer.countDocuments(filter);
 
-        const paymentFilter = { air_comp: airCompId };
+        const paymentFilter = { air_comp: airCompId, companyId };
         if (fromDate || toDate) {
             paymentFilter.payment_date = {};
             if (fromDate) paymentFilter.payment_date.$gte = new Date(fromDate);
@@ -693,8 +717,9 @@ const getAirCompDetails = async (req, res) => {
         const totals = await Transfer.aggregate([
             {
                 $match: {
-                    ...filter,
-                    air_comp: new mongoose.Types.ObjectId(airCompId)
+                    companyId: companyObjectId,
+                    air_comp: new mongoose.Types.ObjectId(airCompId),
+                    ...(filter.createdAt && { createdAt: filter.createdAt })
                 }
             },
             {
@@ -710,8 +735,9 @@ const getAirCompDetails = async (req, res) => {
         const totalPaidToIssuer = await AirCompPayment.aggregate([
             {
                 $match: {
-                    ...paymentFilter,
-                    air_comp: new mongoose.Types.ObjectId(airCompId)
+                    companyId: companyObjectId,
+                    air_comp: new mongoose.Types.ObjectId(airCompId),
+                    ...(paymentFilter.payment_date && { payment_date: paymentFilter.payment_date })
                 }
             },
             { $group: { _id: null, total: { $sum: "$amount" } } }

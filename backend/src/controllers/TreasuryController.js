@@ -1,11 +1,12 @@
+const mongoose = require("mongoose");
 const TreasuryHistory = require("../models/TreasuryHistory.model");
 const Treasury = require("../models/Treasury.model");
 const Transfer = require("../models/Transfer.model");
 const Expense = require("../models/Expense.model");
-const Payment = require("../models/Payment.model");
 const getPagination = require("../utils/pagination");
 const { generateTreasuryExcel } = require("../utils/excelExport");
-const { updateTreasury } = require("../utils/treasury.helper");
+const { updateTreasury, getTreasuryByCompany } = require("../utils/treasury.helper");
+const { getCompanyFilter } = require("../utils/companyFilter");
 
 /**
  * Get Treasury history with filtering and pagination
@@ -14,8 +15,9 @@ const getTreasuryHistory = async (req, res) => {
     try {
         const { limit, skip } = getPagination(req);
         const { fromDate, toDate, type, relatedModel } = req.query;
+        const companyId = req.user.companyId;
 
-        const filter = {};
+        const filter = getCompanyFilter(companyId);
 
         if (fromDate || toDate) {
             filter.createdAt = {};
@@ -67,7 +69,10 @@ const getTreasuryHistory = async (req, res) => {
 const getTreasuryStats = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
-        const filter = {};
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
+        
+        const filter = { companyId: companyObjectId };
 
         if (fromDate || toDate) {
             filter.createdAt = {};
@@ -91,8 +96,8 @@ const getTreasuryStats = async (req, res) => {
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
 
-        // Get current balance
-        const treasury = await Treasury.findOne({ name: "Main Treasury" });
+        // Get current balance for this company
+        const treasury = await getTreasuryByCompany(companyId);
 
         return res.status(200).json({
             success: true,
@@ -117,7 +122,9 @@ const getTreasuryStats = async (req, res) => {
 const exportTreasuryToExcel = async (req, res) => {
     try {
         const { fromDate, toDate, type, relatedModel } = req.query;
-        const filter = {};
+        const companyId = req.user.companyId;
+        
+        const filter = getCompanyFilter(companyId);
 
         if (fromDate || toDate) {
             filter.createdAt = {};
@@ -151,6 +158,7 @@ const exportTreasuryToExcel = async (req, res) => {
 const addTransaction = async (req, res) => {
     try {
         const { type, amount, description } = req.body;
+        const companyId = req.user.companyId;
 
         if (!type || !amount || !description) {
             return res.status(400).json({
@@ -177,12 +185,13 @@ const addTransaction = async (req, res) => {
 
         // Perform treasury update
         await updateTreasury(signedAmount, description, {
+            companyId,
             relatedModel: 'Other',
             userId: req.user?.id
         });
 
         // Provide feedback including updated balance
-        const treasury = await Treasury.findOne({ name: "Main Treasury" });
+        const treasury = await getTreasuryByCompany(companyId);
 
         return res.status(200).json({
             success: true,
@@ -205,7 +214,10 @@ const addTransaction = async (req, res) => {
 const getInventory = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
-        const filter = {};
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
+        
+        const filter = { companyId: companyObjectId };
 
         if (fromDate || toDate) {
             filter.createdAt = {};
@@ -231,7 +243,7 @@ const getInventory = async (req, res) => {
         const profit = (transferStats[0]?.totalRevenue || 0) - (transferStats[0]?.totalCost || 0);
 
         // 2. Calculate Expenses from Expense model
-        const expenseFilter = {};
+        const expenseFilter = { companyId: companyObjectId };
         if (fromDate || toDate) {
             expenseFilter.date = {};
             if (fromDate) expenseFilter.date.$gte = new Date(fromDate);

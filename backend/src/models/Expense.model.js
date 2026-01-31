@@ -6,6 +6,11 @@ const expenseSchema = new mongoose.Schema({
         required: [true, "العنوان مطلوب"],
         trim: true
     },
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     amount: {
         type: Number,
         required: [true, "المبلغ مطلوب"],

@@ -6,13 +6,16 @@ const Customer = require("../models/Customer.model");
 const Advance = require("../models/Advance.model");
 const getPagination = require("../utils/pagination");
 const bcrypt = require("bcryptjs");
+const { addCompanyFilter, getCompanyFilter } = require("../utils/companyFilter");
 
 const getUsers = async (req, res) => {
     try {
         const { limit, skip } = getPagination(req);
         const { name, email, role } = req.query;
+        const companyId = req.user.companyId;
 
-        const filter = {};
+        // Base filter with company
+        const filter = getCompanyFilter(companyId);
 
         if (name) {
             filter.user_name = { $regex: name, $options: "i" };
@@ -23,7 +26,7 @@ const getUsers = async (req, res) => {
         if (role) {
             filter.role = role;
         }
-        filter.role = { $nin: ["admin", "manager"] };
+        // In multi-tenancy, admins should see all users in their company
 
 
         const users = await Users.find(filter, { "__v": false, "password": false })
@@ -54,6 +57,7 @@ const getUsers = async (req, res) => {
 const addUser = async (req, res) => {
     try {
         const { user_name, email, password, role, phone, department, status } = req.body;
+        const companyId = req.user.companyId;
 
         if (!user_name || !email || !password) {
             return res.status(400).json({
@@ -70,16 +74,19 @@ const addUser = async (req, res) => {
             });
         }
 
-        const phoneExists = await Users.findOne({ phone });
-        if (phoneExists) {
-            return res.status(400).json({
-                success: false,
-                message: "الهاتف مسجل بالفعل"
-            });
+        if (phone) {
+            const phoneExists = await Users.findOne({ phone });
+            if (phoneExists) {
+                return res.status(400).json({
+                    success: false,
+                    message: "الهاتف مسجل بالفعل"
+                });
+            }
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // New users get same companyId as the person adding them
         const newUser = await Users.create({
             user_name,
             email,
@@ -87,7 +94,8 @@ const addUser = async (req, res) => {
             role: role || "accountant",
             phone,
             department,
-            status: status || "active"
+            status: status || "active",
+            companyId: companyId
         });
 
         const userSafe = newUser.toObject();
@@ -116,8 +124,10 @@ const addUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { user_name, email, password, role, phone, department, status } = req.body;
+        const companyId = req.user.companyId;
 
-        const user = await Users.findById(req.params.id).select("+password");
+        // Ensure user belongs to same company
+        const user = await Users.findOne({ _id: req.params.id, companyId }).select("+password");
 
         if (!user) {
             return res.status(404).json({
@@ -252,12 +262,36 @@ const updateProfile = async (req, res) => {
 
 const deleteUser = async (req, res) => {
     try {
-        const user = await Users.findById(req.params.id);
+        const companyId = req.user.companyId;
+        
+        // Ensure user belongs to same company
+        const user = await Users.findOne({ _id: req.params.id, companyId });
 
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "المستخدم غير موجود"
+            });
+        }
+
+        // Prevent deleting company admin (primary user)
+        if (user.role === "admin") {
+            // Check if this is the company creator
+            const Company = require("../models/Company.model");
+            const company = await Company.findById(companyId);
+            if (company && String(company.createdBy) === String(user._id)) {
+                return res.status(403).json({
+                    success: false,
+                    message: "لا يمكن حذف منشئ الشركة"
+                });
+            }
+        }
+
+        // Prevent self-deletion
+        if (String(user._id) === String(req.user.id)) {
+            return res.status(403).json({
+                success: false,
+                message: "لا يمكنك حذف حسابك الشخصي"
             });
         }
 
@@ -279,8 +313,10 @@ const getUserById = async (req, res) => {
     try {
         const { limit, skip } = getPagination(req);
         const userId = req.params.id;
+        const companyId = req.user.companyId;
 
-        const user = await Users.findById(userId, { "__v": false, "password": false });
+        // Ensure user belongs to same company
+        const user = await Users.findOne({ _id: userId, companyId }, { "__v": false, "password": false });
 
         if (!user) {
             return res.status(404).json({
@@ -289,17 +325,19 @@ const getUserById = async (req, res) => {
             });
         }
 
-        const transfers = await Transfer.find({ createdBy: user._id }, { "__v": false })
+        // Filter transfers by both user and company
+        const transferFilter = { createdBy: user._id, companyId };
+        const transfers = await Transfer.find(transferFilter, { "__v": false })
             .populate("customer", "name phone")
             .populate("air_comp", "name")
             .limit(limit)
             .skip(skip)
             .sort({ createdAt: -1 });
 
-        const totalTransfers = await Transfer.countDocuments({ createdBy: user._id });
+        const totalTransfers = await Transfer.countDocuments(transferFilter);
 
         const transferStatsAgg = await Transfer.aggregate([
-            { $match: { createdBy: user._id } },
+            { $match: { createdBy: user._id, companyId: new mongoose.Types.ObjectId(companyId) } },
             {
                 $group: {
                     _id: null,
@@ -312,7 +350,7 @@ const getUserById = async (req, res) => {
         ]);
 
         const transferStatusCounts = await Transfer.aggregate([
-            { $match: { createdBy: user._id } },
+            { $match: { createdBy: user._id, companyId: new mongoose.Types.ObjectId(companyId) } },
             { $group: { _id: "$status", count: { $sum: 1 } } }
         ]);
 
@@ -339,7 +377,7 @@ const getUserById = async (req, res) => {
         transferStats.overdueTickets = transferStats.ticketsByStatus.unpaid + transferStats.ticketsByStatus.partial;
 
         const paymentStatsAgg = await Payment.aggregate([
-            { $match: { createdBy: user._id } },
+            { $match: { createdBy: user._id, companyId: new mongoose.Types.ObjectId(companyId) } },
             {
                 $group: {
                     _id: null,
@@ -354,19 +392,19 @@ const getUserById = async (req, res) => {
             totalPaymentAmount: 0
         };
 
-        const totalCustomersCreated = await Customer.countDocuments({ createdBy: user._id });
+        const totalCustomersCreated = await Customer.countDocuments({ createdBy: user._id, companyId });
 
         const { limit: advLimit, skip: advSkip } = getPagination(req);
-        const advances = await Advance.find({ user: user._id })
+        const advances = await Advance.find({ user: user._id, companyId })
             .populate("approvedBy", "user_name")
             .limit(advLimit)
             .skip(advSkip)
             .sort({ createdAt: -1 });
 
-        const totalAdvancesCount = await Advance.countDocuments({ user: user._id });
+        const totalAdvancesCount = await Advance.countDocuments({ user: user._id, companyId });
 
         const advanceStatsAgg = await Advance.aggregate([
-            { $match: { user: user._id, status: { $in: ['approved', 'repaid'] } } },
+            { $match: { user: user._id, companyId: new mongoose.Types.ObjectId(companyId), status: { $in: ['approved', 'repaid'] } } },
             {
                 $group: {
                     _id: null,
@@ -376,7 +414,7 @@ const getUserById = async (req, res) => {
                     totalRepaid: {
                         $sum: { $cond: [{ $eq: ["$status", "repaid"] }, "$amount", 0] }
                     },
-                    totalAmount: { $sum: "$amount" } // This might not be needed if we want specific split
+                    totalAmount: { $sum: "$amount" }
                 }
             }
         ]);
@@ -384,11 +422,7 @@ const getUserById = async (req, res) => {
         const advStatsResult = advanceStatsAgg[0] || { totalApproved: 0, totalRepaid: 0 };
         const totalAdvances = advStatsResult.totalApproved + advStatsResult.totalRepaid;
         const totalRepaidAmount = advStatsResult.totalRepaid;
-        const outstandingAmount = advStatsResult.totalApproved; // Because 'repaid' items are no longer 'approved' status? 
-        // Wait, if status is 'repaid', it was once approved. 
-        // If the user wants "Total Advances taken", it should be Approved + Repaid.
-        // If "Repaid" is what was paid back.
-        // If "Outstanding" is what is still "Approved" but not yet "repaid".
+        const outstandingAmount = advStatsResult.totalApproved;
 
         return res.status(200).json({
             success: true,

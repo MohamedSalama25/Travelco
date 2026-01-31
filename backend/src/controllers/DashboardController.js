@@ -1,8 +1,8 @@
+const mongoose = require("mongoose");
 const Transfer = require("../models/Transfer.model");
 const Payment = require("../models/Payment.model");
 const Customer = require("../models/Customer.model");
 const AirComp = require("../models/AirComp.model");
-const mongoose = require("mongoose");
 const { generateReportExcel } = require("../utils/excelExport");
 
 /**
@@ -21,6 +21,8 @@ const calculateChange = (current, previous) => {
 const getDashboardStats = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
         let currentStart, currentEnd, prevStart, prevEnd;
 
@@ -36,15 +38,16 @@ const getDashboardStats = async (req, res) => {
             // Default: Current Month vs Last Month
             const now = new Date();
             currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            currentEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); // End of current month
+            currentEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
             prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59); // End of last month
+            prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
         }
 
         // Helper to get stats for a specific range
         const getStatsForRange = async (start, end) => {
             const dateFilter = {
+                companyId: companyObjectId,
                 createdAt: { $gte: start, $lte: end }
             };
 
@@ -65,6 +68,7 @@ const getDashboardStats = async (req, res) => {
             const paymentsStats = await Payment.aggregate([
                 {
                     $match: {
+                        companyId: companyObjectId,
                         payment_date: { $gte: start, $lte: end }
                     }
                 },
@@ -76,10 +80,10 @@ const getDashboardStats = async (req, res) => {
                 }
             ]);
 
-            // Overdue tickets counts (tickets created in this period that are currently unpaid/partial)
-            // Note: True historical overdue status is hard to reconstruct without complex audit logs
+            // Overdue tickets counts
             const overdue = await Transfer.countDocuments({
-                ...dateFilter,
+                companyId,
+                createdAt: { $gte: start, $lte: end },
                 status: { $in: ['unpaid', 'partial'] }
             });
 
@@ -104,14 +108,15 @@ const getDashboardStats = async (req, res) => {
             getStatsForRange(prevStart, prevEnd)
         ]);
 
-        // Get total customers (cumulative)
-        const totalCustomers = await Customer.countDocuments();
+        // Get total customers (cumulative - for this company)
+        const totalCustomers = await Customer.countDocuments({ companyId });
         const newCustomers = await Customer.countDocuments({
+            companyId,
             createdAt: { $gte: currentStart, $lte: currentEnd }
         });
 
-        // Get latest transfers (tickets)
-        const latestTransfers = await Transfer.find()
+        // Get latest transfers (tickets) for this company
+        const latestTransfers = await Transfer.find({ companyId })
             .sort({ createdAt: -1 })
             .limit(5)
             .populate('customer', 'name phone')
@@ -122,6 +127,7 @@ const getDashboardStats = async (req, res) => {
         const monthlyStats = await Transfer.aggregate([
             {
                 $match: {
+                    companyId: companyObjectId,
                     createdAt: {
                         $gte: new Date(`${currentYear}-01-01`),
                         $lt: new Date(`${currentYear + 1}-01-01`)
@@ -146,6 +152,7 @@ const getDashboardStats = async (req, res) => {
         const dailyStats = await Transfer.aggregate([
             {
                 $match: {
+                    companyId: companyObjectId,
                     createdAt: { $gte: ninetyDaysAgo }
                 }
             },
@@ -202,7 +209,6 @@ const getDashboardStats = async (req, res) => {
                 trend: currentStats.overdueTickets >= prevStats.overdueTickets ? 'increase' : 'decrease'
             },
             latestTransfers,
-            latestTransfers,
             monthlyStats: monthlyData,
             dailyStats
         };
@@ -235,8 +241,10 @@ const getDashboardStats = async (req, res) => {
 const getStatsByAirComp = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
-        const matchStage = {};
+        const matchStage = { companyId: companyObjectId };
         if (fromDate || toDate) {
             matchStage.createdAt = {};
             if (fromDate) matchStage.createdAt.$gte = new Date(fromDate);
@@ -307,10 +315,13 @@ const getMonthlyStats = async (req, res) => {
     try {
         const { year } = req.query;
         const selectedYear = parseInt(year) || new Date().getFullYear();
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
         const stats = await Transfer.aggregate([
             {
                 $match: {
+                    companyId: companyObjectId,
                     createdAt: {
                         $gte: new Date(`${selectedYear}-01-01`),
                         $lt: new Date(`${selectedYear + 1}-01-01`)
@@ -372,8 +383,10 @@ const getMonthlyStats = async (req, res) => {
 const getInventorySummary = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
-        const matchStage = {};
+        const matchStage = { companyId: companyObjectId };
         if (fromDate || toDate) {
             matchStage.createdAt = {};
             if (fromDate) matchStage.createdAt.$gte = new Date(fromDate);
@@ -400,21 +413,19 @@ const getInventorySummary = async (req, res) => {
         ]);
 
         // Get payments summary
+        const paymentMatchStage = { companyId: companyObjectId };
+        if (fromDate || toDate) {
+            paymentMatchStage.payment_date = {};
+            if (fromDate) paymentMatchStage.payment_date.$gte = new Date(fromDate);
+            if (toDate) {
+                const d = new Date(toDate);
+                d.setHours(23, 59, 59, 999);
+                paymentMatchStage.payment_date.$lte = d;
+            }
+        }
+
         const paymentsSummary = await Payment.aggregate([
-            {
-                $match: fromDate || toDate ? {
-                    payment_date: {
-                        ...(fromDate && { $gte: new Date(fromDate) }),
-                        ...(toDate && {
-                            $lte: (() => {
-                                const d = new Date(toDate);
-                                d.setHours(23, 59, 59, 999);
-                                return d;
-                            })()
-                        })
-                    }
-                } : {}
-            },
+            { $match: paymentMatchStage },
             {
                 $group: {
                     _id: "$payment_method",
@@ -483,8 +494,10 @@ const getInventorySummary = async (req, res) => {
 const exportAirCompStatsToExcel = async (req, res) => {
     try {
         const { fromDate, toDate } = req.query;
+        const companyId = req.user.companyId;
+        const companyObjectId = new mongoose.Types.ObjectId(companyId);
 
-        const matchStage = {};
+        const matchStage = { companyId: companyObjectId };
         if (fromDate || toDate) {
             matchStage.createdAt = {};
             if (fromDate) matchStage.createdAt.$gte = new Date(fromDate);

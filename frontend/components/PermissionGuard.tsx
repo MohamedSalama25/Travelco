@@ -11,10 +11,10 @@ interface PermissionGuardProps {
 
 export default function PermissionGuard({ children, allowedRoles }: PermissionGuardProps) {
     const user = useCurrentUser();
-    const userRole = user?.role || "employee"; // Default/Fallback
+    const userRole = user?.role || "accountant"; // Default/Fallback
 
-    // Admin and Manager usually have full access, or check specific logic
-    if (userRole === "admin" || userRole === "manager") {
+    // Admin has full access
+    if (userRole === "admin") {
         return <>{children}</>;
     }
 

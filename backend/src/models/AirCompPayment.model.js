@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const airCompPaymentSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     air_comp: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'AirComp',

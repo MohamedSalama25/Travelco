@@ -9,6 +9,11 @@ const customerSchema = new mongoose.Schema({
         maxlength: [100, "يجب أن يكون الاسم أقل من 100 حرف"],
         trim: true
     },
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     phone: {
         type: String,
         required: [true, "رقم الهاتف مطلوب"],

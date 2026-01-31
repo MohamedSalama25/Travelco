@@ -33,6 +33,7 @@ const startTicketReminders = () => {
         if (!existingNotification) {
           if (transfer.createdBy) {
             const notification = await Notification.create({
+              companyId: transfer.companyId,
               user: transfer.createdBy,
               title: "تنبيه موعد إقلاع تذكرة",
               message: `التذكرة رقم ${transfer.booking_number} للعميل ${transfer.customer?.name} موعد إقلاعها خلال 24 ساعة.`,

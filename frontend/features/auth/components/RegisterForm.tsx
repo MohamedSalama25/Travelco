@@ -33,7 +33,8 @@ export default function RegisterForm() {
                 user_name: data.name,
                 email: data.email,
                 phone: data.phone,
-                password: data.password
+                password: data.password,
+                company_name: data.company_name,
             },
             {
                 onSuccess: (data: any) => {
@@ -54,7 +55,7 @@ export default function RegisterForm() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-2xl">
                 {/* Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-6 border border-gray-100 dark:border-gray-700">
                     {/* Header */}
@@ -74,98 +75,123 @@ export default function RegisterForm() {
 
                     {/* Form */}
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                        {/* Name */}
-                        <div className="space-y-2">
-                            <Label htmlFor="name" className="text-sm font-medium">
-                                {t("name")}
-                            </Label>
-                            <Input
-                                id="name"
-                                {...register("name")}
-                                placeholder={t("name")}
-                                className={`h-11 ${errors.name ? "border-red-500" : ""}`}
-                            />
-                            {errors.name && (
-                                <p className="text-sm text-red-500">
-                                    {tErrors(errors.name.message as any)}
-                                </p>
-                            )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Name */}
+                            <div className="space-y-2">
+                                <Label htmlFor="name" className="text-sm font-medium">
+                                    {t("name")}
+                                </Label>
+                                <Input
+                                    id="name"
+                                    {...register("name")}
+                                    placeholder={t("name")}
+                                    className={`h-11 ${errors.name ? "border-red-500" : ""}`}
+                                />
+                                {errors.name && (
+                                    <p className="text-sm text-red-500">
+                                        {tErrors(errors.name.message as any)}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Email */}
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-medium">
+                                    {t("email")}
+                                </Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    {...register("email")}
+                                    placeholder={t("email")}
+                                    className={`h-11 ${errors.email ? "border-red-500" : ""}`}
+                                />
+                                {errors.email && (
+                                    <p className="text-sm text-red-500">
+                                        {tErrors(errors.email.message as any)}
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Email */}
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="text-sm font-medium">
-                                {t("email")}
-                            </Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                {...register("email")}
-                                placeholder={t("email")}
-                                className={`h-11 ${errors.email ? "border-red-500" : ""}`}
-                            />
-                            {errors.email && (
-                                <p className="text-sm text-red-500">
-                                    {tErrors(errors.email.message as any)}
-                                </p>
-                            )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Phone */}
+                            <div className="space-y-2">
+                                <Label htmlFor="phone" className="text-sm font-medium">
+                                    {t("phone")}
+                                </Label>
+                                <Input
+                                    id="phone"
+                                    type="text"
+                                    {...register("phone")}
+                                    placeholder={t("phone")}
+                                    className={`h-11 ${errors.phone ? "border-red-500" : ""}`}
+                                />
+                                {errors.phone && (
+                                    <p className="text-sm text-red-500">
+                                        {tErrors(errors.phone.message as any)}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Company Name */}
+                            <div className="space-y-2">
+                                <Label htmlFor="company_name" className="text-sm font-medium">
+                                    {t("companyName")}
+                                </Label>
+                                <Input
+                                    id="company_name"
+                                    type="text"
+                                    {...register("company_name")}
+                                    placeholder={t("companyName")}
+                                    className={`h-11 ${errors.company_name ? "border-red-500" : ""}`}
+                                />
+                                {errors.company_name && (
+                                    <p className="text-sm text-red-500">
+                                        {tErrors(errors.company_name.message as any)}
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Phone */}
-                        <div className="space-y-2">
-                            <Label htmlFor="phone" className="text-sm font-medium">
-                                {t("phone", { defaultValue: "رقم الهاتف" })}
-                            </Label>
-                            <Input
-                                id="phone"
-                                type="text"
-                                {...register("phone")}
-                                placeholder={t("phone", { defaultValue: "رقم الهاتف" })}
-                                className={`h-11 ${errors.phone ? "border-red-500" : ""}`}
-                            />
-                            {errors.phone && (
-                                <p className="text-sm text-red-500">
-                                    {tErrors(errors.phone.message as any)}
-                                </p>
-                            )}
-                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Password */}
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-sm font-medium">
+                                    {t("password")}
+                                </Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    {...register("password")}
+                                    placeholder={t("password")}
+                                    className={`h-11 ${errors.password ? "border-red-500" : ""}`}
+                                />
+                                {errors.password && (
+                                    <p className="text-sm text-red-500">
+                                        {tErrors(errors.password.message as any)}
+                                    </p>
+                                )}
+                            </div>
 
-                        {/* Password */}
-                        <div className="space-y-2">
-                            <Label htmlFor="password" className="text-sm font-medium">
-                                {t("password")}
-                            </Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                {...register("password")}
-                                placeholder={t("password")}
-                                className={`h-11 ${errors.password ? "border-red-500" : ""}`}
-                            />
-                            {errors.password && (
-                                <p className="text-sm text-red-500">
-                                    {tErrors(errors.password.message as any)}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Confirm Password */}
-                        <div className="space-y-2">
-                            <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                                {t("confirmPassword")}
-                            </Label>
-                            <Input
-                                id="confirmPassword"
-                                type="password"
-                                {...register("confirmPassword")}
-                                placeholder={t("password")}
-                                className={`h-11 ${errors.confirmPassword ? "border-red-500" : ""}`}
-                            />
-                            {errors.confirmPassword && (
-                                <p className="text-sm text-red-500">
-                                    {tErrors(errors.confirmPassword.message as any)}
-                                </p>
-                            )}
+                            {/* Confirm Password */}
+                            <div className="space-y-2">
+                                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                                    {t("confirmPassword")}
+                                </Label>
+                                <Input
+                                    id="confirmPassword"
+                                    type="password"
+                                    {...register("confirmPassword")}
+                                    placeholder={t("password")}
+                                    className={`h-11 ${errors.confirmPassword ? "border-red-500" : ""}`}
+                                />
+                                {errors.confirmPassword && (
+                                    <p className="text-sm text-red-500">
+                                        {tErrors(errors.confirmPassword.message as any)}
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Submit Button */}

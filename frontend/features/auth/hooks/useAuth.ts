@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
-import { loginUser, registerUser, LoginPayload, RegisterPayload, LoginResponse } from '../services/authService';
+import { loginUser, registerUser, LoginPayload, RegisterPayload, LoginResponse, RegisterResponse } from '../services/authService';
 
 /**
  * Hook for login mutation
@@ -14,8 +14,13 @@ export const useLogin = () => {
             return data;
         },
         onSuccess: async (data: LoginResponse) => {
-            // ده هيخزن التوكين في الـ state + الكوكيز
-            await setAuth(data.user, data.token);
+            // Store user with companyId and companyName
+            const user = {
+                ...data.user,
+                companyId: data.user.companyId,
+                companyName: data.user.companyName,
+            };
+            await setAuth(user, data.token);
         },
     });
 };
@@ -31,9 +36,14 @@ export const useRegister = () => {
             const data = await registerUser(payload);
             return data;
         },
-        onSuccess: async (data: LoginResponse) => {
-            // نفس فكرة الـ login
-            await setAuth(data.user, data.token);
+        onSuccess: async (data: RegisterResponse) => {
+            // Store user with company info from registration
+            const user = {
+                ...data.user,
+                companyId: data.user.companyId || data.company?._id,
+                companyName: data.user.companyName || data.company?.name,
+            };
+            await setAuth(user, data.token);
         },
     });
 };
@@ -43,6 +53,5 @@ export const useRegister = () => {
  */
 export const useLogout = () => {
     const { logout } = useAuthStore();
-    // ده هيمسح التوكين من الـ state + من الكوكيز
     return logout;
 };

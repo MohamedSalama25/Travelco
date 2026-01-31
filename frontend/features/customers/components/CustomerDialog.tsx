@@ -18,11 +18,13 @@ import { Customer } from "../types/types";
 export function CustomerDialog({
     open,
     onClose,
-    customer
+    customer,
+    onSuccess,
 }: {
     open: boolean;
     onClose: () => void;
     customer?: Customer;
+    onSuccess?: (customer: Customer) => void;
 }) {
     const t = useTranslations("customers");
     const queryClient = useQueryClient();
@@ -51,6 +53,9 @@ export function CustomerDialog({
                         queryKey: ["customers"],
                     });
                     showSuccessToast(result.message || t("customerCreated"));
+                    if (onSuccess && result.data) {
+                        onSuccess(result.data);
+                    }
                     handleClose();
                 }
             }

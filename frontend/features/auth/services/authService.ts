@@ -12,24 +12,43 @@ export interface RegisterPayload {
     email: string;
     phone: string;
     password: string;
+    company_name?: string;
 }
 
-// Defining response types locally or importing if they exist.
-// useAuth had them defined strictly inside the file. I should export them or redefine them.
-// Preferably I should move types to types.ts but for now i'll define them here or import if possible.
-// I'll define generic interfaces for now to match the user's "use strict pattern" request which implies
-// standalone functions.
-
 export interface LoginResponse {
+    success: boolean;
     user: {
         id: string;
         email: string;
         name?: string;
         user_name?: string;
         role?: string;
+        phone?: string;
+        companyId?: string;
+        companyName?: string;
     };
     token: string;
-    message: string;
+    message?: string;
+}
+
+export interface RegisterResponse {
+    success: boolean;
+    user: {
+        id: string;
+        email: string;
+        name?: string;
+        user_name?: string;
+        role?: string;
+        phone?: string;
+        companyId?: string;
+        companyName?: string;
+    };
+    company: {
+        _id: string;
+        name: string;
+    };
+    token: string;
+    message?: string;
 }
 
 export async function loginUser(payload: LoginPayload): Promise<LoginResponse> {
@@ -40,8 +59,8 @@ export async function loginUser(payload: LoginPayload): Promise<LoginResponse> {
     return response.data;
 }
 
-export async function registerUser(payload: RegisterPayload): Promise<LoginResponse> {
-    const response = await clientAxios.post<LoginResponse>(
+export async function registerUser(payload: RegisterPayload): Promise<RegisterResponse> {
+    const response = await clientAxios.post<RegisterResponse>(
         API_CONFIG.ENDPOINTS.AUTH.REGISTER,
         payload
     );
@@ -50,7 +69,7 @@ export async function registerUser(payload: RegisterPayload): Promise<LoginRespo
 
 export async function updateProfile(data: any): Promise<any> {
     const response = await clientAxios.put(
-        '/users/profile', // Using hardcoded path or add to config
+        '/users/profile',
         data
     );
     return response.data;

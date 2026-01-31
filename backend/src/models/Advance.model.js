@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const advanceSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

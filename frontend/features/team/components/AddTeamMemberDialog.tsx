@@ -201,7 +201,6 @@ export default function AddTeamMemberDialog({
                             </SelectTrigger>
                             <SelectContent dir="rtl">
                                 <SelectItem value="admin">{t("admin")}</SelectItem>
-                                <SelectItem value="manager">{t("manager")}</SelectItem>
                                 <SelectItem value="accountant">{t("accountant")}</SelectItem>
                             </SelectContent>
                         </Select>

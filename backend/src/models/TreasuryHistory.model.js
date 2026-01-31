@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const treasuryHistorySchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     amount: {
         type: Number,
         required: true

@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     transfer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Transfer',

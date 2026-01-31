@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const SettingsSchema = new mongoose.Schema({
+    companyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, "الشركة مطلوبة"]
+    },
     companyName: {
         type: String,
         required: [true, "اسم الشركة مطلوب"],

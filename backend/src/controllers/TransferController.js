@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const asyncWrapper = require("../middlewares/asyncWarpper");
 const Transfer = require("../models/Transfer.model");
 const Payment = require("../models/Payment.model");
@@ -8,6 +9,7 @@ const { generateTransfersExcel } = require("../utils/excelExport");
 const buildTransferStats = require("../utils/transferStats.helper");
 const buildTransferFilter = require("../utils/buildTransferFilter");
 const { updateTreasury } = require("../utils/treasury.helper");
+const { getCompanyFilter } = require("../utils/companyFilter");
 
 /**
  * Helper to calculate percentage change
@@ -23,36 +25,45 @@ const calculateChange = (current, previous) => {
  * Get all transfers with advanced filtering and pagination
  */
 const getTransfers = async (req, res) => {
-  const { limit, skip } = getPagination(req);
+  try {
+    const { limit, skip } = getPagination(req);
+    const companyId = req.user.companyId;
 
-  const filter = await buildTransferFilter(req.query);
+    const filter = await buildTransferFilter(req.query, companyId);
 
-  const transfers = await Transfer.find(filter)
-    .populate("customer", "name phone")
-    .populate("air_comp", "name")
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .skip(skip);
+    const transfers = await Transfer.find(filter)
+      .populate("customer", "name phone")
+      .populate("air_comp", "name")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(skip);
 
-  const total = await Transfer.countDocuments(filter);
+    const total = await Transfer.countDocuments(filter);
 
-  const stats = await buildTransferStats({
-    filter,
-    fromDate: req.query.fromDate,
-    toDate: req.query.toDate
-  });
+    const stats = await buildTransferStats({
+      filter,
+      fromDate: req.query.fromDate,
+      toDate: req.query.toDate,
+      companyId
+    });
 
-  res.status(200).json({
-    success: true,
-    data: transfers,
-    stats,
-    pagination: {
-      total,
-      page: Math.floor(skip / limit) + 1,
-      limit,
-      pages: Math.ceil(total / limit)
-    }
-  });
+    res.status(200).json({
+      success: true,
+      data: transfers,
+      stats,
+      pagination: {
+        total,
+        page: Math.floor(skip / limit) + 1,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 
 /**
@@ -60,7 +71,8 @@ const getTransfers = async (req, res) => {
  */
 const getTransferById = asyncWrapper(
   async (req, res, next) => {
-    const transfer = await Transfer.findById(req.params.id)
+    const companyId = req.user.companyId;
+    const transfer = await Transfer.findOne({ _id: req.params.id, companyId })
       .populate('customer', 'name phone')
       .populate('air_comp', 'name')
       .populate('createdBy', 'email')
@@ -72,7 +84,7 @@ const getTransferById = asyncWrapper(
     }
 
     // Get all payments for this transfer
-    const payments = await Payment.find({ transfer: req.params.id })
+    const payments = await Payment.find({ transfer: req.params.id, companyId })
       .populate('createdBy', 'user_name email')
       .sort({ payment_date: -1 });
 
@@ -91,6 +103,7 @@ const getTransferById = asyncWrapper(
  */
 const addTransfer = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
     const {
       booking_number,
       customer,
@@ -111,10 +124,20 @@ const addTransfer = async (req, res) => {
       });
     }
 
+    // Verify customer belongs to same company
+    const customerDoc = await Customer.findOne({ _id: customer, companyId });
+    if (!customerDoc) {
+      return res.status(400).json({
+        success: false,
+        message: "العميل غير موجود"
+      });
+    }
+
     const initialPayment = transfer_pay || 0;
 
-    // Create new Transfer object
+    // Create new Transfer object with companyId
     const newTransfer = new Transfer({
+      companyId,
       booking_number,
       customer,
       air_comp,
@@ -124,9 +147,9 @@ const addTransfer = async (req, res) => {
       ticket_salary: ticket_salary || 0,
       ticket_price: ticket_price || 0,
       transfer_pay: initialPayment,
-      total_paid: initialPayment,  // Set initial payment
+      total_paid: initialPayment,
       remaining_amount: (ticket_price || 0) - initialPayment,
-      status: 'unpaid',  // Will be updated by pre-save hook
+      status: 'unpaid',
       createdBy: req.user?.id || null,
       updatedBy: req.user?.id || null
     });
@@ -137,6 +160,7 @@ const addTransfer = async (req, res) => {
     let paymentRecord = null;
     if (initialPayment > 0) {
       paymentRecord = new Payment({
+        companyId,
         transfer: newTransfer._id,
         amount: initialPayment,
         payment_date: new Date(),
@@ -149,6 +173,7 @@ const addTransfer = async (req, res) => {
 
       // Update Treasury
       await updateTreasury(initialPayment, `دفعة مقدمة للحجز رقم ${newTransfer.booking_number}`, {
+        companyId,
         relatedModel: 'Transfer',
         relatedId: newTransfer._id,
         userId: req.user?.id || null
@@ -177,7 +202,8 @@ const addTransfer = async (req, res) => {
  */
 const updateTransfer = async (req, res) => {
   try {
-    const transfer = await Transfer.findById(req.params.id);
+    const companyId = req.user.companyId;
+    const transfer = await Transfer.findOne({ _id: req.params.id, companyId });
 
     if (!transfer) {
       return res.status(404).json({
@@ -206,7 +232,6 @@ const updateTransfer = async (req, res) => {
     }
 
     // Update only provided fields
-
     if (customer !== undefined) transfer.customer = customer;
     if (air_comp !== undefined) transfer.air_comp = air_comp;
     if (airPort !== undefined) transfer.airPort = airPort;
@@ -214,10 +239,8 @@ const updateTransfer = async (req, res) => {
     if (take_off_date !== undefined) transfer.take_off_date = take_off_date;
     if (ticket_salary !== undefined) transfer.ticket_salary = ticket_salary;
 
-    // If ticket_price changed, recalculate remaining_amount
     if (ticket_price !== undefined && ticket_price !== transfer.ticket_price) {
       transfer.ticket_price = ticket_price;
-      // remaining_amount will be recalculated in pre-save hook
     }
 
     transfer.updatedBy = req.user?.id || transfer.updatedBy;
@@ -243,7 +266,8 @@ const updateTransfer = async (req, res) => {
  */
 const deleteTransfer = async (req, res) => {
   try {
-    const transfer = await Transfer.findById(req.params.id);
+    const companyId = req.user.companyId;
+    const transfer = await Transfer.findOne({ _id: req.params.id, companyId });
 
     if (!transfer) {
       return res.status(404).json({
@@ -253,7 +277,7 @@ const deleteTransfer = async (req, res) => {
     }
 
     // Check if transfer has payments
-    const paymentCount = await Payment.countDocuments({ transfer: req.params.id });
+    const paymentCount = await Payment.countDocuments({ transfer: req.params.id, companyId });
     if (paymentCount > 0) {
       return res.status(400).json({
         success: false,
@@ -280,11 +304,12 @@ const deleteTransfer = async (req, res) => {
  */
 const getTransferStats = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
+    const companyObjectId = new mongoose.Types.ObjectId(companyId);
     const { fromDate, toDate, air_comp } = req.query;
 
     let currentStart, currentEnd, prevStart, prevEnd;
 
-    // Determine date ranges
     if (fromDate && toDate) {
       currentStart = new Date(fromDate);
       currentEnd = new Date(toDate);
@@ -293,7 +318,6 @@ const getTransferStats = async (req, res) => {
       prevEnd = new Date(currentStart);
       prevStart = new Date(prevEnd - duration);
     } else {
-      // Default: Current Month vs Last Month
       const now = new Date();
       currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
       currentEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
@@ -302,13 +326,13 @@ const getTransferStats = async (req, res) => {
       prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
     }
 
-    // Helper to get stats for a specific range
     const getStatsForRange = async (start, end) => {
       const filter = {
+        companyId: companyObjectId,
         createdAt: { $gte: start, $lte: end }
       };
       if (air_comp) {
-        filter.air_comp = air_comp;
+        filter.air_comp = new mongoose.Types.ObjectId(air_comp);
       }
 
       const stats = await Transfer.aggregate([
@@ -399,14 +423,10 @@ const getTransferStats = async (req, res) => {
 
 const cancelTransfer = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
     const { id } = req.params;
-    const {
-      cancel_reason,
-      cancel_tax,
-      cancel_commission
-    } = req.body;
+    const { cancel_reason, cancel_tax, cancel_commission } = req.body;
 
-    // تحقق من البيانات
     if (!cancel_reason) {
       return res.status(400).json({
         success: false,
@@ -421,7 +441,7 @@ const cancelTransfer = async (req, res) => {
       });
     }
 
-    const transfer = await Transfer.findById(id);
+    const transfer = await Transfer.findOne({ _id: id, companyId });
 
     if (!transfer) {
       return res.status(404).json({
@@ -437,41 +457,25 @@ const cancelTransfer = async (req, res) => {
       });
     }
 
-    /* =====================
-       حفظ القيم القديمة
-    ====================== */
     transfer.transfer_pay_before_cancel = transfer.transfer_pay;
     transfer.transfer_salary_before_cancel = transfer.ticket_salary;
     transfer.transfer_price_before_cancel = transfer.ticket_price;
 
-    /* =====================
-       بيانات الإلغاء
-    ====================== */
     transfer.cancel_reason = cancel_reason;
     transfer.cancel_tax = Number(cancel_tax);
     transfer.cancel_commission = Number(cancel_commission);
 
-    /* =====================
-       إعادة التسعير
-    ====================== */
-    // تكلفة التذكرة = الضريبة
     transfer.ticket_salary = transfer.cancel_tax;
+    transfer.ticket_price = transfer.cancel_tax + transfer.cancel_commission;
 
-    // سعر البيع الجديد = الضريبة + العمولة
-    transfer.ticket_price =
-      transfer.cancel_tax + transfer.cancel_commission;
-
-    /* =====================
-       حساب الاسترداد (Refund)
-    ====================== */
     const { is_refunded } = req.body;
 
     if (transfer.total_paid > transfer.ticket_price) {
       transfer.refund_amount = transfer.total_paid - transfer.ticket_price;
 
-      // لو اليوزر اختار استرداد المبلغ فوراً
       if (is_refunded && transfer.refund_amount > 0) {
         await updateTreasury(-transfer.refund_amount, `استرداد مبلغ للعميل عند إلغاء الحجز رقم ${transfer.booking_number}`, {
+          companyId,
           relatedModel: 'Transfer',
           relatedId: transfer._id,
           userId: req.user.id
@@ -482,19 +486,14 @@ const cancelTransfer = async (req, res) => {
       transfer.refund_amount = 0;
     }
 
-    /* =====================
-       إعادة الحسابات
-    ====================== */
     if (transfer.total_paid > transfer.ticket_price) {
       transfer.total_paid = transfer.ticket_price;
     }
 
-    transfer.remaining_amount =
-      transfer.ticket_price - transfer.total_paid;
-
+    transfer.remaining_amount = transfer.ticket_price - transfer.total_paid;
     transfer.status = 'cancel';
     transfer.updatedBy = req.user.id;
-    transfer.cancel_at = new Date(); // التأكد من تسجيل وقت الإلغاء
+    transfer.cancel_at = new Date();
 
     await transfer.save();
 
@@ -514,8 +513,9 @@ const cancelTransfer = async (req, res) => {
 
 const refundTransfer = async (req, res) => {
   try {
+    const companyId = req.user.companyId;
     const { id } = req.params;
-    const transfer = await Transfer.findById(id);
+    const transfer = await Transfer.findOne({ _id: id, companyId });
 
     if (!transfer) {
       return res.status(404).json({
@@ -545,8 +545,8 @@ const refundTransfer = async (req, res) => {
       });
     }
 
-    // خصم المبلغ من الخزنة
     await updateTreasury(-transfer.refund_amount, `استرداد مبلغ للعميل بعد إلغاء التذكرة رقم ${transfer.booking_number}`, {
+      companyId,
       relatedModel: 'Transfer',
       relatedId: transfer._id,
       userId: req.user.id
@@ -569,14 +569,13 @@ const refundTransfer = async (req, res) => {
   }
 };
 
-
-
 /**
  * Export transfers to Excel
  */
 const exportTransfersToExcel = async (req, res) => {
   try {
-    const filter = await buildTransferFilter(req.query);
+    const companyId = req.user.companyId;
+    const filter = await buildTransferFilter(req.query, companyId);
 
     const transfers = await Transfer.find(filter)
       .populate('air_comp', 'name')
