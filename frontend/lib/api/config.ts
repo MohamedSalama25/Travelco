@@ -4,7 +4,7 @@
  */
 
 export const API_CONFIG = {
-    BASE_URL: 'http://localhost:3200/api/',
+    BASE_URL: 'https://api.isag-it.com/api/',
     ENDPOINTS: {
         AUTH: {
             LOGIN: 'auth/login',
