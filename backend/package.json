@@ -9,10 +9,10 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.4",
-    "node-cron": "^4.2.1",
-    "node-windows": "^1.0.0-beta.8",
-    "socket.io": "^4.8.3",
     "validator": "^13.15.23"
+  },
+  "engines": {
+    "node": ">=18.x"
   },
   "scripts": {
     "dev": "node src/server.js",

@@ -14,7 +14,9 @@ import { formatDistanceToNow, format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useRouter } from "@/routing";
 import { toast } from "sonner";
-import { useSocket } from "@/hooks/useSocket";
+
+// Polling interval in milliseconds (30 seconds)
+const POLLING_INTERVAL = 30_000;
 
 interface Notification {
     _id: string;
@@ -36,17 +38,54 @@ export function NotificationCenter() {
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const latestIdRef = useRef<string | null>(null);
-    const socket = useSocket();
+    const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const fetchNotifications = useCallback(async (pageNum = 1, silent = false) => {
         try {
             if (!silent) setIsLoading(true);
             const response = await clientAxios.get(`/notifications?page=${pageNum}&limit=10`);
-            
+
             if (response.data.success) {
                 const newNotifications = response.data.data;
-                
+
                 if (pageNum === 1) {
+                    // Check for truly new notifications (for toast)
+                    if (
+                        silent &&
+                        latestIdRef.current &&
+                        newNotifications.length > 0 &&
+                        newNotifications[0]._id !== latestIdRef.current
+                    ) {
+                        // Find notifications newer than the last known one
+                        const lastKnownIdx = newNotifications.findIndex(
+                            (n: Notification) => n._id === latestIdRef.current
+                        );
+                        const freshOnes =
+                            lastKnownIdx === -1
+                                ? newNotifications.slice(0, 3)
+                                : newNotifications.slice(0, lastKnownIdx);
+
+                        // Show toast for each new notification (max 3)
+                        freshOnes.slice(0, 3).forEach((notification: Notification) => {
+                            toast(
+                                <div
+                                    onClick={() => handleNotificationClick(notification)}
+                                    className="cursor-pointer w-full"
+                                >
+                                    <div className="font-semibold">{notification.title}</div>
+                                    <div className="text-xs text-muted-foreground">{notification.message}</div>
+                                </div>,
+                                {
+                                    position: "top-center",
+                                    action: {
+                                        label: t("viewMore"),
+                                        onClick: () => handleNotificationClick(notification),
+                                    },
+                                }
+                            );
+                        });
+                    }
+
                     if (newNotifications.length > 0) {
                         latestIdRef.current = newNotifications[0]._id;
                     }
@@ -68,46 +107,28 @@ export function NotificationCenter() {
         }
     }, [t, router]);
 
+    // Initial fetch
     useEffect(() => {
         fetchNotifications(1);
     }, [fetchNotifications]);
 
+    // Polling: replace socket with setTimeout-based polling
     useEffect(() => {
-        if (!socket) return;
-
-        console.log("Attaching notification listener...");
-        const handleNewNotification = (notification: Notification) => {
-            console.log("New notification received via socket:", notification);
-            setNotifications(prev => {
-                if (prev.some(n => n._id === notification._id)) return prev;
-                return [notification, ...prev];
-            });
-            setUnreadCount(prev => prev + 1);
-            latestIdRef.current = notification._id;
-
-            toast(
-                <div 
-                    onClick={() => handleNotificationClick(notification)} 
-                    className="cursor-pointer w-full "
-                >
-                    <div className="font-semibold">{notification.title}</div>
-                    <div className="text-xs text-muted-foreground">{notification.message}</div>
-                </div>,
-                {
-                    position: "top-center",
-                    action: {
-                        label: t("viewMore"),
-                        onClick: () => handleNotificationClick(notification)
-                    },
-                }
-            );
+        const poll = () => {
+            pollingRef.current = setTimeout(async () => {
+                await fetchNotifications(1, true);
+                poll(); // Schedule next poll
+            }, POLLING_INTERVAL);
         };
 
-        socket.on("newNotification", handleNewNotification);
+        poll();
+
         return () => {
-            socket.off("newNotification", handleNewNotification);
+            if (pollingRef.current) {
+                clearTimeout(pollingRef.current);
+            }
         };
-    }, [socket, t]);
+    }, [fetchNotifications]);
 
     const markAsRead = async (id: string) => {
         try {
@@ -150,7 +171,7 @@ export function NotificationCenter() {
             toast.error(t("noPhoneAvailable") || "رقم الهاتف غير متاح");
             return;
         }
-        
+
         const phone = customer.phone.replace(/\D/g, "");
         const dateStr = transfer.take_off_date ? format(new Date(transfer.take_off_date), "dd/MM/yyyy HH:mm") : "";
         const message = `مرحباً ${customer.name}، نود تذكيركم بموعد رحلتكم رقم الحجز ${transfer.booking_number} بتاريخ ${dateStr}. نتمنى لكم رحلة سعيدة.`;
@@ -189,9 +210,9 @@ export function NotificationCenter() {
                         )}
                     </div>
                     {unreadCount > 0 && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="text-xs h-7 gap-1 px-2 hover:bg-primary/5 hover:text-primary transition-colors font-normal"
                             onClick={markAllRead}
                         >

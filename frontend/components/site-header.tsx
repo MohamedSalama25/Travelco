@@ -2,7 +2,7 @@
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ThemeSelector } from "./theme-selector";
+// import { ThemeSelector } from "./theme-selector";
 import { ModeSwitcher } from "./mode-switcher";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
@@ -39,7 +39,7 @@ export function SiteHeader() {
         </div>
         <div className="flex items-center gap-2">
           <NotificationCenter />
-          <ThemeSelector />
+          {/* <ThemeSelector /> */}
           <ModeSwitcher />
         </div>
       </div>
