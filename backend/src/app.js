@@ -55,17 +55,6 @@ app.use("/api/expenses", auth, require("./routes/expenseRoutes"));
 app.use("/api/settings", auth, require("./routes/settingsRoutes"));
 app.use("/api/notifications", require("./routes/notification.routes"));
 
-// Cron endpoint (replaces node-cron, protected by secret)
-const { checkTicketReminders } = require("./cron/ticketReminders");
-app.get("/api/cron/ticket-reminders", (req, res, next) => {
-  // Verify cron secret to prevent unauthorized access
-  const cronSecret = req.headers["x-cron-secret"];
-  if (cronSecret !== process.env.CRON_SECRET) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-  return checkTicketReminders(req, res, next);
-});
-
 // Error handler
 app.use((err, req, res, next) => {
   res.status(err.status || 500).json({
