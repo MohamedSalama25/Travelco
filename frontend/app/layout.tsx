@@ -14,13 +14,15 @@ import { ConfirmDialogProvider } from "@/components/providers/ConfirmDialogProvi
 
 
 export const metadata: Metadata = {
-    title: "Travelco Dashboard",
+    title: "Travelco",
     description:
         "A fully responsive analytics dashboard for Travelco management.",
     formatDetection: {
         telephone: false,
     },
     icons: {
+        icon: "/favicon.png",
+        shortcut: "/favicon.png",
         apple: [{ url: "/logo.png", sizes: "180x180" }],
     },
 };
